@@ -165,6 +165,13 @@ textarea {
   color: var(--color-tinta);
 }
 
+/* En celular el header mide 60px: todo lo que se pega debajo debe usar esta medida. */
+@media (max-width: 860px) {
+  :root {
+    --header-height: 60px;
+  }
+}
+
 .container {
   width: 100%;
   max-width: var(--container);
