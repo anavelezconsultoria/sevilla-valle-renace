@@ -20,8 +20,8 @@ import { Marca } from '../shared/ui/marca';
           <a routerLink="/seguimiento">Mis solicitudes</a>
         </div>
         <a class="autora" href="https://anavelezconsultora.com" target="_blank" rel="noopener">
-          <img src="ana-velez-logo.png" alt="" width="40" height="40" loading="lazy" />
-          <span>Desarrollado por <strong>Ana Vélez</strong><br />Consultoría · Software · Tecnología</span>
+          <span>Desarrollado por</span>
+          <img src="ana-velez-logo.png" alt="Ana Vélez · Consultoría, Software y Tecnología" height="64" loading="lazy" />
         </a>
       </div>
     </footer>
@@ -35,7 +35,7 @@ import { Marca } from '../shared/ui/marca';
     a { text-decoration: none; color: var(--color-tenue); }
     a:hover { color: var(--color-primario); }
     .autora { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-xs); line-height: 1.4; }
-    .autora strong { color: var(--color-tinta); }
+    .autora img { height: 64px; width: auto; }
     @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } .footer { padding-bottom: 110px; } }
   `,
 })
