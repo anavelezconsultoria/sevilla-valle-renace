@@ -29,6 +29,7 @@ import {
   SolicitanteGateway,
 } from '../../core/ports/necesidades.ports';
 import { filtrarNecesidades } from '../../core/application/filtrar-necesidades';
+import { calcularCifras } from '../../core/application/calcular-cifras';
 import { crearSemillaDemo, RegistroDemo } from './demo-semilla';
 
 const CLAVE_ALMACEN = 'sevilla-renace-demo-v1';
@@ -84,17 +85,7 @@ export class DemoBackend
   }
 
   cifras(): CifrasPublicas {
-    const todas = this.todas();
-    const contar = (estado: EstadoNecesidad) => todas.filter((n) => n.estado === estado).length;
-    return {
-      registradas: contar(EstadoNecesidad.Registrada),
-      enAtencion: contar(EstadoNecesidad.EnAtencion),
-      entregadas: contar(EstadoNecesidad.Entregada),
-      atendidas: contar(EstadoNecesidad.Atendida),
-      personasAyudadas: todas
-        .filter((n) => n.estado === EstadoNecesidad.Atendida)
-        .reduce((total, n) => total + n.personasHogar, 0),
-    };
+    return calcularCifras(this.todas());
   }
 
   // ---- Solicitante ----

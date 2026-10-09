@@ -82,6 +82,8 @@ export interface Necesidad {
   readonly ubicacionAproximada: Coordenada;
   readonly estado: EstadoNecesidad;
   readonly cierre?: CierreAtencion;
+  /** Identificador publico del perfil que la atiende (no es un dato personal). */
+  readonly ayudanteId?: string;
   readonly ayudanteAlias?: string;
   readonly registradaEn: string;
   readonly actualizadaEn: string;

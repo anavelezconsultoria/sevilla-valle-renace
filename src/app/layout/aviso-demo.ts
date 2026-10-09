@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, Injector, signal } from '@angular/core';
 import { ModoDatos } from '../core/ports/necesidades.ports';
 import { DemoBackend } from '../infrastructure/demo/demo-backend';
 
@@ -34,9 +34,10 @@ import { DemoBackend } from '../infrastructure/demo/demo-backend';
 export class AvisoDemo {
   protected readonly esDemo = inject(ModoDatos).esDemo;
   protected readonly visible = signal(true);
-  private readonly demo = inject(DemoBackend, { optional: true });
+  private readonly injector = inject(Injector);
 
+  /** El backend de demo se pide solo al reiniciar: con Supabase activo nunca se instancia. */
   protected reiniciar(): void {
-    this.demo?.reiniciar();
+    this.injector.get(DemoBackend).reiniciar();
   }
 }
