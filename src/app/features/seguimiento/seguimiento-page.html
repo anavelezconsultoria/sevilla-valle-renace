@@ -14,6 +14,22 @@
     <button type="submit" class="btn btn-primary" [disabled]="buscando() || entrada().length < 4">{{ buscando() ? 'Buscando...' : 'Consultar' }}</button>
   </form>
 
+  @if (!necesidad() && locales.todas().length) {
+    <section class="card propias">
+      <h2>Tus solicitudes en este celular</h2>
+      <ul>
+        @for (s of locales.todas(); track s.necesidadId) {
+          <li>
+            <button type="button" (click)="abrirLocal(s.codigo)">
+              <span><strong>{{ s.titulo }}</strong><small>Código {{ s.codigo }}</small></span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
   @if (noEncontrada()) {
     <p class="card alerta" role="alert">No encontramos una solicitud con ese código. Revisa que esté bien escrito.</p>
   }

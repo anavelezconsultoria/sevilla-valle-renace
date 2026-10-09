@@ -8,6 +8,7 @@ import { EstadoBadge } from '../../shared/ui/estado-badge';
 import { LineaTiempo } from '../../shared/ui/linea-tiempo';
 import { tiempoRelativo } from '../../shared/lib/tiempo';
 import { Celebracion } from '../../shared/ui/celebracion';
+import { SolicitudesLocales } from '../../shared/lib/solicitudes-locales';
 
 /** Seguimiento por codigo: el solicitante ve su caso y confirma, reclama o cancela sin crear cuenta. */
 @Component({
@@ -20,6 +21,7 @@ import { Celebracion } from '../../shared/ui/celebracion';
 export class SeguimientoPage {
   private readonly solicitante = inject(SolicitanteGateway);
   private readonly lectura = inject(NecesidadesLectura);
+  protected readonly locales = inject(SolicitudesLocales);
 
   /** ?codigo=XXXX-XXXX llega por enlace de WhatsApp o desde el registro. */
   readonly codigo = input<string>();
@@ -57,6 +59,10 @@ export class SeguimientoPage {
       const desdeEnlace = this.codigo();
       if (desdeEnlace) untracked(() => void this.buscar(desdeEnlace));
     });
+  }
+
+  protected async abrirLocal(codigo: string): Promise<void> {
+    await this.buscar(codigo);
   }
 
   protected alEscribir(evento: Event): void {

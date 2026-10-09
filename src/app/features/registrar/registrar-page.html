@@ -166,6 +166,7 @@
               <div class="field">
                 <label class="field-label" for="referencias">Cómo llegar <span class="muted">(opcional)</span></label>
                 <input id="referencias" class="input" [formField]="formulario.referencias" placeholder="Ej.: Casa azul frente a la escuela" />
+                <sr-errores-campo [estado]="estado(formulario.referencias)" />
               </div>
             </div>
           </div>

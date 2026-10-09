@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { FormField, form, max, maxLength, min, minLength, required, validate } from '@angular/forms/signals';
+import { FormField, form, max, maxLength, min, validate } from '@angular/forms/signals';
+import { LARGOS, MAX_REFERENCIAS, validarLargo } from '../../shared/lib/validaciones';
+import { SolicitudesLocales } from '../../shared/lib/solicitudes-locales';
 import { SolicitanteGateway } from '../../core/ports/necesidades.ports';
 import { Categoria, Coordenada, RegistroResultado, Urgencia } from '../../core/domain/necesidad.model';
 import { CATEGORIAS, infoCategoria, OPCIONES_URGENCIA, SUGERENCIAS, URGENCIAS } from '../../core/domain/catalogos';
@@ -59,6 +61,7 @@ type CampoConEstado = () => {
 })
 export class RegistrarPage {
   private readonly solicitante = inject(SolicitanteGateway);
+  private readonly solicitudesLocales = inject(SolicitudesLocales);
 
   protected readonly pasos = PASOS;
   protected readonly categorias = CATEGORIAS;
@@ -93,16 +96,13 @@ export class RegistrarPage {
   protected readonly formulario = form(this.modelo, (p) => {
     validate(p.categoria, ({ value }) => (value() ? null : { kind: 'categoria', message: 'Elige qué tipo de ayuda necesitas.' }));
     validate(p.urgencia, ({ value }) => (value() ? null : { kind: 'urgencia', message: 'Elige qué tan urgente es.' }));
-    required(p.titulo, { message: 'Escribe en pocas palabras qué necesitas.' });
-    minLength(p.titulo, 3, { message: 'Escribe al menos 3 letras.' });
-    maxLength(p.titulo, 80, { message: 'Máximo 80 caracteres.' });
-    required(p.descripcion, { message: 'Cuéntanos un poco más.' });
-    minLength(p.descripcion, 15, { message: 'Agrega un poco más de detalle (mínimo 15 caracteres).' });
-    maxLength(p.descripcion, 600, { message: 'Máximo 600 caracteres.' });
+    validate(p.titulo, ({ value }) => validarLargo(value(), LARGOS.titulo));
+    validate(p.descripcion, ({ value }) => validarLargo(value(), LARGOS.descripcion));
     min(p.personasHogar, 1, { message: 'Al menos 1 persona.' });
     max(p.personasHogar, 30, { message: 'Máximo 30 personas.' });
-    required(p.sector, { message: 'Escribe tu barrio, vereda o corregimiento.' });
-    required(p.nombre, { message: 'Escribe un nombre para contactarte.' });
+    validate(p.sector, ({ value }) => validarLargo(value(), LARGOS.sector));
+    validate(p.nombre, ({ value }) => validarLargo(value(), LARGOS.nombre));
+    maxLength(p.referencias, MAX_REFERENCIAS, { message: `Máximo ${MAX_REFERENCIAS} caracteres.` });
     validate(p.telefono, ({ value }) =>
       TELEFONO_CO.test(value().replace(/\D/g, '')) ? null : { kind: 'telefono', message: 'Escribe un celular de 10 dígitos que empiece por 3.' },
     );
@@ -116,7 +116,7 @@ export class RegistrarPage {
     categoria: () => [this.formulario.categoria],
     urgencia: () => [this.formulario.urgencia, this.formulario.personasHogar],
     detalle: () => [this.formulario.titulo, this.formulario.descripcion],
-    ubicacion: () => [this.formulario.sector],
+    ubicacion: () => [this.formulario.sector, this.formulario.referencias],
     contacto: () => [this.formulario.nombre, this.formulario.telefono, this.formulario.autorizaDatos],
     revision: () => [],
   };
@@ -223,6 +223,12 @@ export class RegistrarPage {
         sector: m.sector,
         ubicacion: punto,
         contacto: { nombre: m.nombre.trim(), telefono: m.telefono.replace(/\D/g, ''), referencias: m.referencias.trim() },
+      });
+      this.solicitudesLocales.guardar({
+        necesidadId: resultado.necesidad.id,
+        codigo: resultado.codigoSeguimiento,
+        titulo: resultado.necesidad.titulo,
+        registradaEn: resultado.necesidad.registradaEn,
       });
       this.resultado.set(resultado);
       window.scrollTo({ top: 0 });

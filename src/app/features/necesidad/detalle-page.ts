@@ -8,10 +8,11 @@ import { LineaTiempo } from '../../shared/ui/linea-tiempo';
 import { MapaNecesidades } from '../../shared/mapa/mapa-necesidades';
 import { tiempoRelativo } from '../../shared/lib/tiempo';
 import { PanelAyudante } from './panel-ayudante';
+import { PanelSolicitante } from './panel-solicitante';
 
 @Component({
   selector: 'sr-detalle-page',
-  imports: [RouterLink, CategoriaIcono, EstadoBadge, LineaTiempo, MapaNecesidades, PanelAyudante],
+  imports: [RouterLink, CategoriaIcono, EstadoBadge, LineaTiempo, MapaNecesidades, PanelAyudante, PanelSolicitante],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="container pagina">
@@ -44,6 +45,7 @@ import { PanelAyudante } from './panel-ayudante';
           </article>
 
           <aside class="lateral">
+            <sr-panel-solicitante [necesidad]="n" />
             <sr-panel-ayudante [necesidad]="n" />
             <section class="card mapa-card">
               <sr-mapa-necesidades class="mapa" [necesidades]="[n]" [seleccionadaId]="n.id" />
