@@ -7,7 +7,7 @@
         <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" />
       }
     </svg>
-    {{ panelesOcultos() ? 'Mostrar paneles' : 'Ver mapa completo' }}
+    <span class="texto-alternar">{{ panelesOcultos() ? 'Mostrar paneles' : 'Ver mapa completo' }}</span>
   </button>
 
   <sr-mapa-necesidades
@@ -45,7 +45,20 @@
 
     <sr-panel-cifras class="entrada" style="--i: 2" [cifras]="cifras()" />
 
-    <div class="chips entrada" style="--i: 3" role="group" aria-label="Filtrar por categoría">
+    <button
+      type="button"
+      class="filtro-movil card entrada"
+      style="--i: 2"
+      [class.abierto]="categoriasAbiertas()"
+      [attr.aria-expanded]="categoriasAbiertas()"
+      (click)="categoriasAbiertas.set(!categoriasAbiertas())"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18M6 12h12M10 19h4" /></svg>
+      <span>{{ etiquetaCategoria() }}</span>
+      <svg class="flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+    </button>
+
+    <div class="chips entrada" style="--i: 3" role="group" aria-label="Filtrar por categoría" [class.abierto]="categoriasAbiertas()">
       @for (c of categorias; track c.valor) {
         <button type="button" class="chip" [class.activo]="categoria() === c.valor" [style.--cat]="c.color" (click)="alternarCategoria(c.valor)">
           <span class="punto" aria-hidden="true"></span>{{ c.etiqueta }}

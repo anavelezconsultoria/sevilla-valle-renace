@@ -51,14 +51,30 @@
   position: relative;
 }
 
-:host ::ng-deep .sr-pin--urgente::after {
+:host ::ng-deep .sr-pin--urgente::after,
+:host ::ng-deep .sr-pin--espera::after {
   content: '';
   position: absolute;
   inset: -7px;
   border-radius: 50% 50% 50% 8px;
   border: 3px solid var(--pin);
   opacity: 0;
-  animation: latido 2s ease-out 1.4s infinite;
+  animation: latido 2.6s ease-out 1.2s infinite;
+}
+
+:host ::ng-deep .sr-pin--urgente::after {
+  border-width: 4px;
+  animation-duration: 1.5s;
+}
+
+:host ::ng-deep .sr-pin--urgente::before {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border-radius: 50% 50% 50% 8px;
+  border: 3px solid var(--pin);
+  opacity: 0;
+  animation: latido 1.5s ease-out 1.95s infinite;
 }
 
 @keyframes latido {

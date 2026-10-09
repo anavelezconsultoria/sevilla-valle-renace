@@ -233,16 +233,54 @@
     gap: var(--space-2);
   }
 
-  .panel-izquierdo .cta,
   .panel-izquierdo sr-panel-cifras {
     display: none;
   }
 
+  /* Portada compacta: titulo y los dos botones, sin parrafo ni colinas. */
+  .bienvenida {
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    gap: var(--space-1);
+  }
+
+  .bienvenida .muted,
+  .bienvenida .montanas {
+    display: none;
+  }
+
+  .bienvenida h1 {
+    font-size: 1.05rem;
+  }
+
+  .bienvenida .cta-botones .btn {
+    min-height: 42px;
+    padding-inline: 12px;
+  }
+
+  /* Categorias: lista desplegable de dos columnas, nada de deslizar de lado. */
+  .filtro-movil {
+    display: flex;
+  }
+
   .chips {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: none;
+    display: none;
+  }
+
+  .chips.abierto {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-superficie);
+    box-shadow: var(--shadow-md);
+    animation: aparecer 260ms var(--ease-salida) both;
+  }
+
+  .chips.abierto .chip {
+    justify-content: flex-start;
+    min-height: 40px;
+    box-shadow: none;
   }
 
   .chip {
@@ -386,8 +424,87 @@
   stroke-linejoin: round;
 }
 
+.filtro-movil {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-tinta);
+  cursor: pointer;
+}
+
+.filtro-movil svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--color-tenue);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.filtro-movil span {
+  flex: 1;
+  text-align: left;
+}
+
+.filtro-movil .flecha {
+  transition: transform 250ms var(--ease-salida);
+}
+
+.filtro-movil.abierto .flecha {
+  transform: rotate(180deg);
+}
+
+/* Celular: lista de categorias desplegable y boton redondo para ver el mapa completo. */
 @media (max-width: 860px) {
+  .filtro-movil {
+    display: flex;
+  }
+
   .alternar-paneles {
-    display: none;
+    top: auto;
+    left: auto;
+    right: var(--space-3);
+    bottom: 68px;
+    transform: none;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .alternar-paneles:hover {
+    transform: none;
+  }
+
+  .alternar-paneles svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .texto-alternar {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .paneles-ocultos .panel-izquierdo {
+    transform: translateY(calc(-100% - 32px));
+  }
+
+  .paneles-ocultos .panel-derecho {
+    transform: translateY(100%);
+  }
+
+  .paneles-ocultos .alternar-paneles {
+    bottom: var(--space-4);
   }
 }

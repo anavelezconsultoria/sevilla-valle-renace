@@ -25,6 +25,12 @@ export class MapaPage {
   protected readonly listaAbierta = signal(false);
   /** En escritorio los paneles se pueden esconder para ver el mapa completo. */
   protected readonly panelesOcultos = signal(false);
+  /** En celular las categorias se despliegan como lista en lugar de deslizarse de lado. */
+  protected readonly categoriasAbiertas = signal(false);
+  protected readonly etiquetaCategoria = computed(() => {
+    const actual = this.categoria();
+    return actual ? (CATEGORIAS.find((c) => c.valor === actual)?.etiqueta ?? 'Categorías') : 'Todas las categorías';
+  });
   protected readonly cargando = this.lectura.cargando;
 
   protected readonly activas = computed(() =>
@@ -42,6 +48,7 @@ export class MapaPage {
 
   protected alternarCategoria(valor: Categoria): void {
     this.categoria.update((actual) => (actual === valor ? null : valor));
+    this.categoriasAbiertas.set(false);
   }
 
   protected alBuscar(evento: Event): void {

@@ -1,11 +1,12 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { Session } from '@supabase/supabase-js';
-import { Ayudante, InicioSesionPayload, SesionGateway } from '../../core/ports/necesidades.ports';
+import { Ayudante, ErrorLimiteEnvios, InicioSesionPayload, SesionGateway } from '../../core/ports/necesidades.ports';
 import { exigir, SUPABASE_CLIENTE } from './supabase-cliente';
 import { FilaPerfil } from './supabase-filas';
 
 const CLAVE_ALIAS_PENDIENTE = 'sevilla-renace-alias-pendiente';
 const RUTA_RETORNO = '/mis-atenciones';
+const SEGUNDOS_ESPERA_LIMITE = 60;
 
 /**
  * Sesion de quien ayuda con enlace al correo (sin contrasenas). El alias se
@@ -29,7 +30,7 @@ export class SupabaseSesion implements SesionGateway {
       email: correo.trim(),
       options: { emailRedirectTo: `${location.origin}${RUTA_RETORNO}`, data: { alias: alias.trim() } },
     });
-    if (error) throw new Error(this.mensajeAuth(error.message));
+    if (error) throw this.traducirError(error.status, error.message);
     return 'enlace_enviado';
   }
 
@@ -63,10 +64,9 @@ export class SupabaseSesion implements SesionGateway {
     return typeof alias === 'string' && alias.length >= 2 ? alias : null;
   }
 
-  private mensajeAuth(mensaje: string): string {
-    return /rate limit|too many/i.test(mensaje)
-      ? 'Se enviaron demasiados correos en poco tiempo. Espera unos minutos e inténtalo de nuevo.'
-      : 'No pudimos enviarte el enlace. Revisa el correo e inténtalo de nuevo.';
+  private traducirError(estado: number | undefined, mensaje: string): Error {
+    if (estado === 429 || /rate limit|too many/i.test(mensaje)) return new ErrorLimiteEnvios(SEGUNDOS_ESPERA_LIMITE);
+    return new Error('No pudimos enviarte el enlace. Revisa el correo e inténtalo de nuevo.');
   }
 
   private guardarAliasPendiente(alias: string | null): void {

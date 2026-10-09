@@ -61,5 +61,32 @@ export const EVENTOS: Record<TipoEvento, string> = {
   [TipoEvento.Cancelada]: 'Cancelada por quien la pidió',
 };
 
+/** Frases rapidas por categoria: con un toque llenan el titulo y bajan la barrera de escribir. */
+export const SUGERENCIAS: Record<Categoria, readonly string[]> = {
+  [Categoria.Alimentos]: ['Mercado básico', 'Leche y alimentos para bebé', 'Comida preparada'],
+  [Categoria.Agua]: ['Agua potable', 'Tanque para almacenar agua', 'Filtro de agua'],
+  [Categoria.Techo]: ['Tejas o plástico para el techo', 'Carpa o refugio temporal', 'Lugar donde dormir'],
+  [Categoria.Salud]: ['Atención médica', 'Revisión de una herida', 'Apoyo psicológico'],
+  [Categoria.Medicamentos]: ['Medicamento formulado', 'Insulina', 'Medicamento para la presión'],
+  [Categoria.Ropa]: ['Cobijas', 'Ropa para niños', 'Zapatos'],
+  [Categoria.Aseo]: ['Kit de aseo', 'Pañales', 'Toallas higiénicas'],
+  [Categoria.Materiales]: ['Cemento', 'Ladrillos o bloques', 'Mano de obra para reparar'],
+  [Categoria.Transporte]: ['Transporte a una cita médica', 'Trasteo de enseres', 'Llevar a un familiar'],
+  [Categoria.Mascotas]: ['Concentrado para perro', 'Concentrado para gato', 'Atención veterinaria'],
+  [Categoria.Otra]: ['Ayuda con un trámite', 'Acompañamiento', 'Otra necesidad'],
+};
+
+export interface UrgenciaInfo {
+  readonly valor: Urgencia;
+  readonly etiqueta: string;
+  readonly descripcion: string;
+}
+
+export const OPCIONES_URGENCIA: readonly UrgenciaInfo[] = [
+  { valor: Urgencia.Alta, etiqueta: 'Urgente', descripcion: 'Lo necesito hoy o hay riesgo para alguien' },
+  { valor: Urgencia.Media, etiqueta: 'Pronto', descripcion: 'En los próximos días' },
+  { valor: Urgencia.Baja, etiqueta: 'Puede esperar', descripcion: 'Ayuda para seguir adelante' },
+];
+
 /** Centro de Sevilla, Valle del Cauca. */
 export const CENTRO_SEVILLA = { lat: 4.2667, lng: -75.9333 } as const;

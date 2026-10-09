@@ -59,6 +59,7 @@ export class MapaNecesidades {
         seleccionado: n.id === seleccionada,
         orden,
         animar,
+        esperando: n.estado === EstadoNecesidad.Registrada,
         urgente: n.urgencia === Urgencia.Alta && n.estado === EstadoNecesidad.Registrada,
       });
       L.marker([n.ubicacionAproximada.lat, n.ubicacionAproximada.lng], { icon: icono, title: n.titulo, zIndexOffset: n.id === seleccionada ? 1000 : 0 })

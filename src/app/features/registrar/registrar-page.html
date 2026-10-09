@@ -1,122 +1,265 @@
 @if (resultado(); as r) {
+  <sr-celebracion />
   <sr-codigo-confirmacion [resultado]="r" (otra)="nuevaSolicitud()" />
 } @else {
-  <div class="container pagina">
-    <header class="encabezado">
-      <p class="eyebrow">Pedir ayuda</p>
-      <h1>Cuéntanos qué necesitas</h1>
-      <p class="muted">No necesitas crear una cuenta. Tu nombre, tu teléfono y tu ubicación exacta solo los verá quien vaya a ayudarte.</p>
+  <section class="asistente" (keydown)="alPresionarTecla($event)" aria-labelledby="titulo-paso">
+    <header class="cabecera">
+      <div class="container cabecera-interior">
+        <div class="fila">
+          <p class="eyebrow">Pedir ayuda · Paso {{ indice() + 1 }} de {{ pasos.length }}</p>
+          <span class="privado">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 11V8a6 6 0 0 1 12 0v3M5 11h14v10H5z" /></svg>
+            Tus datos son privados
+          </span>
+        </div>
+        <div class="progreso" role="progressbar" [attr.aria-valuenow]="indice() + 1" aria-valuemin="1" [attr.aria-valuemax]="pasos.length">
+          <div class="progreso-barra" [style.width.%]="progreso()"></div>
+        </div>
+        <ol class="migas">
+          @for (p of pasos; track p.id; let i = $index) {
+            <li>
+              <button
+                type="button"
+                [class.hecho]="i < indice()"
+                [class.actual]="i === indice()"
+                [disabled]="i > indice()"
+                (click)="irA(i)"
+                [attr.aria-current]="i === indice() ? 'step' : null"
+              >
+                <span class="punto">{{ i < indice() ? '✓' : i + 1 }}</span>
+                <span class="nombre">{{ p.corto }}</span>
+              </button>
+            </li>
+          }
+        </ol>
+      </div>
     </header>
 
-    <form class="formulario" (submit)="enviar($event)" novalidate>
-      <!-- 1. Categoria -->
-      <fieldset class="bloque card">
-        <legend><span class="paso">1</span> ¿Qué tipo de ayuda necesitas?</legend>
-        <div class="categorias">
-          @for (c of categorias; track c.valor) {
-            <button type="button" class="categoria" [class.activa]="modelo().categoria === c.valor" [attr.aria-pressed]="modelo().categoria === c.valor" (click)="elegirCategoria(c.valor)">
-              <sr-categoria-icono [categoria]="c.valor" [tamano]="36" />
-              <span>{{ c.etiqueta }}</span>
-            </button>
-          }
-        </div>
-        <sr-errores-campo [estado]="estado(formulario.categoria)" />
-      </fieldset>
-
-      <!-- 2. Detalle -->
-      <fieldset class="bloque card">
-        <legend><span class="paso">2</span> Cuéntanos más</legend>
-        <label class="field">
-          <span class="field-label">¿Qué necesitas? <span class="muted">(en pocas palabras)</span></span>
-          <input class="input" [formField]="formulario.titulo" placeholder="Ej.: Agua potable para una semana" />
-          <sr-errores-campo [estado]="estado(formulario.titulo)" />
-        </label>
-        <label class="field">
-          <span class="field-label">Detalles</span>
-          <textarea class="input" [formField]="formulario.descripcion" rows="4" placeholder="¿Qué pasó? ¿Qué te hace falta exactamente? ¿Hay niños, adultos mayores o alguien enfermo?"></textarea>
-          <span class="field-hint">{{ modelo().descripcion.length }}/600</span>
-          <sr-errores-campo [estado]="estado(formulario.descripcion)" />
-        </label>
-        <div class="dos-columnas">
-          <div class="field">
-            <span class="field-label">¿Qué tan urgente es?</span>
-            <div class="segmento" role="radiogroup" aria-label="Urgencia">
-              @for (u of urgencias; track u[0]) {
-                <button type="button" role="radio" [attr.aria-checked]="modelo().urgencia === u[0]" (click)="elegirUrgencia(u[0])">{{ u[1] }}</button>
+    <div class="container escenario">
+      @switch (paso().id) {
+        @case ('categoria') {
+          <div class="paso" [class.atras]="direccion() === 'atras'">
+            <h1 id="titulo-paso">{{ paso().titulo }}</h1>
+            <p class="ayuda">Toca la opción que más se parezca. Puedes registrar otra necesidad después.</p>
+            <div class="categorias">
+              @for (c of categorias; track c.valor; let i = $index) {
+                <button
+                  type="button"
+                  class="opcion"
+                  [style.--i]="i"
+                  [style.--cat]="c.color"
+                  [class.elegida]="modelo().categoria === c.valor"
+                  [attr.aria-pressed]="modelo().categoria === c.valor"
+                  (click)="elegirCategoria(c.valor)"
+                >
+                  <sr-categoria-icono [categoria]="c.valor" [tamano]="44" />
+                  <span>{{ c.etiqueta }}</span>
+                </button>
               }
             </div>
+            <sr-errores-campo [estado]="estado(formulario.categoria)" />
+            <p class="aviso-123">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9 2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /></svg>
+              <span>¿Hay riesgo para la vida de alguien? Llama primero a la <a href="tel:123">línea de emergencias 123</a>.</span>
+            </p>
           </div>
-          <div class="field">
-            <span class="field-label">Personas en el hogar</span>
-            <div class="contador">
-              <button type="button" (click)="cambiarPersonas(-1)" aria-label="Una persona menos">−</button>
-              <input class="input" type="number" [formField]="formulario.personasHogar" aria-label="Personas en el hogar" />
-              <button type="button" (click)="cambiarPersonas(1)" aria-label="Una persona más">+</button>
+        }
+
+        @case ('urgencia') {
+          <div class="paso" [class.atras]="direccion() === 'atras'">
+            <h1 id="titulo-paso">{{ paso().titulo }}</h1>
+            <p class="ayuda">Esto ayuda a que se atienda primero lo que más apura.</p>
+            <div class="urgencias" role="radiogroup" aria-label="Urgencia">
+              @for (u of opcionesUrgencia; track u.valor; let i = $index) {
+                <button
+                  type="button"
+                  role="radio"
+                  class="opcion urgencia"
+                  [attr.data-nivel]="u.valor"
+                  [style.--i]="i"
+                  [class.elegida]="modelo().urgencia === u.valor"
+                  [attr.aria-checked]="modelo().urgencia === u.valor"
+                  (click)="elegirUrgencia(u.valor)"
+                >
+                  <span class="nivel" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <span class="textos">
+                    <strong>{{ u.etiqueta }}</strong>
+                    <small>{{ u.descripcion }}</small>
+                  </span>
+                </button>
+              }
             </div>
-            <sr-errores-campo [estado]="estado(formulario.personasHogar)" />
-          </div>
-        </div>
-      </fieldset>
+            <sr-errores-campo [estado]="estado(formulario.urgencia)" />
 
-      <!-- 3. Ubicacion -->
-      <fieldset class="bloque card">
-        <legend><span class="paso">3</span> ¿Dónde estás?</legend>
-        <label class="field">
-          <span class="field-label">Barrio, vereda o corregimiento</span>
-          <input class="input" [formField]="formulario.sector" placeholder="Ej.: Barrio El Centro" />
-          <sr-errores-campo [estado]="estado(formulario.sector)" />
-        </label>
-        <div class="field">
-          <div class="ubicacion-cabecera">
-            <span class="field-label">Marca el punto en el mapa</span>
-            <button type="button" class="btn btn-secondary" (click)="usarMiUbicacion()" [disabled]="ubicando()">
-              {{ ubicando() ? 'Buscando...' : 'Usar mi ubicación' }}
+            <div class="personas">
+              <h2>¿Cuántas personas viven en tu hogar?</h2>
+              <div class="contador">
+                <button type="button" (click)="cambiarPersonas(-1)" [disabled]="modelo().personasHogar <= 1" aria-label="Una persona menos">−</button>
+                <output aria-live="polite">
+                  <strong>{{ modelo().personasHogar }}</strong>
+                  {{ modelo().personasHogar === 1 ? 'persona' : 'personas' }}
+                </output>
+                <button type="button" (click)="cambiarPersonas(1)" [disabled]="modelo().personasHogar >= 30" aria-label="Una persona más">+</button>
+              </div>
+              <div class="figuras" aria-hidden="true">
+                @for (f of figurasPersonas(); track f) {
+                  <svg viewBox="0 0 24 24" class="figura"><circle cx="12" cy="7" r="4" /><path d="M4 22a8 8 0 0 1 16 0z" /></svg>
+                }
+                @if (modelo().personasHogar > 10) {
+                  <span class="mas-personas">+{{ modelo().personasHogar - 10 }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        @case ('detalle') {
+          <div class="paso" [class.atras]="direccion() === 'atras'">
+            <h1 id="titulo-paso">{{ paso().titulo }}</h1>
+            @if (categoriaElegida(); as c) {
+              <p class="ayuda con-icono"><sr-categoria-icono [categoria]="c.valor" [tamano]="28" /> {{ c.etiqueta }}</p>
+            }
+            <div class="field">
+              <label class="field-label" for="titulo">¿Qué necesitas, en pocas palabras?</label>
+              <div class="sugerencias">
+                @for (s of sugerencias(); track s; let i = $index) {
+                  <button type="button" class="sugerencia" [style.--i]="i" [class.elegida]="modelo().titulo === s" (click)="usarSugerencia(s)">{{ s }}</button>
+                }
+              </div>
+              <input id="titulo" class="input" [formField]="formulario.titulo" placeholder="O escríbelo con tus palabras" />
+              <sr-errores-campo [estado]="estado(formulario.titulo)" />
+            </div>
+            <div class="field">
+              <label class="field-label" for="descripcion">Detalles</label>
+              <textarea id="descripcion" class="input" [formField]="formulario.descripcion" rows="5" placeholder="¿Qué pasó? ¿Qué te hace falta exactamente? ¿Hay niños, adultos mayores o alguien enfermo?"></textarea>
+              <div class="contador-texto" [class.listo]="modelo().descripcion.trim().length >= 15">
+                <span class="barrita"><span [style.width.%]="(modelo().descripcion.length / 600) * 100"></span></span>
+                {{ modelo().descripcion.length }}/600
+              </div>
+              <sr-errores-campo [estado]="estado(formulario.descripcion)" />
+            </div>
+          </div>
+        }
+
+        @case ('ubicacion') {
+          <div class="paso" [class.atras]="direccion() === 'atras'">
+            <h1 id="titulo-paso">{{ paso().titulo }}</h1>
+            <p class="ayuda">En el mapa público solo aparece un punto aproximado, a unos 200 metros. Nunca tu casa.</p>
+            <button type="button" class="btn btn-accion btn-block gps" (click)="usarMiUbicacion()" [disabled]="ubicando()" [class.ubicado]="punto() !== null">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z" /></svg>
+              {{ ubicando() ? 'Buscando tu ubicación...' : punto() ? 'Ubicación lista · actualizar' : 'Usar mi ubicación' }}
             </button>
+            @if (errorUbicacion(); as e) {
+              <p class="field-error" role="alert">{{ e }}</p>
+            }
+            <p class="o-separador"><span>o marca el punto tocando el mapa</span></p>
+            <sr-selector-punto class="selector card" [(punto)]="punto" />
+            @if (mostrarErrores() && !punto()) {
+              <p class="field-error" role="alert">Usa tu ubicación o toca el mapa para marcar dónde estás.</p>
+            }
+            <div class="dos-columnas">
+              <div class="field">
+                <label class="field-label" for="sector">Barrio, vereda o corregimiento</label>
+                <input id="sector" class="input" [formField]="formulario.sector" placeholder="Ej.: Barrio El Centro" />
+                <sr-errores-campo [estado]="estado(formulario.sector)" />
+              </div>
+              <div class="field">
+                <label class="field-label" for="referencias">Cómo llegar <span class="muted">(opcional)</span></label>
+                <input id="referencias" class="input" [formField]="formulario.referencias" placeholder="Ej.: Casa azul frente a la escuela" />
+              </div>
+            </div>
           </div>
-          <sr-selector-punto class="selector card" [(punto)]="punto" />
-          <span class="field-hint">En el mapa público solo aparece un punto aproximado, a unos 200 metros, nunca tu casa.</span>
-          @if (intentoEnviar() && !punto()) {
-            <p class="field-error" role="alert">Toca el mapa o usa tu ubicación para marcar dónde estás.</p>
-          }
-        </div>
-        <label class="field">
-          <span class="field-label">Cómo llegar <span class="muted">(opcional)</span></span>
-          <input class="input" [formField]="formulario.referencias" placeholder="Ej.: Casa azul frente a la escuela" />
-        </label>
-      </fieldset>
+        }
 
-      <!-- 4. Contacto -->
-      <fieldset class="bloque card">
-        <legend><span class="paso">4</span> ¿Cómo te contactamos?</legend>
-        <div class="dos-columnas">
-          <label class="field">
-            <span class="field-label">Nombre</span>
-            <input class="input" [formField]="formulario.nombre" autocomplete="given-name" placeholder="Tu nombre" />
-            <sr-errores-campo [estado]="estado(formulario.nombre)" />
-          </label>
-          <label class="field">
-            <span class="field-label">Celular</span>
-            <input class="input" [formField]="formulario.telefono" type="tel" inputmode="numeric" autocomplete="tel" placeholder="3001234567" />
-            <sr-errores-campo [estado]="estado(formulario.telefono)" />
-          </label>
-        </div>
-        <label class="autorizacion">
-          <input type="checkbox" [formField]="formulario.autorizaDatos" />
-          <span>Autorizo que mi nombre, celular y ubicación se compartan <strong>solo</strong> con la persona que tome mi solicitud para ayudarme (Ley 1581 de 2012).</span>
-        </label>
-        <sr-errores-campo [estado]="estado(formulario.autorizaDatos)" />
-      </fieldset>
+        @case ('contacto') {
+          <div class="paso" [class.atras]="direccion() === 'atras'">
+            <h1 id="titulo-paso">{{ paso().titulo }}</h1>
+            <p class="ayuda">Solo lo verá la persona que tome tu solicitud para ayudarte.</p>
+            <div class="dos-columnas">
+              <div class="field">
+                <label class="field-label" for="nombre">Nombre</label>
+                <input id="nombre" class="input" [formField]="formulario.nombre" autocomplete="given-name" placeholder="Tu nombre" />
+                <sr-errores-campo [estado]="estado(formulario.nombre)" />
+              </div>
+              <div class="field">
+                <label class="field-label" for="telefono">Celular</label>
+                <input id="telefono" class="input" [formField]="formulario.telefono" type="tel" inputmode="numeric" autocomplete="tel" placeholder="3001234567" />
+                <sr-errores-campo [estado]="estado(formulario.telefono)" />
+              </div>
+            </div>
+            <label class="autorizacion" [class.marcada]="modelo().autorizaDatos">
+              <input type="checkbox" [formField]="formulario.autorizaDatos" />
+              <span class="interruptor" aria-hidden="true"><span></span></span>
+              <span>Autorizo que mi nombre, celular y ubicación se compartan <strong>solo</strong> con la persona que tome mi solicitud para ayudarme (Ley 1581 de 2012).</span>
+            </label>
+            <sr-errores-campo [estado]="estado(formulario.autorizaDatos)" />
+          </div>
+        }
 
-      @if (errorGeneral(); as e) {
-        <p class="error-general" role="alert">{{ e }}</p>
+        @case ('revision') {
+          @let m = modelo();
+          <div class="paso" [class.atras]="direccion() === 'atras'">
+            <h1 id="titulo-paso">{{ paso().titulo }}</h1>
+            <p class="ayuda">Revisa que todo esté bien. Puedes cambiar cualquier parte.</p>
+            <dl class="resumen card">
+              <div [style.--i]="0">
+                <dt>Necesitas</dt>
+                <dd>
+                  @if (categoriaElegida(); as c) {
+                    <sr-categoria-icono [categoria]="c.valor" [tamano]="32" />
+                  }
+                  <span><strong>{{ m.titulo }}</strong><small>{{ categoriaElegida()?.etiqueta }}</small></span>
+                </dd>
+                <button type="button" class="cambiar" (click)="irAPaso('detalle')">Cambiar</button>
+              </div>
+              <div [style.--i]="1">
+                <dt>Urgencia</dt>
+                <dd><span><strong>{{ m.urgencia ? etiquetasUrgencia[m.urgencia] : '' }}</strong><small>{{ m.personasHogar }} {{ m.personasHogar === 1 ? 'persona' : 'personas' }} en el hogar</small></span></dd>
+                <button type="button" class="cambiar" (click)="irAPaso('urgencia')">Cambiar</button>
+              </div>
+              <div [style.--i]="2">
+                <dt>Detalles</dt>
+                <dd><span class="texto-largo">{{ m.descripcion }}</span></dd>
+                <button type="button" class="cambiar" (click)="irAPaso('detalle')">Cambiar</button>
+              </div>
+              <div [style.--i]="3">
+                <dt>Dónde</dt>
+                <dd><span><strong>{{ m.sector }}</strong><small>{{ m.referencias || 'Punto marcado en el mapa' }}</small></span></dd>
+                <button type="button" class="cambiar" (click)="irAPaso('ubicacion')">Cambiar</button>
+              </div>
+              <div [style.--i]="4">
+                <dt>Contacto</dt>
+                <dd><span><strong>{{ m.nombre }}</strong><small>{{ m.telefono }} · privado</small></span></dd>
+                <button type="button" class="cambiar" (click)="irAPaso('contacto')">Cambiar</button>
+              </div>
+            </dl>
+            @if (errorGeneral(); as e) {
+              <p class="error-general" role="alert">{{ e }}</p>
+            }
+          </div>
+        }
       }
+    </div>
 
-      <div class="enviar">
-        <button type="submit" class="btn btn-accion btn-block grande" [disabled]="enviando()">
-          {{ enviando() ? 'Registrando...' : 'Registrar mi necesidad' }}
-        </button>
-        <p class="field-hint">Al registrarla recibirás un código para seguir tu solicitud y confirmar cuando te llegue la ayuda.</p>
+    <footer class="acciones">
+      <div class="container acciones-interior">
+        @if (indice() > 0) {
+          <button type="button" class="btn btn-secondary" (click)="atras()">← Atrás</button>
+        } @else {
+          <span></span>
+        }
+        @if (paso().id === 'revision') {
+          <button type="button" class="btn btn-accion enviar" [disabled]="enviando()" (click)="enviar()">
+            @if (enviando()) {
+              <span class="girando" aria-hidden="true"></span> Registrando...
+            } @else {
+              Registrar mi necesidad
+            }
+          </button>
+        } @else if (paso().id !== 'categoria') {
+          <button type="button" class="btn btn-primary" [class.listo]="pasoValido(paso().id)" (click)="continuar()">Continuar →</button>
+        }
       </div>
-    </form>
-  </div>
+    </footer>
+  </section>
 }

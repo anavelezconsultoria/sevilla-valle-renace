@@ -62,6 +62,14 @@ export interface InicioSesionPayload {
   readonly alias: string;
 }
 
+/** El proveedor de correo rechazo el envio por exceso de intentos: hay que esperar antes de reintentar. */
+export class ErrorLimiteEnvios extends Error {
+  constructor(readonly segundosEspera: number) {
+    super('Se enviaron demasiados correos en poco tiempo. Espera un momento e inténtalo de nuevo.');
+    this.name = 'ErrorLimiteEnvios';
+  }
+}
+
 export abstract class SesionGateway {
   abstract readonly ayudante: Signal<Ayudante | null>;
   /** En produccion envia un enlace al correo; en modo demo entra directo. */
