@@ -17,7 +17,7 @@ import { Marca } from '../shared/ui/marca';
           <p class="titulo">Emergencias</p>
           <a href="tel:123">Línea de emergencias 123</a>
           <a routerLink="/como-funciona">Cómo funciona</a>
-          <a routerLink="/seguimiento">Seguir mi solicitud</a>
+          <a routerLink="/seguimiento">Mis solicitudes</a>
         </div>
         <a class="autora" href="https://anavelezconsultora.com" target="_blank" rel="noopener">
           <img src="ana-velez-logo.png" alt="" width="40" height="40" loading="lazy" />

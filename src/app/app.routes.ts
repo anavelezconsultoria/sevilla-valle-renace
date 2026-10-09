@@ -24,7 +24,7 @@ export const routes: Routes = [
   },
   {
     path: 'seguimiento',
-    title: 'Seguir mi solicitud | Sevilla Renace',
+    title: 'Mis solicitudes | Sevilla Renace',
     loadComponent: () => import('./features/seguimiento/seguimiento-page').then((m) => m.SeguimientoPage),
   },
   {

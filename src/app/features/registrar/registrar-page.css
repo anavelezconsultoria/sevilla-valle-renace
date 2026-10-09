@@ -766,3 +766,58 @@
     flex: 1;
   }
 }
+
+/* Clave de 4 numeros: casillas tipo cajero sobre un input real (teclado numerico y lectores de pantalla). */
+.pin {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 56px);
+  gap: var(--space-2);
+  width: max-content;
+}
+.pin-entrada {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  font-size: 16px;
+  cursor: text;
+  z-index: 1;
+}
+.casilla {
+  display: grid;
+  place-items: center;
+  height: 64px;
+  border: 2px solid var(--color-linea);
+  border-radius: var(--radius-md);
+  background: var(--color-superficie);
+  font-family: var(--font-marca);
+  font-size: 1.6rem;
+  color: var(--color-primario-fuerte);
+  transition: border-color var(--dur-corta), transform var(--dur-corta) var(--ease-salida), background-color var(--dur-corta);
+}
+.casilla.llena {
+  border-color: var(--color-acento);
+  background: var(--color-acento-suave);
+  animation: latido-casilla 220ms var(--ease-salida);
+}
+.pin:focus-within .casilla.actual {
+  border-color: var(--color-accion);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accion) 18%, transparent);
+}
+.pin.completa .casilla {
+  border-color: var(--color-montana);
+  background: color-mix(in srgb, var(--color-montana) 10%, var(--color-superficie));
+}
+@keyframes latido-casilla {
+  50% { transform: scale(1.08); }
+}
+.consejo {
+  font-size: var(--text-sm);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--estado-pendiente-bg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .casilla.llena { animation: none; }
+}

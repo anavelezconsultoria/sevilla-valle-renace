@@ -9,7 +9,8 @@ import { SelectorPunto } from '../../shared/mapa/selector-punto';
 import { CategoriaIcono } from '../../shared/ui/categoria-icono';
 import { ErroresCampo, EstadoCampo } from '../../shared/ui/errores-campo';
 import { Celebracion } from '../../shared/ui/celebracion';
-import { CodigoConfirmacion } from './codigo-confirmacion';
+import { enmascararTelefono, LARGO_CLAVE, motivoClaveInvalida, soloDigitos } from '../../core/domain/clave-solicitante';
+import { RegistroExitoso } from './registro-exitoso';
 import { MAX_PERSONAS_DIBUJADAS, PASOS, PasoRegistro } from './pasos-registro';
 
 interface FormularioNecesidad {
@@ -23,6 +24,8 @@ interface FormularioNecesidad {
   telefono: string;
   referencias: string;
   autorizaDatos: boolean;
+  clave: string;
+  confirmacionClave: string;
 }
 
 const VACIO: FormularioNecesidad = {
@@ -36,7 +39,11 @@ const VACIO: FormularioNecesidad = {
   telefono: '',
   referencias: '',
   autorizaDatos: false,
+  clave: '',
+  confirmacionClave: '',
 };
+
+type CampoClave = 'clave' | 'confirmacionClave';
 
 const TELEFONO_CO = /^3\d{9}$/;
 const ESPERA_AVANCE_MS = 260;
@@ -54,7 +61,7 @@ type CampoConEstado = () => {
  */
 @Component({
   selector: 'sr-registrar-page',
-  imports: [FormField, SelectorPunto, CategoriaIcono, ErroresCampo, CodigoConfirmacion, Celebracion],
+  imports: [FormField, SelectorPunto, CategoriaIcono, ErroresCampo, RegistroExitoso, Celebracion],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './registrar-page.html',
   styleUrl: './registrar-page.css',
@@ -109,6 +116,13 @@ export class RegistrarPage {
     validate(p.autorizaDatos, ({ value }) =>
       value() ? null : { kind: 'autorizacion', message: 'Necesitamos tu autorización para compartir tu contacto con quien te ayude.' },
     );
+    validate(p.clave, ({ value, valueOf }) => {
+      const motivo = motivoClaveInvalida({ clave: value(), telefono: soloDigitos(valueOf(p.telefono)) });
+      return motivo ? { kind: 'clave', message: motivo } : null;
+    });
+    validate(p.confirmacionClave, ({ value, valueOf }) =>
+      value() === valueOf(p.clave) ? null : { kind: 'confirmacion', message: 'Las dos claves no son iguales.' },
+    );
   });
 
   /** Campos que valida cada paso: el boton Continuar solo mira los suyos. */
@@ -118,8 +132,21 @@ export class RegistrarPage {
     detalle: () => [this.formulario.titulo, this.formulario.descripcion],
     ubicacion: () => [this.formulario.sector, this.formulario.referencias],
     contacto: () => [this.formulario.nombre, this.formulario.telefono, this.formulario.autorizaDatos],
+    clave: () => [this.formulario.clave, this.formulario.confirmacionClave],
     revision: () => [],
   };
+
+  protected readonly largoClave = LARGO_CLAVE;
+  protected readonly casillasClave = Array.from({ length: LARGO_CLAVE }, (_, i) => i);
+  protected readonly telefonoVisible = computed(() => enmascararTelefono(this.modelo().telefono));
+
+  /** La clave admite solo digitos y se corta en 4, como el teclado de un cajero. */
+  protected alEscribirClave(campo: CampoClave, evento: Event): void {
+    const entrada = evento.target as HTMLInputElement;
+    const limpia = soloDigitos(entrada.value).slice(0, LARGO_CLAVE);
+    entrada.value = limpia;
+    this.modelo.update((m) => ({ ...m, [campo]: limpia }));
+  }
 
   protected estado(campo: CampoConEstado): EstadoCampo {
     const estado = campo();
@@ -222,11 +249,11 @@ export class RegistrarPage {
         personasHogar: m.personasHogar,
         sector: m.sector,
         ubicacion: punto,
-        contacto: { nombre: m.nombre.trim(), telefono: m.telefono.replace(/\D/g, ''), referencias: m.referencias.trim() },
+        contacto: { nombre: m.nombre.trim(), telefono: soloDigitos(m.telefono), referencias: m.referencias.trim(), clave: m.clave },
       });
       this.solicitudesLocales.guardar({
         necesidadId: resultado.necesidad.id,
-        codigo: resultado.codigoSeguimiento,
+        codigo: resultado.codigoDispositivo,
         titulo: resultado.necesidad.titulo,
         registradaEn: resultado.necesidad.registradaEn,
       });

@@ -29,8 +29,3 @@ export function generarCodigoSeguimiento(aleatorio: Aleatorio = Math.random): st
     Array.from({ length: 4 }, () => ALFABETO_CODIGO[Math.floor(aleatorio() * ALFABETO_CODIGO.length)]).join('');
   return `${bloque()}-${bloque()}`;
 }
-
-export function normalizarCodigo(entrada: string): string {
-  const limpio = entrada.toUpperCase().replace(/[^A-Z0-9]/g, '');
-  return limpio.length === 8 ? `${limpio.slice(0, 4)}-${limpio.slice(4)}` : limpio;
-}

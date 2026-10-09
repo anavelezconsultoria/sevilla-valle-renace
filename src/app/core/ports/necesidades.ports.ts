@@ -1,7 +1,9 @@
 import { Signal } from '@angular/core';
 import {
+  AccesoSolicitante,
   CifrasPublicas,
   ContactoPrivado,
+  CredencialSolicitante,
   FiltroNecesidades,
   Necesidad,
   NuevaNecesidad,
@@ -23,17 +25,30 @@ export abstract class NecesidadesLectura {
   abstract cifras(): CifrasPublicas;
 }
 
-export interface NoRecibidaPayload {
-  readonly codigo: string;
+export interface AccionSolicitante {
+  readonly necesidadId: string;
+  readonly credencial: CredencialSolicitante;
+}
+
+export interface NoRecibidaPayload extends AccionSolicitante {
   readonly nota: string;
+}
+
+/** El celular o la clave no coinciden con ninguna solicitud. */
+export class ErrorAccesoSolicitante extends Error {
+  constructor() {
+    super('El celular o la clave no coinciden. Revisa e inténtalo de nuevo.');
+    this.name = 'ErrorAccesoSolicitante';
+  }
 }
 
 export abstract class SolicitanteGateway {
   abstract registrar(nueva: NuevaNecesidad): Promise<RegistroResultado>;
-  abstract consultarPorCodigo(codigo: string): Promise<Necesidad | undefined>;
-  abstract confirmarRecibida(codigo: string): Promise<Necesidad>;
+  /** Solicitudes de ese celular. Lanza ErrorAccesoSolicitante si el celular o la clave no coinciden. */
+  abstract misNecesidades(acceso: AccesoSolicitante): Promise<readonly Necesidad[]>;
+  abstract confirmarRecibida(accion: AccionSolicitante): Promise<Necesidad>;
   abstract reportarNoRecibida(payload: NoRecibidaPayload): Promise<Necesidad>;
-  abstract cancelar(codigo: string): Promise<Necesidad>;
+  abstract cancelar(accion: AccionSolicitante): Promise<Necesidad>;
 }
 
 export interface EntregaPayload {

@@ -19,9 +19,15 @@ import { HORAS_PARA_CONFIRMAR, HORAS_PARA_ENTREGAR, sumarHoras } from '../../cor
 export interface RegistroDemo {
   necesidad: Necesidad;
   contacto: ContactoPrivado;
+  /** Llave interna del celular que registro. */
   codigo: string;
+  /** Clave de 4 numeros del solicitante. */
+  clave: string;
   ayudanteId?: string;
 }
+
+/** Acceso de la demo: todas las solicitudes de ejemplo son de este celular ficticio. */
+export const ACCESO_DEMO = { telefono: '3000000000', clave: '2580' } as const;
 
 const AHORA = Date.now();
 const haceHoras = (h: number): string => new Date(AHORA - h * 3_600_000).toISOString();
@@ -63,7 +69,8 @@ function base(s: SemillaBase, estado: EstadoNecesidad, eventos: EventoNecesidad[
   const ubicacion = cerca(s.dLat, s.dLng);
   return {
     codigo: s.codigo,
-    contacto: { nombre: 'Persona de ejemplo', telefono: '300 000 0000', ubicacionExacta: ubicacion, referencias: 'Dato ficticio de demostración' },
+    clave: ACCESO_DEMO.clave,
+    contacto: { nombre: 'Persona de ejemplo', telefono: ACCESO_DEMO.telefono, ubicacionExacta: ubicacion, referencias: 'Dato ficticio de demostración' },
     necesidad: {
       id: s.id,
       categoria: s.categoria,

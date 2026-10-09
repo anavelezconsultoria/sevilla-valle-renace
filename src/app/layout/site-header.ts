@@ -18,7 +18,7 @@ import { NAVEGACION } from './navegacion';
           }
         </nav>
         <div class="acciones">
-          <a routerLink="/seguimiento" class="btn btn-ghost seguir">Seguir mi solicitud</a>
+          <a routerLink="/seguimiento" class="btn btn-ghost seguir">Mis solicitudes</a>
           <a routerLink="/pedir-ayuda" class="btn btn-accion">Necesito ayuda</a>
           <a routerLink="/mis-atenciones" class="avatar" [attr.aria-label]="ayudante() ? 'Mi panel de ' + ayudante()!.alias : 'Quiero ayudar: identificarme'">
             {{ ayudante()?.alias?.charAt(0) ?? '+' }}

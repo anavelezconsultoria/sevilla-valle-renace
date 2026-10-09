@@ -10,8 +10,8 @@ import { DemoBackend } from '../infrastructure/demo/demo-backend';
     @if (esDemo && visible()) {
       <div class="aviso" role="status">
         <strong class="largo">Modo demostración.</strong><strong class="corto">Demo</strong>
-        <span class="largo">Los casos que ves son ficticios. Prueba el seguimiento con el código <code>DEMO-ALIM</code>.</span>
-        <span class="corto">Datos ficticios · código <code>DEMO-ALIM</code></span>
+        <span class="largo">Los casos que ves son ficticios. Prueba «Mis solicitudes» con el celular <code>3000000000</code> y la clave <code>2580</code>.</span>
+        <span class="corto">Datos ficticios · celular <code>3000000000</code> clave <code>2580</code></span>
         <button type="button" class="reiniciar" (click)="reiniciar()">Reiniciar datos</button>
         <button type="button" class="cerrar" (click)="visible.set(false)" aria-label="Ocultar aviso">×</button>
       </div>

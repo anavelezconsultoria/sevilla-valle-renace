@@ -59,9 +59,9 @@ export class ComoFuncionaPage {
       clase: 'btn-accion',
       pasos: [
         { titulo: 'Registra tu necesidad', texto: 'Sin crear cuenta. Toma menos de dos minutos.' },
-        { titulo: 'Guarda tu código', texto: 'Con él sigues tu solicitud. Puedes guardarlo en WhatsApp.' },
+        { titulo: 'Crea tu clave', texto: 'Cuatro números, como la del cajero. Con tu celular y tu clave sigues tu solicitud.' },
         { titulo: 'Alguien la toma', texto: 'Te contactará para coordinar la entrega.' },
-        { titulo: 'Confirma que llegó', texto: 'Con tu código. Si no respondes en 48 horas, se cierra como atendida.' },
+        { titulo: 'Confirma que llegó', texto: 'Con un toque desde tu celular. Si no respondes en 48 horas, se cierra como atendida.' },
       ],
     },
     {

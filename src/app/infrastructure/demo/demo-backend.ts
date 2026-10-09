@@ -1,5 +1,6 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 import {
+  AccesoSolicitante,
   CierreAtencion,
   CifrasPublicas,
   ContactoPrivado,
@@ -16,11 +17,14 @@ import {
   HORAS_PARA_ENTREGAR,
   sumarHoras,
 } from '../../core/domain/ciclo-de-vida';
-import { desplazarCoordenada, generarCodigoSeguimiento, normalizarCodigo } from '../../core/domain/privacidad';
+import { desplazarCoordenada, generarCodigoSeguimiento } from '../../core/domain/privacidad';
+import { soloDigitos } from '../../core/domain/clave-solicitante';
 import {
+  AccionSolicitante,
   Ayudante,
   AyudanteGateway,
   EntregaPayload,
+  ErrorAccesoSolicitante,
   InicioSesionPayload,
   ModoDatos,
   NecesidadesLectura,
@@ -32,7 +36,7 @@ import { filtrarNecesidades } from '../../core/application/filtrar-necesidades';
 import { calcularCifras } from '../../core/application/calcular-cifras';
 import { crearSemillaDemo, RegistroDemo } from './demo-semilla';
 
-const CLAVE_ALMACEN = 'sevilla-renace-demo-v2';
+const CLAVE_ALMACEN = 'sevilla-renace-demo-v3';
 const CLAVE_SESION = 'sevilla-renace-demo-sesion';
 const INTERVALO_VENCIMIENTOS_MS = 60_000;
 
@@ -108,17 +112,20 @@ export class DemoBackend
       actualizadaEn: ahora,
       eventos: [{ id: `${id}-e0`, tipo: TipoEvento.Registrada, ocurridoEn: ahora, actor: 'Solicitante', evidencias: [] }],
     };
-    const contacto: ContactoPrivado = { ...nueva.contacto, ubicacionExacta: nueva.ubicacion };
-    this.guardar([{ necesidad, contacto, codigo }, ...this.registros()]);
-    return { necesidad, codigoSeguimiento: codigo };
+    const { clave, ...datosContacto } = nueva.contacto;
+    const contacto: ContactoPrivado = { ...datosContacto, ubicacionExacta: nueva.ubicacion };
+    this.guardar([{ necesidad, contacto, codigo, clave }, ...this.registros()]);
+    return { necesidad, codigoDispositivo: codigo };
   }
 
-  async consultarPorCodigo(codigo: string): Promise<Necesidad | undefined> {
-    return this.porCodigo(codigo)?.necesidad;
+  async misNecesidades(acceso: AccesoSolicitante): Promise<readonly Necesidad[]> {
+    const propias = this.registros().filter((r) => this.coincideAcceso(r, acceso));
+    if (!propias.length) throw new ErrorAccesoSolicitante();
+    return propias.map((r) => r.necesidad);
   }
 
-  async confirmarRecibida(codigo: string): Promise<Necesidad> {
-    const registro = this.exigirCodigo(codigo, EstadoNecesidad.Entregada);
+  async confirmarRecibida(accion: AccionSolicitante): Promise<Necesidad> {
+    const registro = this.exigirSolicitante(accion, EstadoNecesidad.Entregada);
     return this.transicionar({
       registro,
       estado: EstadoNecesidad.Atendida,
@@ -127,8 +134,8 @@ export class DemoBackend
     });
   }
 
-  async reportarNoRecibida({ codigo, nota }: NoRecibidaPayload): Promise<Necesidad> {
-    const registro = this.exigirCodigo(codigo, EstadoNecesidad.Entregada);
+  async reportarNoRecibida({ nota, ...accion }: NoRecibidaPayload): Promise<Necesidad> {
+    const registro = this.exigirSolicitante(accion, EstadoNecesidad.Entregada);
     return this.transicionar({
       registro,
       estado: EstadoNecesidad.EnAtencion,
@@ -137,8 +144,8 @@ export class DemoBackend
     });
   }
 
-  async cancelar(codigo: string): Promise<Necesidad> {
-    const registro = this.exigirCodigo(codigo, EstadoNecesidad.Registrada);
+  async cancelar(accion: AccionSolicitante): Promise<Necesidad> {
+    const registro = this.exigirSolicitante(accion, EstadoNecesidad.Registrada);
     return this.transicionar({
       registro,
       estado: EstadoNecesidad.Cancelada,
@@ -248,14 +255,20 @@ export class DemoBackend
     return necesidad;
   }
 
-  private porCodigo(codigo: string): RegistroDemo | undefined {
-    const normalizado = normalizarCodigo(codigo);
-    return this.registros().find((r) => r.codigo === normalizado);
+  private coincideAcceso(registro: RegistroDemo, { telefono, clave }: AccesoSolicitante): boolean {
+    return soloDigitos(registro.contacto.telefono) === soloDigitos(telefono) && registro.clave === clave;
   }
 
-  private exigirCodigo(codigo: string, estado: EstadoNecesidad): RegistroDemo {
-    const registro = this.porCodigo(codigo);
-    if (!registro) throw new Error('No encontramos una necesidad con ese código.');
+  private porCredencial({ necesidadId, credencial }: AccionSolicitante): RegistroDemo | undefined {
+    const registro = this.registros().find((r) => r.necesidad.id === necesidadId);
+    if (!registro) return undefined;
+    const valida = credencial.tipo === 'dispositivo' ? registro.codigo === credencial.codigo : this.coincideAcceso(registro, credencial);
+    return valida ? registro : undefined;
+  }
+
+  private exigirSolicitante(accion: AccionSolicitante, estado: EstadoNecesidad): RegistroDemo {
+    const registro = this.porCredencial(accion);
+    if (!registro) throw new ErrorAccesoSolicitante();
     if (registro.necesidad.estado !== estado) throw new Error('Esta acción ya no está disponible para esta necesidad.');
     return registro;
   }

@@ -1,13 +1,14 @@
 import { Injectable, signal } from '@angular/core';
 
 /**
- * Recuerda en ESTE celular las necesidades que registro, con su codigo, para
- * que quien pidio la ayuda pueda confirmarla sin tener que escribir el codigo.
+ * Recuerda en ESTE celular las necesidades que registro, con su llave interna,
+ * para que quien pidio la ayuda la confirme con un toque, sin escribir nada.
  * Solo vive en el navegador de la persona; el servidor nunca recibe esta lista.
  */
 
 export interface SolicitudLocal {
   readonly necesidadId: string;
+  /** Llave interna del registro: nunca se muestra a la persona. */
   readonly codigo: string;
   readonly titulo: string;
   readonly registradaEn: string;

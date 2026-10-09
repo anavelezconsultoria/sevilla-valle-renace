@@ -112,14 +112,30 @@ export interface NuevaNecesidad {
     readonly nombre: string;
     readonly telefono: string;
     readonly referencias: string;
+    /** Clave de 4 numeros que elige quien pide ayuda; el backend solo guarda su hash. */
+    readonly clave: string;
   };
 }
 
 export interface RegistroResultado {
   readonly necesidad: Necesidad;
-  /** Se muestra una sola vez al solicitante; el backend solo guarda su hash. */
-  readonly codigoSeguimiento: string;
+  /** Llave interna que se guarda en el celular que registro: nunca se muestra a la persona. */
+  readonly codigoDispositivo: string;
 }
+
+/** Lo que recuerda quien pidio ayuda para entrar desde cualquier celular. */
+export interface AccesoSolicitante {
+  readonly telefono: string;
+  readonly clave: string;
+}
+
+/**
+ * Como demuestra quien pidio la ayuda que la solicitud es suya: el celular que
+ * la registro guarda una llave interna; desde otro celular usa celular + clave.
+ */
+export type CredencialSolicitante =
+  | { readonly tipo: 'dispositivo'; readonly codigo: string }
+  | ({ readonly tipo: 'clave' } & AccesoSolicitante);
 
 export interface FiltroNecesidades {
   readonly estados?: readonly EstadoNecesidad[];

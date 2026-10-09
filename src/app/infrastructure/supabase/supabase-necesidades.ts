@@ -1,15 +1,19 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 import {
+  AccesoSolicitante,
   CifrasPublicas,
   ContactoPrivado,
+  CredencialSolicitante,
   FiltroNecesidades,
   Necesidad,
   NuevaNecesidad,
   RegistroResultado,
 } from '../../core/domain/necesidad.model';
 import {
+  AccionSolicitante,
   AyudanteGateway,
   EntregaPayload,
+  ErrorAccesoSolicitante,
   ModoDatos,
   NecesidadesLectura,
   NoRecibidaPayload,
@@ -25,6 +29,21 @@ import { aContacto, aNecesidad, FilaContacto, FilaNecesidad, FilaRegistro, SELEC
 const LIMITE_NECESIDADES = 1000;
 const ESPERA_RECARGA_MS = 400;
 const RECARGA_PERIODICA_MS = 120_000;
+
+type TipoCredencial = CredencialSolicitante['tipo'];
+
+/** Funcion de la base para cada accion del solicitante, segun como se identifique. */
+const RPC_SOLICITANTE = {
+  confirmar: { dispositivo: 'confirmar_recibida', clave: 'confirmar_con_clave' },
+  noRecibida: { dispositivo: 'reportar_no_recibida', clave: 'no_recibida_con_clave' },
+  cancelar: { dispositivo: 'cancelar_necesidad', clave: 'cancelar_con_clave' },
+} as const satisfies Record<string, Record<TipoCredencial, string>>;
+
+interface EjecucionSolicitante {
+  readonly rpc: Readonly<Record<TipoCredencial, string>>;
+  readonly accion: AccionSolicitante;
+  readonly extra?: Readonly<Record<string, string>>;
+}
 
 /**
  * Adaptador de Supabase para los puertos de necesidades. Mantiene en memoria la
@@ -92,30 +111,33 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
         p_lng: nueva.ubicacion.lng,
         p_nombre: nueva.contacto.nombre,
         p_telefono: nueva.contacto.telefono,
+        p_clave: nueva.contacto.clave,
         p_referencias: nueva.contacto.referencias,
       }),
     );
     const registro = filas[0];
     if (!registro) throw new Error('No pudimos registrar la necesidad.');
     const necesidad = await this.recargarYObtener(registro.necesidad_id);
-    return { necesidad, codigoSeguimiento: registro.codigo };
+    return { necesidad, codigoDispositivo: registro.codigo };
   }
 
-  async consultarPorCodigo(codigo: string): Promise<Necesidad | undefined> {
-    const id = exigir<string | null>(await this.cliente.rpc('consultar_por_codigo', { p_codigo: codigo }));
-    return id ? this.recargarYObtener(id) : undefined;
+  async misNecesidades({ telefono, clave }: AccesoSolicitante): Promise<readonly Necesidad[]> {
+    const ids = exigir<readonly string[]>(await this.cliente.rpc('mis_necesidades', { p_telefono: telefono, p_clave: clave }));
+    if (!ids.length) throw new ErrorAccesoSolicitante();
+    await this.recargar();
+    return ids.map((id) => this.obtener(id)).filter((n): n is Necesidad => n !== undefined);
   }
 
-  async confirmarRecibida(codigo: string): Promise<Necesidad> {
-    return this.ejecutarYObtener('confirmar_recibida', { p_codigo: codigo });
+  async confirmarRecibida(accion: AccionSolicitante): Promise<Necesidad> {
+    return this.ejecutarComoSolicitante({ rpc: RPC_SOLICITANTE.confirmar, accion });
   }
 
-  async reportarNoRecibida({ codigo, nota }: NoRecibidaPayload): Promise<Necesidad> {
-    return this.ejecutarYObtener('reportar_no_recibida', { p_codigo: codigo, p_nota: nota });
+  async reportarNoRecibida({ nota, ...accion }: NoRecibidaPayload): Promise<Necesidad> {
+    return this.ejecutarComoSolicitante({ rpc: RPC_SOLICITANTE.noRecibida, accion, extra: { p_nota: nota } });
   }
 
-  async cancelar(codigo: string): Promise<Necesidad> {
-    return this.ejecutarYObtener('cancelar_necesidad', { p_codigo: codigo });
+  async cancelar(accion: AccionSolicitante): Promise<Necesidad> {
+    return this.ejecutarComoSolicitante({ rpc: RPC_SOLICITANTE.cancelar, accion });
   }
 
   // ---- Ayudante ----
@@ -160,6 +182,18 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
 
   private urlPublica = (ruta: string): string =>
     this.cliente.storage.from(this.config.bucketEvidencias).getPublicUrl(ruta).data.publicUrl;
+
+  /** La credencial decide la funcion: llave del dispositivo o celular + clave. Null = la clave no coincide. */
+  private async ejecutarComoSolicitante({ rpc, accion, extra = {} }: EjecucionSolicitante): Promise<Necesidad> {
+    const { credencial, necesidadId } = accion;
+    const argumentos =
+      credencial.tipo === 'dispositivo'
+        ? { p_codigo: credencial.codigo }
+        : { p_necesidad: necesidadId, p_telefono: credencial.telefono, p_clave: credencial.clave };
+    const id = exigir<string | null>(await this.cliente.rpc(rpc[credencial.tipo], { ...argumentos, ...extra }));
+    if (!id) throw new ErrorAccesoSolicitante();
+    return this.recargarYObtener(id);
+  }
 
   private async ejecutarYObtener(funcion: string, argumentos: Record<string, string | readonly string[]>): Promise<Necesidad> {
     const id = exigir<string>(await this.cliente.rpc(funcion, argumentos));

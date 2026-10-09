@@ -1,6 +1,6 @@
 @if (resultado(); as r) {
   <sr-celebracion />
-  <sr-codigo-confirmacion [resultado]="r" (otra)="nuevaSolicitud()" />
+  <sr-registro-exitoso [resultado]="r" [telefono]="telefonoVisible()" (otra)="nuevaSolicitud()" />
 } @else {
   <section class="asistente" (keydown)="alPresionarTecla($event)" aria-labelledby="titulo-paso">
     <header class="cabecera">
@@ -197,6 +197,38 @@
           </div>
         }
 
+        @case ('clave') {
+          @let m = modelo();
+          <div class="paso" [class.atras]="direccion() === 'atras'">
+            <h1 id="titulo-paso">{{ paso().titulo }}</h1>
+            <p class="ayuda">Como la clave del cajero. Con tu celular <strong>{{ telefonoVisible() }}</strong> y esta clave sigues tu solicitud y confirmas cuando te llegue la ayuda, desde cualquier celular.</p>
+
+            <div class="field">
+              <label class="field-label" for="clave">Tu clave</label>
+              <div class="pin" [class.completa]="m.clave.length === largoClave">
+                <input id="clave" class="pin-entrada" [value]="m.clave" (input)="alEscribirClave('clave', $event)" type="text" inputmode="numeric" autocomplete="off" />
+                @for (i of casillasClave; track i) {
+                  <span class="casilla" [class.llena]="i < m.clave.length" [class.actual]="i === m.clave.length" aria-hidden="true">{{ m.clave[i] ?? '' }}</span>
+                }
+              </div>
+              <sr-errores-campo [estado]="estado(formulario.clave)" />
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="confirmacion-clave">Escríbela otra vez</label>
+              <div class="pin" [class.completa]="m.confirmacionClave.length === largoClave && m.confirmacionClave === m.clave">
+                <input id="confirmacion-clave" class="pin-entrada" [value]="m.confirmacionClave" (input)="alEscribirClave('confirmacionClave', $event)" type="text" inputmode="numeric" autocomplete="off" />
+                @for (i of casillasClave; track i) {
+                  <span class="casilla" [class.llena]="i < m.confirmacionClave.length" [class.actual]="i === m.confirmacionClave.length" aria-hidden="true">{{ m.confirmacionClave[i] ? '•' : '' }}</span>
+                }
+              </div>
+              <sr-errores-campo [estado]="estado(formulario.confirmacionClave)" />
+            </div>
+
+            <p class="consejo">No uses 1234 ni el final de tu celular: quien te ayude ve tu número. No le digas la clave a nadie.</p>
+          </div>
+        }
+
         @case ('revision') {
           @let m = modelo();
           <div class="paso" [class.atras]="direccion() === 'atras'">
@@ -232,6 +264,11 @@
                 <dt>Contacto</dt>
                 <dd><span><strong>{{ m.nombre }}</strong><small>{{ m.telefono }} · privado</small></span></dd>
                 <button type="button" class="cambiar" (click)="irAPaso('contacto')">Cambiar</button>
+              </div>
+              <div [style.--i]="5">
+                <dt>Tu clave</dt>
+                <dd><span><strong>••••</strong><small>Para seguir tu solicitud desde cualquier celular</small></span></dd>
+                <button type="button" class="cambiar" (click)="irAPaso('clave')">Cambiar</button>
               </div>
             </dl>
             @if (errorGeneral(); as e) {

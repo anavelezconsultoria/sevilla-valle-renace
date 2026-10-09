@@ -7,8 +7,8 @@ import { Celebracion } from '../../shared/ui/celebracion';
 
 /**
  * Panel para quien pidio la ayuda. Si este celular registro la necesidad,
- * confirma con un toque (el codigo ya esta guardado). Si no, lo lleva a
- * confirmar con su codigo.
+ * confirma con un toque (la llave interna ya esta guardada). Si no, lo lleva
+ * a entrar con su celular y su clave.
  */
 @Component({
   selector: 'sr-panel-solicitante',
@@ -27,14 +27,14 @@ import { Celebracion } from '../../shared/ui/celebracion';
           <p class="muted"><strong>{{ n.ayudanteAlias }}</strong> registró la entrega. Confírmalo para cerrar tu solicitud.</p>
           <div class="botones">
             <button type="button" class="btn btn-success" [disabled]="ocupado()" (click)="confirmar(c)">Sí, la recibí</button>
-            <a class="btn btn-secondary" [routerLink]="['/seguimiento']" [queryParams]="{ codigo: c }">No la he recibido</a>
+            <a class="btn btn-secondary" [routerLink]="['/seguimiento']" [queryParams]="{ necesidad: n.id }">No la he recibido</a>
           </div>
         } @else if (n.estado === 'atendida') {
           <h2>¡Qué bueno que llegó!</h2>
           <p class="muted">Tu solicitud quedó cerrada como atendida.</p>
         } @else {
           <p class="muted">{{ mensajeEstado() }}</p>
-          <a class="enlace" [routerLink]="['/seguimiento']" [queryParams]="{ codigo: c }">Ver mi solicitud y mi código</a>
+          <a class="enlace" [routerLink]="['/seguimiento']" [queryParams]="{ necesidad: n.id }">Ver cómo va mi solicitud</a>
         }
         @if (error(); as e) {
           <p class="field-error" role="alert">{{ e }}</p>
@@ -43,8 +43,8 @@ import { Celebracion } from '../../shared/ui/celebracion';
     } @else if (n.estado === 'entregada') {
       <section class="card panel">
         <h2>¿Tú pediste esta ayuda?</h2>
-        <p class="muted">Confirma que te llegó con el código que recibiste al registrarla.</p>
-        <a class="btn btn-accion btn-block" routerLink="/seguimiento">Confirmar con mi código</a>
+        <p class="muted">Confirma que te llegó con tu celular y la clave de 4 números que creaste al pedirla.</p>
+        <a class="btn btn-accion btn-block" routerLink="/seguimiento">Confirmar con mi celular y clave</a>
       </section>
     }
   `,
@@ -78,7 +78,7 @@ export class PanelSolicitante {
     this.ocupado.set(true);
     this.error.set(null);
     try {
-      await this.solicitante.confirmarRecibida(codigo);
+      await this.solicitante.confirmarRecibida({ necesidadId: this.necesidad().id, credencial: { tipo: 'dispositivo', codigo } });
       this.celebrar.set(true);
     } catch (e) {
       this.error.set(e instanceof Error ? e.message : 'No se pudo confirmar. Inténtalo de nuevo.');

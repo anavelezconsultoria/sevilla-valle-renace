@@ -18,11 +18,11 @@ select set_config('request.jwt.claims', '{"role":"anon"}', true);
 do $$
 declare r record;
 begin
-  select * into r from public.registrar_necesidad('agua', 'Agua para la semana', 'Se rompio el tanque con el temblor', 'alta', 4, 'Sector prueba', 4.2667, -75.9333, 'Rosa', '315 123 4567', 'Casa azul');
+  select * into r from public.registrar_necesidad('agua', 'Agua para la semana', 'Se rompio el tanque con el temblor', 'alta', 4, 'Sector prueba', 4.2667, -75.9333, 'Rosa', '315 123 4567', '5793', 'Casa azul');
   perform set_config('prueba.id', r.necesidad_id::text, true);
   perform set_config('prueba.codigo', r.codigo, true);
   if r.codigo !~ '^[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$' then raise exception 'FALLO: codigo con formato invalido %', r.codigo; end if;
-  raise notice 'OK  anonimo registra una necesidad y recibe codigo';
+  raise notice 'OK  anonimo registra una necesidad (con clave) y el celular recibe su llave interna';
 end $$;
 
 do $$ begin
@@ -60,6 +60,39 @@ do $$ begin
   perform public.confirmar_recibida(current_setting('prueba.codigo'));
   raise exception 'FALLO: se confirmo una necesidad que no fue entregada';
 exception when sqlstate 'P0001' then raise notice 'OK  no se puede confirmar antes de la entrega';
+end $$;
+
+do $$ begin
+  perform public.registrar_necesidad('agua', 'Agua', 'Se rompio el tanque con el temblor', 'alta', 1, 'Sector', 4.26, -75.93, 'Rosa', '3151234567', '1234');
+  raise exception 'FALLO: se acepto una clave obvia';
+exception when sqlstate 'P0001' then raise notice 'OK  se rechaza una clave obvia (1234)';
+end $$;
+
+do $$ begin
+  perform public.registrar_necesidad('agua', 'Agua', 'Se rompio el tanque con el temblor', 'alta', 1, 'Sector', 4.26, -75.93, 'Rosa', '3151234567', '4567');
+  raise exception 'FALLO: se acepto como clave el final del celular';
+exception when sqlstate 'P0001' then raise notice 'OK  se rechaza como clave el final del celular, que quien ayuda ve';
+end $$;
+
+do $$ begin
+  if not exists (select 1 from public.mis_necesidades('315 123 4567', '5793') m where m = current_setting('prueba.id')::uuid) then
+    raise exception 'FALLO: celular + clave no encontraron la necesidad';
+  end if;
+  if exists (select 1 from public.mis_necesidades('3151234567', '9999')) then
+    raise exception 'FALLO: una clave equivocada devolvio necesidades';
+  end if;
+  raise notice 'OK  celular + clave encuentran la necesidad; una clave equivocada no ve nada';
+end $$;
+
+-- Fuerza bruta: 5 fallos bloquean el celular 15 minutos, incluso para la clave correcta.
+do $$ declare r record; begin
+  select * into r from public.registrar_necesidad('ropa', 'Cobijas', 'Dormimos en el patio por las replicas', 'media', 2, 'Sector', 4.26, -75.93, 'Eva', '3205550000', '7319');
+  for i in 1..5 loop
+    if exists (select 1 from public.mis_necesidades('3205550000', lpad(i::text, 4, '8'))) then raise exception 'FALLO: clave falsa aceptada'; end if;
+  end loop;
+  perform * from public.mis_necesidades('3205550000', '7319');
+  raise exception 'FALLO: no se bloqueo tras 5 intentos fallidos';
+exception when sqlstate 'P0003' then raise notice 'OK  5 intentos fallidos bloquean el celular 15 minutos';
 end $$;
 
 -- -----------------------------------------------------------------------------
@@ -130,7 +163,7 @@ select public.entregar_necesidad(
 );
 
 -- -----------------------------------------------------------------------------
--- 5. El solicitante confirma con su codigo
+-- 5. El solicitante confirma con su celular y su clave
 -- -----------------------------------------------------------------------------
 set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
@@ -141,7 +174,25 @@ do $$ begin
 exception when sqlstate 'P0002' then raise notice 'OK  un codigo falso no sirve';
 end $$;
 
-select public.confirmar_recibida(current_setting('prueba.codigo'));
+do $$ begin
+  if public.confirmar_con_clave(current_setting('prueba.id')::uuid, '3151234567', '8642') is not null then
+    raise exception 'FALLO: una clave equivocada confirmo';
+  end if;
+  if (select estado from public.necesidades where id = current_setting('prueba.id')::uuid) <> 'entregada' then
+    raise exception 'FALLO: la clave equivocada cambio el estado';
+  end if;
+  raise notice 'OK  quien conoce el celular pero no la clave NO puede confirmar';
+end $$;
+
+do $$ begin
+  perform public.registrar_necesidad('aseo', 'Jabon', 'Necesitamos jabon para lavar la ropa', 'baja', 2, 'Sector', 4.26, -75.93, 'Teo', '3017776655', '3952');
+  if public.confirmar_con_clave(current_setting('prueba.id')::uuid, '3017776655', '3952') is not null then
+    raise exception 'FALLO: la clave de otra persona sirvio para esta necesidad';
+  end if;
+  raise notice 'OK  el celular y la clave de otra solicitud no sirven para esta';
+end $$;
+
+select public.confirmar_con_clave(current_setting('prueba.id')::uuid, '315 123 4567', '5793');
 
 do $$ declare n record; tipos text; begin
   select * into n from public.necesidades where id = current_setting('prueba.id')::uuid;
@@ -156,7 +207,7 @@ end $$;
 -- 6. Vencimientos de 48 horas
 -- -----------------------------------------------------------------------------
 do $$ declare r record; begin
-  select * into r from public.registrar_necesidad('ropa', 'Cobijas para la noche', 'Dormimos en el patio por las replicas', 'media', 3, 'Sector prueba', 4.27, -75.93, 'Luis', '3009998877');
+  select * into r from public.registrar_necesidad('ropa', 'Cobijas para la noche', 'Dormimos en el patio por las replicas', 'media', 3, 'Sector prueba', 4.27, -75.93, 'Luis', '3009998877', '8264');
   perform set_config('prueba.id2', r.necesidad_id::text, true);
   perform set_config('prueba.codigo2', r.codigo, true);
 end $$;
@@ -208,17 +259,28 @@ set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 do $$ begin
   for i in 1..3 loop
-    perform public.registrar_necesidad('aseo', 'Kit de aseo ' || i, 'Necesitamos jabon y panales para el bebe', 'baja', 2, 'Sector', 4.26, -75.93, 'Ana', '3110000000');
+    perform public.registrar_necesidad('aseo', 'Kit de aseo ' || i, 'Necesitamos jabon y panales para el bebe', 'baja', 2, 'Sector', 4.26, -75.93, 'Ana', '3110000000', '2468');
   end loop;
-  perform public.registrar_necesidad('aseo', 'Kit de aseo 4', 'Necesitamos jabon y panales para el bebe', 'baja', 2, 'Sector', 4.26, -75.93, 'Ana', '3110000000');
+  perform public.registrar_necesidad('aseo', 'Kit de aseo 4', 'Necesitamos jabon y panales para el bebe', 'baja', 2, 'Sector', 4.26, -75.93, 'Ana', '3110000000', '2468');
   raise exception 'FALLO: se permitio una cuarta necesidad activa con el mismo celular';
 exception when sqlstate 'P0001' then raise notice 'OK  un celular no puede tener mas de 3 necesidades activas';
 end $$;
 
 do $$ begin
-  perform public.registrar_necesidad('aseo', 'X', 'corta', 'baja', 0, 'S', 4.26, -75.93, 'A', '123');
+  perform public.registrar_necesidad('aseo', 'X', 'corta', 'baja', 0, 'S', 4.26, -75.93, 'A', '123', '5793');
   raise exception 'FALLO: se aceptaron datos invalidos';
 exception when check_violation then raise notice 'OK  la base rechaza datos invalidos aunque el cliente no valide';
+end $$;
+
+reset role;
+do $$ begin
+  -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.
+  if exists (select 1 from public.necesidades_privado pr join public.necesidades n on n.id = pr.necesidad_id
+              where n.registrada_en = now()
+                and (pr.clave_hash is null or pr.clave_hash !~ '^\$2[aby]\$' or pr.clave_hash like '%5793%')) then
+    raise exception 'FALLO: hay claves sin hash bcrypt';
+  end if;
+  raise notice 'OK  las claves solo se guardan como hash bcrypt';
 end $$;
 
 rollback;
