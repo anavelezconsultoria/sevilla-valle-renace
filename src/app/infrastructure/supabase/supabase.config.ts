@@ -11,7 +11,7 @@ export const SUPABASE_CONFIG = new InjectionToken<SupabaseConfig>('SUPABASE_CONF
 
 export const CONFIG_SUPABASE: SupabaseConfig = {
   url: 'https://wabslvejumtvdpjxgsgx.supabase.co',
-  anonKey: '',
+  anonKey: 'sb_publishable_hwp8JZSSwFtfp9XplZPLAA_KwExGKrV',
   bucketEvidencias: 'evidencias',
 };
 
