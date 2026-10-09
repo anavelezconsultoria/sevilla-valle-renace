@@ -179,6 +179,11 @@ textarea {
   padding-block: var(--space-7) var(--space-6);
   background: var(--textura-montana) right bottom / 640px auto no-repeat, linear-gradient(var(--color-arena), var(--color-fondo));
   border-bottom: 1px solid var(--color-linea);
+  animation: deriva 26s ease-in-out infinite alternate;
+}
+
+.encabezado-pagina > * {
+  animation: aparecer 600ms var(--ease-salida) both;
 }
 
 /* ---------- Botones ---------- */
@@ -381,6 +386,48 @@ textarea.input {
 .entrada {
   animation: aparecer var(--dur-media) var(--ease-salida) both;
   animation-delay: calc(min(var(--i, 0), 12) * 45ms);
+}
+
+/* Revelado al hacer scroll (directiva srRevelar). */
+.por-revelar {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 600ms var(--ease-salida), transform 600ms var(--ease-salida);
+  transition-delay: calc(min(var(--i, 0), 6) * 70ms);
+}
+
+.por-revelar.revelado {
+  opacity: 1;
+  transform: none;
+}
+
+/* Llamado a la accion principal: un brillo que respira cada pocos segundos. */
+@keyframes respirar {
+  0%, 70%, 100% {
+    box-shadow: 0 4px 14px rgba(43, 76, 242, 0.3), 0 0 0 0 rgba(43, 76, 242, 0.35);
+  }
+  85% {
+    box-shadow: 0 4px 14px rgba(43, 76, 242, 0.3), 0 0 0 10px rgba(43, 76, 242, 0);
+  }
+}
+
+.btn-respira {
+  animation: respirar 3.2s ease-out 1.5s infinite;
+}
+
+@keyframes rebote {
+  40% {
+    transform: scale(1.06);
+  }
+  70% {
+    transform: scale(0.98);
+  }
+}
+
+@keyframes deriva {
+  to {
+    background-position: calc(100% + 140px) bottom, 0 0;
+  }
 }
 
 .esqueleto {

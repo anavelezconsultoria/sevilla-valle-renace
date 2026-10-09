@@ -6,6 +6,7 @@ import { infoCategoria } from '../../core/domain/catalogos';
 import { CategoriaIcono } from '../../shared/ui/categoria-icono';
 import { fechaCorta } from '../../shared/lib/tiempo';
 import { Contador } from '../../shared/ui/contador';
+import { Revelar } from '../../shared/ui/revelar';
 
 interface AyudaEntregada {
   readonly necesidad: Necesidad;
@@ -32,7 +33,7 @@ function aAyudaEntregada(n: Necesidad): AyudaEntregada {
  */
 @Component({
   selector: 'sr-entregadas-page',
-  imports: [RouterLink, CategoriaIcono, Contador],
+  imports: [RouterLink, CategoriaIcono, Contador, Revelar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="encabezado-pagina">
@@ -52,7 +53,7 @@ function aAyudaEntregada(n: Necesidad): AyudaEntregada {
 
       <div class="lista">
         @for (a of ayudas(); track a.necesidad.id; let i = $index) {
-          <article class="card ayuda entrada" [style.--i]="i + 4">
+          <article class="card ayuda" srRevelar [style.--i]="i % 3">
             @if (a.evidencias.length) {
               <a class="foto" [routerLink]="['/necesidades', a.necesidad.id]">
                 <img [src]="a.evidencias[0].url" [alt]="a.evidencias[0].descripcion" loading="lazy" />

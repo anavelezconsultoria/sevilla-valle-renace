@@ -11,7 +11,7 @@ import {
   viewChild,
 } from '@angular/core';
 import * as L from 'leaflet';
-import { Necesidad } from '../../core/domain/necesidad.model';
+import { EstadoNecesidad, Necesidad, Urgencia } from '../../core/domain/necesidad.model';
 import { infoCategoria } from '../../core/domain/catalogos';
 import { crearMapa, iconoNecesidad } from './mapa-base';
 
@@ -59,6 +59,7 @@ export class MapaNecesidades {
         seleccionado: n.id === seleccionada,
         orden,
         animar,
+        urgente: n.urgencia === Urgencia.Alta && n.estado === EstadoNecesidad.Registrada,
       });
       L.marker([n.ubicacionAproximada.lat, n.ubicacionAproximada.lng], { icon: icono, title: n.titulo, zIndexOffset: n.id === seleccionada ? 1000 : 0 })
         .on('click', () => this.seleccionar.emit(n.id))

@@ -34,12 +34,14 @@ export interface MarcadorNecesidad {
   /** Posicion en la lista: escalona la caida de los pines la primera vez que se pintan. */
   readonly orden: number;
   readonly animar: boolean;
+  /** Urgente y sin atender: el pin late para que el ojo vaya primero ahi. */
+  readonly urgente: boolean;
 }
 
-export function iconoNecesidad({ categoria, estado, seleccionado, orden, animar }: MarcadorNecesidad): L.DivIcon {
+export function iconoNecesidad({ categoria, estado, seleccionado, orden, animar, urgente }: MarcadorNecesidad): L.DivIcon {
   const anillo = ANILLO_POR_ESTADO[estado] ?? '#ffffff';
   const tamano = seleccionado ? 46 : 38;
-  const clases = ['sr-pin', seleccionado ? 'sr-pin--activo' : '', animar ? 'sr-pin--cae' : ''].join(' ');
+  const clases = ['sr-pin', seleccionado ? 'sr-pin--activo' : '', animar ? 'sr-pin--cae' : '', urgente ? 'sr-pin--urgente' : ''].join(' ');
   const html = `
     <div class="${clases}" style="--pin:${categoria.color};--anillo:${anillo};--t:${tamano}px;--i:${orden}">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${categoria.icono}"/></svg>

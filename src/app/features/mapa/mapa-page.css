@@ -65,6 +65,36 @@
   overflow: hidden;
 }
 
+/* Colinas que se mueven como ondas lentas y flores que flotan. */
+.ola {
+  animation: ondear 7s ease-in-out infinite alternate;
+}
+
+.ola-2 {
+  animation-duration: 9s;
+  animation-direction: alternate-reverse;
+}
+
+.ola-3 {
+  animation-duration: 11s;
+}
+
+.flores {
+  animation: flotar 4s ease-in-out infinite;
+}
+
+@keyframes ondear {
+  to {
+    transform: translateX(-16px);
+  }
+}
+
+@keyframes flotar {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
 .bienvenida h1 {
   font-size: 1.2rem;
   line-height: 1.25;

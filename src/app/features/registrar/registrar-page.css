@@ -79,8 +79,9 @@ legend + * {
 }
 
 .categoria.activa {
-  border-color: var(--color-primario);
-  background: var(--color-primario-suave);
+  border-color: var(--color-accion);
+  background: var(--color-accion-suave);
+  animation: rebote 380ms var(--ease-salida);
 }
 
 .dos-columnas {

@@ -6,12 +6,13 @@ import { CATEGORIAS, ESTADOS, URGENCIAS } from '../../core/domain/catalogos';
 import { ESTADOS_ACTIVOS } from '../../core/domain/ciclo-de-vida';
 import { NecesidadCard } from '../../shared/ui/necesidad-card';
 import { MapaNecesidades } from '../../shared/mapa/mapa-necesidades';
+import { Revelar } from '../../shared/ui/revelar';
 
 type Vista = 'lista' | 'mapa';
 
 @Component({
   selector: 'sr-tablero-page',
-  imports: [RouterLink, NecesidadCard, MapaNecesidades],
+  imports: [RouterLink, NecesidadCard, MapaNecesidades, Revelar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="encabezado-pagina"><div class="container cabecera">
@@ -57,7 +58,7 @@ type Vista = 'lista' | 'mapa';
       }
       <div class="grid">
         @for (n of resultados(); track n.id; let i = $index) {
-          <sr-necesidad-card class="entrada" [style.--i]="i" [necesidad]="n" />
+          <sr-necesidad-card srRevelar [style.--i]="i % 3" [necesidad]="n" />
         } @empty {
           <div class="vacio card">
             <p><strong>No hay necesidades con estos filtros.</strong></p>
