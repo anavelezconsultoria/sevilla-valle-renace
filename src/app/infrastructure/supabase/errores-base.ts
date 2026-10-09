@@ -18,8 +18,12 @@ const RESTRICCIONES: Readonly<Record<string, string>> = {
 
 const MENSAJE_GENERICO = 'No pudimos guardar los datos. Revisa el formulario e inténtalo de nuevo.';
 
+/** La pagina quedo abierta con una version anterior a la de la base (la funcion ya no existe). */
+const CODIGO_VERSION_VIEJA = 'PGRST202';
+const MENSAJE_VERSION_VIEJA = 'Sevilla Renace se actualizó. Recarga la página e inténtalo de nuevo.';
+
 /** Codigos de Postgres que indican un dato invalido o un error interno, no un mensaje de negocio. */
-const CODIGOS_TECNICOS = new Set(['23514', '23502', '23505', '22001', '22P02', '42883', 'PGRST202']);
+const CODIGOS_TECNICOS = new Set(['23514', '23502', '23505', '22001', '22P02', '42883']);
 
 export interface ErrorBase {
   readonly message: string;
@@ -29,6 +33,7 @@ export interface ErrorBase {
 export function mensajeParaPersona({ message, code }: ErrorBase): string {
   const restriccion = Object.keys(RESTRICCIONES).find((nombre) => message.includes(nombre));
   if (restriccion) return RESTRICCIONES[restriccion]!;
+  if (code === CODIGO_VERSION_VIEJA) return MENSAJE_VERSION_VIEJA;
   if (code && CODIGOS_TECNICOS.has(code)) return MENSAJE_GENERICO;
   if (/violates|constraint|syntax|relation|column|function/i.test(message)) return MENSAJE_GENERICO;
   // Los mensajes que lanzan nuestras funciones (P0001, P0002, 28000, 42501) ya estan en español.
