@@ -69,7 +69,7 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a"}', true);
 
 do $$ declare c record; begin
-  perform public.asegurar_perfil('Ayudante A');
+  perform public.asegurar_perfil('Ayudante A', '3001112222');
   perform public.tomar_necesidad(current_setting('prueba.id')::uuid);
   select * into c from public.contacto_necesidad(current_setting('prueba.id')::uuid);
   if c.telefono <> '3151234567' then raise exception 'FALLO: contacto incorrecto %', c.telefono; end if;
@@ -80,7 +80,19 @@ end $$;
 -- 3. Ayudante B no puede interferir
 -- -----------------------------------------------------------------------------
 select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000b"}', true);
-select public.asegurar_perfil('Ayudante B');
+select public.asegurar_perfil('Ayudante B', '3003334444');
+
+do $$ begin
+  perform * from public.perfiles_privado;
+  raise exception 'FALLO: un ayudante leyo celulares de otros ayudantes';
+exception when insufficient_privilege then raise notice 'OK  el celular de quien ayuda es privado';
+end $$;
+
+do $$ begin
+  perform public.asegurar_perfil('Ayudante B', '12345');
+  raise exception 'FALLO: se acepto un celular invalido';
+exception when sqlstate 'P0001' then raise notice 'OK  se rechaza un celular invalido de quien ayuda';
+end $$;
 
 do $$ begin
   perform public.tomar_necesidad(current_setting('prueba.id')::uuid);

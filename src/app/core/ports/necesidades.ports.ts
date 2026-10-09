@@ -54,26 +54,26 @@ export abstract class AyudanteGateway {
 export interface Ayudante {
   readonly id: string;
   readonly alias: string;
-  readonly correo: string;
 }
 
 export interface InicioSesionPayload {
-  readonly correo: string;
   readonly alias: string;
+  /** Privado: solo para coordinacion. Nunca se muestra en la plataforma. */
+  readonly celular: string;
 }
 
-/** El proveedor de correo rechazo el envio por exceso de intentos: hay que esperar antes de reintentar. */
+/** El servicio de acceso rechazo el intento por exceso de solicitudes: hay que esperar antes de reintentar. */
 export class ErrorLimiteEnvios extends Error {
   constructor(readonly segundosEspera: number) {
-    super('Se enviaron demasiados correos en poco tiempo. Espera un momento e inténtalo de nuevo.');
+    super('Hubo demasiados intentos en poco tiempo. Espera un momento e inténtalo de nuevo.');
     this.name = 'ErrorLimiteEnvios';
   }
 }
 
 export abstract class SesionGateway {
   abstract readonly ayudante: Signal<Ayudante | null>;
-  /** En produccion envia un enlace al correo; en modo demo entra directo. */
-  abstract iniciarSesion(payload: InicioSesionPayload): Promise<'enlace_enviado' | 'sesion_iniciada'>;
+  /** Entra al instante con alias y celular: sin correos ni contrasenas. */
+  abstract iniciarSesion(payload: InicioSesionPayload): Promise<void>;
   abstract cerrarSesion(): Promise<void>;
 }
 

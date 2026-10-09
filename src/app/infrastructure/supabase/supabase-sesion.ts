@@ -4,13 +4,12 @@ import { Ayudante, ErrorLimiteEnvios, InicioSesionPayload, SesionGateway } from 
 import { exigir, SUPABASE_CLIENTE } from './supabase-cliente';
 import { FilaPerfil } from './supabase-filas';
 
-const CLAVE_ALIAS_PENDIENTE = 'sevilla-renace-alias-pendiente';
-const RUTA_RETORNO = '/mis-atenciones';
 const SEGUNDOS_ESPERA_LIMITE = 60;
 
 /**
- * Sesion de quien ayuda con enlace al correo (sin contrasenas). El alias se
- * guarda mientras la persona abre el enlace y se convierte en su perfil publico.
+ * Sesion de quien ayuda SIN correo: Supabase Anonymous Sign-ins crea un usuario
+ * al instante y la sesion queda guardada en el celular. El alias es publico; el
+ * celular va a una tabla privada que solo lee la coordinacion.
  */
 @Injectable({ providedIn: 'root' })
 export class SupabaseSesion implements SesionGateway {
@@ -24,14 +23,12 @@ export class SupabaseSesion implements SesionGateway {
     });
   }
 
-  async iniciarSesion({ correo, alias }: InicioSesionPayload): Promise<'enlace_enviado'> {
-    this.guardarAliasPendiente(alias.trim());
-    const { error } = await this.cliente.auth.signInWithOtp({
-      email: correo.trim(),
-      options: { emailRedirectTo: `${location.origin}${RUTA_RETORNO}`, data: { alias: alias.trim() } },
-    });
-    if (error) throw this.traducirError(error.status, error.message);
-    return 'enlace_enviado';
+  async iniciarSesion({ alias, celular }: InicioSesionPayload): Promise<void> {
+    await this.asegurarSesion();
+    const perfil = exigir<FilaPerfil>(
+      await this.cliente.rpc('asegurar_perfil', { p_alias: alias.trim(), p_celular: celular.replace(/\D/g, '') }),
+    );
+    this.ayudante.set({ id: perfil.id, alias: perfil.alias });
   }
 
   async cerrarSesion(): Promise<void> {
@@ -39,50 +36,31 @@ export class SupabaseSesion implements SesionGateway {
     this.ayudante.set(null);
   }
 
+  /** Reutiliza la sesion guardada en el celular; si no hay, crea una anonima. */
+  private async asegurarSesion(): Promise<void> {
+    const { data } = await this.cliente.auth.getSession();
+    if (data.session) return;
+    const { error } = await this.cliente.auth.signInAnonymously();
+    if (error) throw this.traducirError(error.status, error.message);
+  }
+
+  /** Al volver a abrir la app, recupera el perfil de la sesion guardada. */
   private async sincronizar(sesion: Session | null): Promise<void> {
     if (!sesion) {
       this.ayudante.set(null);
       return;
     }
-    const perfil = await this.asegurarPerfil(sesion);
-    this.ayudante.set({ id: perfil.id, alias: perfil.alias, correo: sesion.user.email ?? '' });
-  }
-
-  private async asegurarPerfil(sesion: Session): Promise<FilaPerfil> {
-    const pendiente = this.leerAliasPendiente();
-    const existente = await this.cliente.from('perfiles').select('id, alias').eq('id', sesion.user.id).maybeSingle();
-    const perfil = exigir<FilaPerfil | null>(existente);
-    if (perfil && !pendiente) return perfil;
-    const alias = pendiente ?? this.aliasDeMetadatos(sesion) ?? sesion.user.email?.split('@')[0] ?? 'Ayudante';
-    const creado = exigir<FilaPerfil>(await this.cliente.rpc('asegurar_perfil', { p_alias: alias }));
-    this.guardarAliasPendiente(null);
-    return creado;
-  }
-
-  private aliasDeMetadatos(sesion: Session): string | null {
-    const alias = sesion.user.user_metadata['alias'];
-    return typeof alias === 'string' && alias.length >= 2 ? alias : null;
+    const perfil = exigir<FilaPerfil | null>(
+      await this.cliente.from('perfiles').select('id, alias').eq('id', sesion.user.id).maybeSingle(),
+    );
+    this.ayudante.set(perfil ? { id: perfil.id, alias: perfil.alias } : null);
   }
 
   private traducirError(estado: number | undefined, mensaje: string): Error {
     if (estado === 429 || /rate limit|too many/i.test(mensaje)) return new ErrorLimiteEnvios(SEGUNDOS_ESPERA_LIMITE);
-    return new Error('No pudimos enviarte el enlace. Revisa el correo e inténtalo de nuevo.');
-  }
-
-  private guardarAliasPendiente(alias: string | null): void {
-    try {
-      if (alias) localStorage.setItem(CLAVE_ALIAS_PENDIENTE, alias);
-      else localStorage.removeItem(CLAVE_ALIAS_PENDIENTE);
-    } catch {
-      /* Sin almacenamiento: se usa el alias de los metadatos del usuario. */
+    if (/anonymous sign-ins are disabled/i.test(mensaje)) {
+      return new Error('El acceso para voluntarios todavía no está habilitado. Avísale a la coordinación.');
     }
-  }
-
-  private leerAliasPendiente(): string | null {
-    try {
-      return localStorage.getItem(CLAVE_ALIAS_PENDIENTE);
-    } catch {
-      return null;
-    }
+    return new Error('No pudimos identificarte. Revisa tu conexión e inténtalo de nuevo.');
   }
 }

@@ -53,7 +53,7 @@ interface Columna {
         <section class="card acceso">
           <p class="eyebrow">Quiero ayudar</p>
           <h1>Identifícate para atender necesidades</h1>
-          <p class="muted">Solo pedimos un nombre público y tu correo. Así la familia sabe quién va a ayudarle y quedas con tu historial de ayudas.</p>
+          <p class="muted">Solo pedimos un nombre público y tu celular, que es privado. Entras al instante y quedas con tu historial de ayudas en este celular.</p>
           <sr-identificarse-form />
         </section>
       }

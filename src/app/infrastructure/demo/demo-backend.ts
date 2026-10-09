@@ -199,11 +199,10 @@ export class DemoBackend
 
   // ---- Sesion ----
 
-  async iniciarSesion({ correo, alias }: InicioSesionPayload): Promise<'sesion_iniciada'> {
-    const ayudante: Ayudante = { id: `demo-${correo.toLowerCase()}`, alias: alias.trim(), correo };
+  async iniciarSesion({ celular, alias }: InicioSesionPayload): Promise<void> {
+    const ayudante: Ayudante = { id: `demo-${celular.replace(/\D/g, '')}`, alias: alias.trim() };
     this.ayudante.set(ayudante);
     this.escribir(CLAVE_SESION, ayudante);
-    return 'sesion_iniciada';
   }
 
   async cerrarSesion(): Promise<void> {

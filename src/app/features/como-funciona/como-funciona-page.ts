@@ -71,7 +71,7 @@ export class ComoFuncionaPage {
       clase: 'btn-primary',
       pasos: [
         { titulo: 'Elige una necesidad', texto: 'En el mapa o en el tablero, empezando por las más urgentes.' },
-        { titulo: 'Tómala', texto: 'Solo pedimos un nombre público y tu correo. Verás el contacto de la familia.' },
+        { titulo: 'Tómala', texto: 'Solo pedimos un nombre público y tu celular. Verás el contacto de la familia.' },
         { titulo: 'Entrégala en 48 horas', texto: 'Si no puedes, libérala para que otra persona la tome.' },
         { titulo: 'Registra la entrega', texto: 'Una nota y, si quieres, una foto sin rostros de lo que llevaste.' },
       ],

@@ -80,7 +80,7 @@ describe('Flujo completo en modo demostracion', () => {
     const { necesidad, codigoSeguimiento } = await backend.registrar(NUEVA);
     expect(distanciaMetros(necesidad.ubicacionAproximada, CENTRO_SEVILLA)).toBeGreaterThan(100);
 
-    await backend.iniciarSesion({ correo: 'ayuda@prueba.co', alias: 'Ayudante de prueba' });
+    await backend.iniciarSesion({ celular: '3001112222', alias: 'Ayudante de prueba' });
     await backend.tomar(necesidad.id);
     await expect(backend.contacto(necesidad.id)).resolves.toMatchObject({ telefono: '3000000000' });
     await backend.entregar({ necesidadId: necesidad.id, nota: 'Entregado', fotos: [] });
@@ -98,16 +98,16 @@ describe('Flujo completo en modo demostracion', () => {
 
   it('nadie puede tomar una necesidad que ya esta en atencion', async () => {
     const { necesidad } = await backend.registrar(NUEVA);
-    await backend.iniciarSesion({ correo: 'a@prueba.co', alias: 'A' });
+    await backend.iniciarSesion({ celular: '3001112222', alias: 'A' });
     await backend.tomar(necesidad.id);
-    await backend.iniciarSesion({ correo: 'b@prueba.co', alias: 'B' });
+    await backend.iniciarSesion({ celular: '3003334444', alias: 'B' });
     await expect(backend.tomar(necesidad.id)).rejects.toThrow();
     await expect(backend.contacto(necesidad.id)).rejects.toThrow();
   });
 
   it('libera la toma vencida y cierra la entrega sin reclamo a las 48 horas', async () => {
     const { necesidad } = await backend.registrar(NUEVA);
-    await backend.iniciarSesion({ correo: 'a@prueba.co', alias: 'A' });
+    await backend.iniciarSesion({ celular: '3001112222', alias: 'A' });
     await backend.tomar(necesidad.id);
     backend.aplicarVencimientos(new Date(Date.now() + (HORAS_PARA_ENTREGAR + 1) * 3_600_000));
     expect(backend.obtener(necesidad.id)?.estado).toBe(EstadoNecesidad.Registrada);
