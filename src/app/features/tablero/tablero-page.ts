@@ -14,16 +14,16 @@ type Vista = 'lista' | 'mapa';
   imports: [RouterLink, NecesidadCard, MapaNecesidades],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="container cabecera">
+    <header class="encabezado-pagina"><div class="container cabecera">
       <div>
         <p class="eyebrow">Tablero de necesidades</p>
         <h1>¿A quién puedes ayudar hoy?</h1>
         <p class="muted">Elige una necesidad, tómala y llévala hasta la entrega. Primero aparece lo más urgente y lo que lleva más tiempo esperando.</p>
       </div>
-      <a routerLink="/pedir-ayuda" class="btn btn-primary">Registrar una necesidad</a>
-    </section>
+      <a routerLink="/pedir-ayuda" class="btn btn-accion">Registrar una necesidad</a>
+    </div></header>
 
-    <section class="container filtros" aria-label="Filtros">
+    <section class="container filtros" aria-label="Filtros" style="margin-top: var(--space-5)">
       <div class="segmento" role="tablist" aria-label="Estado">
         @for (opcion of opcionesEstado; track opcion.valor) {
           <button type="button" role="tab" [attr.aria-selected]="estado() === opcion.valor" (click)="estado.set(opcion.valor)">
@@ -56,8 +56,8 @@ type Vista = 'lista' | 'mapa';
         <sr-mapa-necesidades class="mapa card" [necesidades]="resultados()" (seleccionar)="seleccionadaId.set($event)" [seleccionadaId]="seleccionadaId()" />
       }
       <div class="grid">
-        @for (n of resultados(); track n.id) {
-          <sr-necesidad-card [necesidad]="n" />
+        @for (n of resultados(); track n.id; let i = $index) {
+          <sr-necesidad-card class="entrada" [style.--i]="i" [necesidad]="n" />
         } @empty {
           <div class="vacio card">
             <p><strong>No hay necesidades con estos filtros.</strong></p>
@@ -68,14 +68,14 @@ type Vista = 'lista' | 'mapa';
     </section>
   `,
   styles: `
-    .cabecera { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-4); padding-block: var(--space-6) var(--space-5); }
+    .cabecera { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-4); }
     .cabecera h1 { font-size: var(--text-2xl); margin-block: 6px; }
     .cabecera p.muted { max-width: 620px; }
     .filtros { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-bottom: var(--space-4); }
     .filtros select, .filtros input { width: auto; min-width: 180px; flex: 1; min-height: 42px; }
-    .segmento, .vista { display: inline-flex; padding: 3px; gap: 2px; background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: var(--radius-pill); }
-    .segmento button, .vista button { border: 0; background: none; padding: 7px 14px; border-radius: var(--radius-pill); font-size: var(--text-sm); font-weight: 550; color: var(--color-muted); cursor: pointer; }
-    .segmento button[aria-selected='true'], .vista button.activo { background: var(--color-blue); color: #fff; }
+    .segmento, .vista { display: inline-flex; padding: 3px; gap: 2px; background: var(--color-superficie); border: 1px solid var(--color-linea-fuerte); border-radius: var(--radius-pill); }
+    .segmento button, .vista button { border: 0; background: none; padding: 7px 14px; border-radius: var(--radius-pill); font-size: var(--text-sm); font-weight: 550; color: var(--color-tenue); cursor: pointer; }
+    .segmento button[aria-selected='true'], .vista button.activo { background: var(--color-primario); color: #fff; }
     .conteo { font-size: var(--text-sm); margin-bottom: var(--space-3); }
     .mapa { display: block; height: 420px; overflow: hidden; margin-bottom: var(--space-4); }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: var(--space-3); }

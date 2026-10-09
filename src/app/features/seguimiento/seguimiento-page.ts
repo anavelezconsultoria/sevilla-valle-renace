@@ -7,11 +7,12 @@ import { normalizarCodigo } from '../../core/domain/privacidad';
 import { EstadoBadge } from '../../shared/ui/estado-badge';
 import { LineaTiempo } from '../../shared/ui/linea-tiempo';
 import { tiempoRelativo } from '../../shared/lib/tiempo';
+import { Celebracion } from '../../shared/ui/celebracion';
 
 /** Seguimiento por codigo: el solicitante ve su caso y confirma, reclama o cancela sin crear cuenta. */
 @Component({
   selector: 'sr-seguimiento-page',
-  imports: [RouterLink, EstadoBadge, LineaTiempo],
+  imports: [RouterLink, EstadoBadge, LineaTiempo, Celebracion],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './seguimiento-page.html',
   styleUrl: './seguimiento-page.css',
@@ -33,6 +34,8 @@ export class SeguimientoPage {
   protected readonly reclamando = signal(false);
   protected readonly notaReclamo = signal('');
   protected readonly mensaje = signal<string | null>(null);
+  /** Se celebra solo cuando la ayuda llego: es el momento que da sentido a todo el flujo. */
+  protected readonly celebrar = signal(false);
 
   /** Se relee del almacen para reflejar cambios en vivo (por ejemplo, el cierre automatico). */
   protected readonly necesidad = computed<Necesidad | undefined>(() => {
@@ -86,6 +89,7 @@ export class SeguimientoPage {
       (codigo) => this.solicitante.confirmarRecibida(codigo),
       'Gracias por confirmar. Tu necesidad quedó registrada como atendida.',
     );
+    if (!this.error()) this.celebrar.set(true);
   }
 
   protected async reclamar(): Promise<void> {

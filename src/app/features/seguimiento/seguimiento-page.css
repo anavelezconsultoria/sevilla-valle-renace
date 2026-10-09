@@ -21,7 +21,7 @@
 }
 
 .codigo {
-  font-family: var(--font-display);
+  font-family: var(--font-titulo);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-size: var(--text-lg);
@@ -58,7 +58,7 @@ h2 {
   padding: var(--space-4);
   border-radius: var(--radius-md);
   background: var(--estado-entregada-bg);
-  border: 1px solid var(--color-lavender);
+  border: 1px solid var(--color-linea-fuerte);
 }
 
 .botones {
@@ -71,7 +71,7 @@ h2 {
   font-size: var(--text-sm);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
-  background: var(--color-blue-soft);
+  background: var(--color-primario-suave);
 }
 
 .ok {
@@ -90,7 +90,7 @@ h2 {
 
 .enlace {
   font-size: var(--text-sm);
-  color: var(--color-blue);
+  color: var(--color-primario);
   font-weight: 600;
 }
 

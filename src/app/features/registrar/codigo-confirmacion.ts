@@ -9,7 +9,7 @@ import { RegistroResultado } from '../../core/domain/necesidad.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="container pagina">
-      <div class="card exito">
+      <div class="card exito entrada">
         <div class="check" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" /></svg>
         </div>
@@ -38,12 +38,16 @@ import { RegistroResultado } from '../../core/domain/necesidad.model';
     .pagina { max-width: 620px; padding-block: var(--space-7); }
     .exito { display: grid; justify-items: center; gap: var(--space-4); padding: var(--space-6) var(--space-5); text-align: center; }
     .check { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--estado-exito-bg); }
+    .check { animation: latir 600ms var(--ease-salida) 200ms both; }
     .check svg { width: 32px; height: 32px; fill: none; stroke: var(--estado-exito); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .check path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: trazar 500ms var(--ease-salida) 450ms forwards; }
+    @keyframes trazar { to { stroke-dashoffset: 0; } }
+    @keyframes latir { from { transform: scale(.4); opacity: 0; } }
     h1 { font-size: var(--text-xl); }
-    .codigo { font-family: var(--font-display); font-size: clamp(1.8rem, 6vw, 2.6rem); letter-spacing: .08em; color: var(--color-blue); padding: var(--space-3) var(--space-5); border: 2px dashed var(--color-lavender); border-radius: var(--radius-md); background: var(--color-lavender-soft); }
+    .codigo { font-family: var(--font-marca); font-size: clamp(1.8rem, 6vw, 2.6rem); letter-spacing: .08em; color: var(--color-primario-fuerte); padding: var(--space-3) var(--space-5); border: 2px dashed var(--color-acento); border-radius: var(--radius-md); background: var(--color-acento-suave); animation: aparecer var(--dur-media) var(--ease-salida) 600ms both; }
     .acciones, .siguiente { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
     .btn-whatsapp { background: #25d366; color: #fff; }
-    .aviso { font-size: var(--text-sm); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); background: var(--estado-pendiente-bg); color: var(--color-text); text-align: left; }
+    .aviso { font-size: var(--text-sm); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); background: var(--estado-pendiente-bg); color: var(--color-texto); text-align: left; }
   `,
 })
 export class CodigoConfirmacion {

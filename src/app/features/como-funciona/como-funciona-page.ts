@@ -25,7 +25,7 @@ interface Paso {
                 <li><span class="num">{{ i + 1 }}</span><div><h3>{{ p.titulo }}</h3><p class="muted">{{ p.texto }}</p></div></li>
               }
             </ol>
-            <a [routerLink]="ruta.enlace" class="btn btn-primary">{{ ruta.cta }}</a>
+            <a [routerLink]="ruta.enlace" [class]="'btn ' + ruta.clase">{{ ruta.cta }}</a>
           </section>
         }
       </div>
@@ -43,19 +43,20 @@ interface Paso {
     h2 { font-family: var(--font-body); font-weight: 700; font-size: var(--text-lg); }
     ol { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); }
     li { display: grid; grid-template-columns: 32px 1fr; gap: var(--space-3); }
-    .num { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--color-blue); color: #fff; font-weight: 700; }
+    .num { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--color-primario); color: #fff; font-weight: 700; }
     h3 { font-size: var(--text-md); margin-bottom: 2px; }
     .ruta .btn { justify-self: start; }
-    .privacidad { padding: var(--space-5); display: grid; gap: var(--space-2); background: var(--color-lavender-soft); border-color: var(--color-lavender); }
+    .privacidad { padding: var(--space-5); display: grid; gap: var(--space-2); background: var(--color-arena); border-color: var(--color-linea-fuerte); }
     @media (max-width: 860px) { .columnas { grid-template-columns: 1fr; } }
   `,
 })
 export class ComoFuncionaPage {
-  protected readonly rutas: readonly { titulo: string; pasos: readonly Paso[]; enlace: string; cta: string }[] = [
+  protected readonly rutas: readonly { titulo: string; pasos: readonly Paso[]; enlace: string; cta: string; clase: string }[] = [
     {
       titulo: 'Si necesitas ayuda',
       enlace: '/pedir-ayuda',
       cta: 'Pedir ayuda',
+      clase: 'btn-accion',
       pasos: [
         { titulo: 'Registra tu necesidad', texto: 'Sin crear cuenta. Toma menos de dos minutos.' },
         { titulo: 'Guarda tu código', texto: 'Con él sigues tu solicitud. Puedes guardarlo en WhatsApp.' },
@@ -67,6 +68,7 @@ export class ComoFuncionaPage {
       titulo: 'Si quieres ayudar',
       enlace: '/necesidades',
       cta: 'Ver necesidades',
+      clase: 'btn-primary',
       pasos: [
         { titulo: 'Elige una necesidad', texto: 'En el mapa o en el tablero, empezando por las más urgentes.' },
         { titulo: 'Tómala', texto: 'Solo pedimos un nombre público y tu correo. Verás el contacto de la familia.' },

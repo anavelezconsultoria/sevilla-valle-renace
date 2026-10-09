@@ -5,6 +5,7 @@ import { CierreAtencion, EstadoNecesidad, Evidencia, Necesidad, TipoEvento } fro
 import { infoCategoria } from '../../core/domain/catalogos';
 import { CategoriaIcono } from '../../shared/ui/categoria-icono';
 import { fechaCorta } from '../../shared/lib/tiempo';
+import { Contador } from '../../shared/ui/contador';
 
 interface AyudaEntregada {
   readonly necesidad: Necesidad;
@@ -31,26 +32,27 @@ function aAyudaEntregada(n: Necesidad): AyudaEntregada {
  */
 @Component({
   selector: 'sr-entregadas-page',
-  imports: [RouterLink, CategoriaIcono],
+  imports: [RouterLink, CategoriaIcono, Contador],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="container pagina">
-      <header class="encabezado">
+    <header class="encabezado-pagina">
+      <div class="container encabezado">
         <p class="eyebrow">Ayudas entregadas</p>
         <h1>Lo que Sevilla ha logrado junta</h1>
         <p class="muted">Cada ayuda queda registrada con quién la llevó, cuándo y, si la hay, una foto sin rostros de lo que se entregó.</p>
-      </header>
-
+      </div>
+    </header>
+    <div class="container pagina">
       <dl class="cifras">
-        <div class="card"><dt>Necesidades atendidas</dt><dd>{{ ayudas().length }}</dd></div>
-        <div class="card"><dt>Personas ayudadas</dt><dd>{{ personas() }}</dd></div>
-        <div class="card"><dt>Confirmadas por quien recibió</dt><dd>{{ confirmadas() }}</dd></div>
-        <div class="card"><dt>Cerradas sin reclamo en 48 h</dt><dd>{{ automaticas() }}</dd></div>
+        <div class="card entrada"><dt>Necesidades atendidas</dt><dd [srContador]="ayudas().length"></dd></div>
+        <div class="card entrada" style="--i: 1"><dt>Personas ayudadas</dt><dd [srContador]="personas()"></dd></div>
+        <div class="card entrada" style="--i: 2"><dt>Confirmadas por quien recibió</dt><dd [srContador]="confirmadas()"></dd></div>
+        <div class="card entrada" style="--i: 3"><dt>Cerradas sin reclamo en 48 h</dt><dd [srContador]="automaticas()"></dd></div>
       </dl>
 
       <div class="lista">
-        @for (a of ayudas(); track a.necesidad.id) {
-          <article class="card ayuda">
+        @for (a of ayudas(); track a.necesidad.id; let i = $index) {
+          <article class="card ayuda entrada" [style.--i]="i + 4">
             @if (a.evidencias.length) {
               <a class="foto" [routerLink]="['/necesidades', a.necesidad.id]">
                 <img [src]="a.evidencias[0].url" [alt]="a.evidencias[0].descripcion" loading="lazy" />
@@ -86,25 +88,30 @@ function aAyudaEntregada(n: Necesidad): AyudaEntregada {
   `,
   styles: `
     .pagina { padding-block: var(--space-6); display: grid; gap: var(--space-5); }
-    .encabezado { display: grid; gap: var(--space-2); max-width: 720px; }
+    .encabezado { display: grid; gap: var(--space-2); }
+    .encabezado p.muted { max-width: 640px; }
     .encabezado h1 { font-size: var(--text-2xl); }
     .cifras { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin: 0; }
     .cifras div { padding: var(--space-4); }
-    dt { font-size: var(--text-xs); color: var(--color-muted); }
-    dd { margin: 4px 0 0; font-family: var(--font-display); font-size: 1.6rem; color: var(--estado-exito); }
+    dt { font-size: var(--text-xs); color: var(--color-tenue); }
+    dd { margin: 4px 0 0; font-family: var(--font-titulo); font-weight: 650; font-size: 2rem; line-height: 1.1; color: var(--color-montana); font-variant-numeric: tabular-nums; }
     .lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: var(--space-4); }
-    .ayuda { overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
-    .foto { position: relative; display: block; aspect-ratio: 4 / 3; background: var(--color-lavender-soft); }
+    .ayuda { overflow: hidden; display: grid; grid-template-rows: auto 1fr; transition: transform var(--dur-corta) var(--ease-salida), box-shadow var(--dur-corta); }
+    .ayuda:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .foto img { transition: transform 600ms var(--ease-salida); }
+    .ayuda:hover .foto img { transform: scale(1.04); }
+    .foto { overflow: hidden; }
+    .foto { position: relative; display: block; aspect-ratio: 4 / 3; background: var(--color-arena); }
     .foto img { width: 100%; height: 100%; object-fit: cover; }
     .sin-foto { display: grid; place-items: center; aspect-ratio: 4 / 3; }
     .mas { position: absolute; right: 10px; bottom: 10px; padding: 2px 10px; border-radius: var(--radius-pill); background: rgba(0,0,0,.6); color: #fff; font-size: var(--text-xs); font-weight: 700; }
     .cuerpo { display: grid; gap: var(--space-2); padding: var(--space-4); align-content: start; }
-    .meta { font-size: var(--text-xs); color: var(--color-muted); }
+    .meta { font-size: var(--text-xs); color: var(--color-tenue); }
     h2 { font-family: var(--font-body); font-weight: 700; font-size: var(--text-md); }
     h2 a { text-decoration: none; }
-    h2 a:hover { color: var(--color-blue); }
+    h2 a:hover { color: var(--color-primario); }
     .nota { font-size: var(--text-sm); font-style: italic; }
-    .pie { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: var(--text-xs); color: var(--color-muted); }
+    .pie { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: var(--text-xs); color: var(--color-tenue); }
     .cierre { padding: 2px 8px; border-radius: var(--radius-pill); background: var(--estado-exito-bg); color: var(--estado-exito); font-weight: 650; }
     .cierre.auto { background: var(--estado-neutro-bg); color: var(--estado-neutro); }
     .vacio { padding: var(--space-6); text-align: center; grid-column: 1 / -1; }

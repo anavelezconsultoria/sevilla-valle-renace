@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, Provider } from '@angular/core';
-import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
+import { provideRouter, withComponentInputBinding, withInMemoryScrolling, withViewTransitions } from '@angular/router';
 import { routes } from './app.routes';
 import {
   AyudanteGateway,
@@ -34,10 +34,27 @@ const PUERTOS_SUPABASE: Provider[] = [
   { provide: ModoDatos, useExisting: SupabaseNecesidades },
 ];
 
+/**
+ * Datos de ejemplo forzados para revisar el diseno: solo en la maquina local
+ * con ?demo en la URL. En el sitio publicado no se puede activar.
+ */
+function demoLocalForzado(): boolean {
+  if (typeof location === 'undefined') return false;
+  const esLocal = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
+  return esLocal && new URLSearchParams(location.search).has('demo');
+}
+
+const usarSupabase = supabaseConfigurado(CONFIG_SUPABASE) && !demoLocalForzado();
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withComponentInputBinding(), withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
-    ...(supabaseConfigurado(CONFIG_SUPABASE) ? PUERTOS_SUPABASE : PUERTOS_DEMO),
+    provideRouter(
+      routes,
+      withComponentInputBinding(),
+      withInMemoryScrolling({ scrollPositionRestoration: 'top' }),
+      withViewTransitions({ skipInitialTransition: true }),
+    ),
+    ...(usarSupabase ? PUERTOS_SUPABASE : PUERTOS_DEMO),
   ],
 };

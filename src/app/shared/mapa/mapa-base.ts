@@ -22,22 +22,26 @@ export function crearMapa(contenedor: HTMLElement, { centro = CENTRO_SEVILLA, zo
 }
 
 const ANILLO_POR_ESTADO: Partial<Record<EstadoNecesidad, string>> = {
-  [EstadoNecesidad.EnAtencion]: '#003cff',
-  [EstadoNecesidad.Entregada]: '#7c3aed',
-  [EstadoNecesidad.Atendida]: '#15803d',
+  [EstadoNecesidad.EnAtencion]: '#16336f',
+  [EstadoNecesidad.Entregada]: '#c9922e',
+  [EstadoNecesidad.Atendida]: '#2f5d46',
 };
 
 export interface MarcadorNecesidad {
   readonly categoria: CategoriaInfo;
   readonly estado: EstadoNecesidad;
   readonly seleccionado: boolean;
+  /** Posicion en la lista: escalona la caida de los pines la primera vez que se pintan. */
+  readonly orden: number;
+  readonly animar: boolean;
 }
 
-export function iconoNecesidad({ categoria, estado, seleccionado }: MarcadorNecesidad): L.DivIcon {
+export function iconoNecesidad({ categoria, estado, seleccionado, orden, animar }: MarcadorNecesidad): L.DivIcon {
   const anillo = ANILLO_POR_ESTADO[estado] ?? '#ffffff';
   const tamano = seleccionado ? 46 : 38;
+  const clases = ['sr-pin', seleccionado ? 'sr-pin--activo' : '', animar ? 'sr-pin--cae' : ''].join(' ');
   const html = `
-    <div class="sr-pin${seleccionado ? ' sr-pin--activo' : ''}" style="--pin:${categoria.color};--anillo:${anillo};--t:${tamano}px">
+    <div class="${clases}" style="--pin:${categoria.color};--anillo:${anillo};--t:${tamano}px;--i:${orden}">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${categoria.icono}"/></svg>
     </div>`;
   return L.divIcon({ html, className: 'sr-pin-wrap', iconSize: [tamano, tamano], iconAnchor: [tamano / 2, tamano] });

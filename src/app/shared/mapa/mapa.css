@@ -27,6 +27,15 @@
   transition: transform 0.15s;
 }
 
+:host ::ng-deep .sr-pin--cae {
+  animation: caer 620ms var(--ease-salida) both;
+  animation-delay: calc(min(var(--i, 0), 20) * 55ms + 200ms);
+}
+
+:host ::ng-deep .sr-pin:hover {
+  transform: rotate(-45deg) scale(1.08);
+}
+
 :host ::ng-deep .sr-pin svg {
   width: 55%;
   height: 55%;
@@ -34,14 +43,14 @@
 }
 
 :host ::ng-deep .sr-pin--activo {
-  outline: 4px solid rgba(0, 60, 255, 0.25);
+  outline: 4px solid rgba(22, 51, 111, 0.2);
 }
 
 :host ::ng-deep .sr-elegido {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--color-blue);
+  background: var(--color-primario);
   border: 4px solid #fff;
-  box-shadow: 0 0 0 6px rgba(0, 60, 255, 0.25), 0 4px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 0 6px rgba(22, 51, 111, 0.2), 0 4px 10px rgba(0, 0, 0, 0.25);
 }

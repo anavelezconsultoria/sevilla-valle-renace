@@ -19,7 +19,7 @@ import { NAVEGACION } from './navegacion';
         </nav>
         <div class="acciones">
           <a routerLink="/seguimiento" class="btn btn-ghost seguir">Seguir mi solicitud</a>
-          <a routerLink="/pedir-ayuda" class="btn btn-primary">Necesito ayuda</a>
+          <a routerLink="/pedir-ayuda" class="btn btn-accion">Necesito ayuda</a>
           <a routerLink="/mis-atenciones" class="avatar" [attr.aria-label]="ayudante() ? 'Mi panel de ' + ayudante()!.alias : 'Quiero ayudar: identificarme'">
             {{ ayudante()?.alias?.charAt(0) ?? '+' }}
           </a>
@@ -28,15 +28,15 @@ import { NAVEGACION } from './navegacion';
     </header>
   `,
   styles: `
-    .header { position: sticky; top: 0; z-index: 1000; background: rgba(255,255,255,.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--color-line); }
+    .header { position: sticky; top: 0; z-index: 1000; background: rgba(250,247,242,.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--color-linea); }
     .barra { height: var(--header-height); display: flex; align-items: center; gap: var(--space-5); padding-inline: var(--gutter); max-width: 1600px; margin-inline: auto; }
     .marca { text-decoration: none; display: inline-flex; }
     .nav { display: flex; gap: var(--space-1); margin-left: var(--space-4); }
-    .nav a { padding: 8px 14px; border-radius: var(--radius-pill); font-size: var(--text-sm); font-weight: 550; color: var(--color-muted); text-decoration: none; transition: background-color .15s, color .15s; }
-    .nav a:hover { color: var(--color-ink); background: var(--color-lavender-soft); }
-    .nav a.activo { color: var(--color-blue); background: var(--color-blue-soft); }
+    .nav a { padding: 8px 14px; border-radius: var(--radius-pill); font-size: var(--text-sm); font-weight: 550; color: var(--color-tenue); text-decoration: none; transition: background-color .15s, color .15s; }
+    .nav a:hover { color: var(--color-tinta); background: var(--color-arena); }
+    .nav a.activo { color: var(--color-primario); background: var(--color-primario-suave); }
     .acciones { margin-left: auto; display: flex; align-items: center; gap: var(--space-2); }
-    .avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--color-lavender); color: var(--color-navy); font-weight: 700; text-decoration: none; text-transform: uppercase; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--color-primario); color: #fff; transition: transform var(--dur-corta) var(--ease-salida); font-weight: 700; text-decoration: none; text-transform: uppercase; }
     @media (max-width: 1080px) { .seguir { display: none; } }
     @media (max-width: 860px) {
       .nav, .acciones .btn { display: none; }

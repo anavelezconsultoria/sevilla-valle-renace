@@ -35,14 +35,14 @@ import { EstadoBadge } from './estado-badge';
   `,
   styles: `
     .tarjeta { display: grid; gap: var(--space-3); padding: var(--space-4); text-decoration: none; transition: border-color .15s, box-shadow .15s, transform .15s; }
-    .tarjeta:hover { border-color: var(--color-lavender); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .tarjeta:hover { border-color: var(--color-linea-fuerte); box-shadow: var(--shadow-md); transform: translateY(-1px); }
     .compacta { padding: var(--space-3) var(--space-4); gap: var(--space-2); box-shadow: none; }
     .cabecera { display: flex; gap: var(--space-3); align-items: center; }
     .titulos { min-width: 0; }
     h3 { font-size: var(--text-md); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .meta { font-size: var(--text-xs); color: var(--color-muted); margin-top: 2px; }
-    .descripcion { font-size: var(--text-sm); color: var(--color-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .pie { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: var(--text-xs); color: var(--color-muted); }
+    .meta { font-size: var(--text-xs); color: var(--color-tenue); margin-top: 2px; }
+    .descripcion { font-size: var(--text-sm); color: var(--color-tenue); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .pie { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: var(--text-xs); color: var(--color-tenue); }
     .urgente { color: var(--urgencia-alta); font-weight: 650; }
     .hace { margin-left: auto; }
   `,

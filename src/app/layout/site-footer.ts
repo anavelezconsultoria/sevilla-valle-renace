@@ -27,15 +27,15 @@ import { Marca } from '../shared/ui/marca';
     </footer>
   `,
   styles: `
-    .footer { margin-top: var(--space-7); padding-block: var(--space-6); border-top: 1px solid var(--color-line); background: var(--color-surface); font-size: var(--text-sm); }
+    .footer { margin-top: var(--space-7); padding-block: var(--space-6); border-top: 1px solid var(--color-linea); background: var(--color-superficie); font-size: var(--text-sm); }
     .grid { display: grid; grid-template-columns: 1.4fr 1fr auto; gap: var(--space-6); align-items: start; }
     .col { display: grid; gap: var(--space-2); }
     .col p.muted { max-width: 360px; }
-    .titulo { font-weight: 650; color: var(--color-ink); }
-    a { text-decoration: none; color: var(--color-muted); }
-    a:hover { color: var(--color-blue); }
+    .titulo { font-weight: 650; color: var(--color-tinta); }
+    a { text-decoration: none; color: var(--color-tenue); }
+    a:hover { color: var(--color-primario); }
     .autora { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-xs); line-height: 1.4; }
-    .autora strong { color: var(--color-ink); }
+    .autora strong { color: var(--color-tinta); }
     @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } .footer { padding-bottom: 110px; } }
   `,
 })

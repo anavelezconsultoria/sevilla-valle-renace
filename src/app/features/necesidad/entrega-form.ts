@@ -61,7 +61,7 @@ interface FotoPreparada {
     figure { position: relative; margin: 0; }
     figure img { width: 104px; height: 80px; object-fit: cover; border-radius: var(--radius-sm); }
     figure button { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border: 0; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; cursor: pointer; }
-    .agregar { width: 104px; height: 80px; display: grid; place-items: center; border: 1.5px dashed var(--color-line-strong); border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: 600; color: var(--color-blue); cursor: pointer; text-align: center; }
+    .agregar { width: 104px; height: 80px; display: grid; place-items: center; border: 1.5px dashed var(--color-linea-fuerte); border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: 600; color: var(--color-primario); cursor: pointer; text-align: center; }
     .botones { display: flex; gap: var(--space-2); flex-wrap: wrap; }
   `,
 })

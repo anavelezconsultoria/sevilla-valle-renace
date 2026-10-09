@@ -43,7 +43,7 @@
   width: 18px;
   height: 18px;
   fill: none;
-  stroke: var(--color-muted);
+  stroke: var(--color-tenue);
   stroke-width: 2;
   stroke-linecap: round;
   flex: none;
@@ -57,26 +57,38 @@
   outline: none;
 }
 
-.cta {
+.bienvenida {
+  position: relative;
   display: grid;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-5) 84px;
+  overflow: hidden;
 }
 
-.cta h1 {
-  font-size: var(--text-md);
-  line-height: 1.35;
+.bienvenida h1 {
+  font-size: 1.65rem;
 }
 
-.cta p {
+.bienvenida p.muted {
   font-size: var(--text-sm);
-  margin-top: 4px;
+}
+
+.montanas {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 70px;
 }
 
 .cta-botones {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-2);
+  margin-top: var(--space-2);
 }
 
 .chips {
@@ -91,8 +103,8 @@
   gap: 6px;
   padding: 6px 12px;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--color-line-strong);
-  background: var(--color-surface);
+  border: 1px solid var(--color-linea-fuerte);
+  background: var(--color-superficie);
   font-size: var(--text-xs);
   font-weight: 550;
   cursor: pointer;
@@ -109,7 +121,7 @@
 .chip.activo {
   border-color: var(--cat);
   background: color-mix(in srgb, var(--cat) 12%, white);
-  color: var(--color-ink);
+  color: var(--color-tinta);
 }
 
 .panel-derecho {
@@ -131,7 +143,7 @@
   align-items: baseline;
   justify-content: space-between;
   padding: var(--space-4) var(--space-4) var(--space-3);
-  border-bottom: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-linea);
 }
 
 .lista-cabecera h2 {
@@ -146,12 +158,6 @@
   gap: var(--space-2);
   padding: var(--space-3);
   scrollbar-width: thin;
-}
-
-.vacio {
-  padding: var(--space-5);
-  text-align: center;
-  font-size: var(--text-sm);
 }
 
 .vista-previa {
@@ -171,7 +177,7 @@
   height: 28px;
   border: 0;
   border-radius: 50%;
-  background: var(--color-lavender-soft);
+  background: var(--color-arena);
   cursor: pointer;
   font-size: 18px;
   line-height: 1;
@@ -243,7 +249,7 @@
     width: 40px;
     height: 4px;
     border-radius: 4px;
-    background: var(--color-line-strong);
+    background: var(--color-linea-fuerte);
   }
 
   .lista-cabecera {
@@ -265,3 +271,32 @@
   }
 }
 
+
+.conteo {
+  min-width: 28px;
+  height: 28px;
+  padding-inline: 8px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--color-accion-suave);
+  color: var(--color-accion);
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+
+.tarjeta-esqueleto {
+  height: 92px;
+}
+
+.vacio {
+  display: grid;
+  gap: 4px;
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  font-size: var(--text-sm);
+}
+
+.lista-cabecera h2 {
+  font-size: var(--text-lg);
+}

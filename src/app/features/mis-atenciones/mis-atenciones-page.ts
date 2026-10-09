@@ -65,13 +65,13 @@ interface Columna {
     .encabezado h1 { font-size: var(--text-2xl); margin-block: 4px; }
     .acciones { display: flex; gap: var(--space-2); }
     .columnas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); align-items: start; }
-    .columna { display: grid; gap: var(--space-2); padding: var(--space-4); border-radius: var(--radius-lg); background: var(--color-lavender-soft); }
+    .columna { display: grid; gap: var(--space-2); padding: var(--space-4); border-radius: var(--radius-lg); background: var(--color-arena); }
     .col-cabecera { display: flex; justify-content: space-between; align-items: center; }
     h2 { font-family: var(--font-body); font-weight: 700; font-size: var(--text-md); }
-    .conteo { min-width: 28px; height: 28px; display: grid; place-items: center; border-radius: var(--radius-pill); background: var(--color-surface); font-weight: 700; font-size: var(--text-sm); }
+    .conteo { min-width: 28px; height: 28px; display: grid; place-items: center; border-radius: var(--radius-pill); background: var(--color-superficie); font-weight: 700; font-size: var(--text-sm); }
     .ayuda { font-size: var(--text-xs); }
     .tarjetas { display: grid; gap: var(--space-2); }
-    .vacia { font-size: var(--text-sm); color: var(--color-muted); padding: var(--space-4); text-align: center; border: 1.5px dashed var(--color-line-strong); border-radius: var(--radius-md); }
+    .vacia { font-size: var(--text-sm); color: var(--color-tenue); padding: var(--space-4); text-align: center; border: 1.5px dashed var(--color-linea-fuerte); border-radius: var(--radius-md); }
     .acceso { max-width: 520px; margin-inline: auto; padding: var(--space-6) var(--space-5); display: grid; gap: var(--space-3); }
     .acceso h1 { font-size: var(--text-xl); }
     @media (max-width: 960px) { .columnas { grid-template-columns: minmax(0, 1fr); } }

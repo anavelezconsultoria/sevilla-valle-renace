@@ -7,26 +7,34 @@
   />
 
   <aside class="panel panel-izquierdo">
-    <label class="buscador card">
+    <section class="card bienvenida entrada">
+      <svg class="montanas" viewBox="0 0 360 90" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 90 L0 58 Q40 30 80 46 T160 30 T250 40 T360 22 L360 90Z" fill="#e6f0ea" />
+        <path d="M0 90 L0 70 Q50 48 110 62 T220 52 T360 50 L360 90Z" fill="#cfe1d5" />
+        <path d="M0 90 L0 80 Q70 66 140 76 T280 70 T360 72 L360 90Z" fill="#2f5d46" opacity=".85" />
+        <g fill="#b9532b" opacity=".9">
+          <circle cx="72" cy="66" r="2.6" /><circle cx="80" cy="64" r="2.6" /><circle cx="76" cy="58" r="2.6" />
+          <circle cx="232" cy="58" r="2.6" /><circle cx="240" cy="55" r="2.6" />
+        </g>
+      </svg>
+      <p class="eyebrow">Sevilla, Valle del Cauca</p>
+      <h1>Sevilla se levanta junta</h1>
+      <p class="muted">Registra lo que te hace falta o elige una necesidad para atender. Cada ayuda queda registrada hasta que llega.</p>
+      <div class="cta-botones">
+        <a routerLink="/pedir-ayuda" class="btn btn-accion">Necesito ayuda</a>
+        <a routerLink="/necesidades" class="btn btn-primary">Quiero ayudar</a>
+      </div>
+    </section>
+
+    <label class="buscador card entrada" style="--i: 1">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-4.3-4.3" /></svg>
       <span class="visually-hidden">Buscar por sector o necesidad</span>
       <input type="search" placeholder="Buscar sector o necesidad..." [value]="texto()" (input)="alBuscar($event)" />
     </label>
 
-    <section class="card cta">
-      <div>
-        <h1>¿Necesitas ayuda o quieres ayudar?</h1>
-        <p class="muted">Registra lo que te hace falta o elige una necesidad para atender.</p>
-      </div>
-      <div class="cta-botones">
-        <a routerLink="/pedir-ayuda" class="btn btn-primary">Necesito ayuda</a>
-        <a routerLink="/necesidades" class="btn btn-secondary">Quiero ayudar</a>
-      </div>
-    </section>
+    <sr-panel-cifras class="entrada" style="--i: 2" [cifras]="cifras()" />
 
-    <sr-panel-cifras [cifras]="cifras()" />
-
-    <div class="chips" role="group" aria-label="Filtrar por categoría">
+    <div class="chips entrada" style="--i: 3" role="group" aria-label="Filtrar por categoría">
       @for (c of categorias; track c.valor) {
         <button type="button" class="chip" [class.activo]="categoria() === c.valor" [style.--cat]="c.color" (click)="alternarCategoria(c.valor)">
           <span class="punto" aria-hidden="true"></span>{{ c.etiqueta }}
@@ -49,15 +57,24 @@
     </button>
     <div class="lista-cabecera">
       <h2>Necesidades activas</h2>
-      <span class="muted">{{ activas().length }}</span>
+      <span class="conteo">{{ activas().length }}</span>
     </div>
     <div class="lista">
-      @for (n of activas(); track n.id) {
-        <div (mouseenter)="seleccionadaId.set(n.id)">
-          <sr-necesidad-card [necesidad]="n" [compacta]="true" />
-        </div>
-      } @empty {
-        <p class="vacio muted">No hay necesidades activas con ese filtro.</p>
+      @if (cargando()) {
+        @for (i of [0, 1, 2, 3]; track i) {
+          <div class="esqueleto tarjeta-esqueleto"></div>
+        }
+      } @else {
+        @for (n of activas(); track n.id; let i = $index) {
+          <div class="entrada" [style.--i]="i" (mouseenter)="seleccionadaId.set(n.id)">
+            <sr-necesidad-card [necesidad]="n" [compacta]="true" />
+          </div>
+        } @empty {
+          <div class="vacio">
+            <p><strong>Ninguna necesidad activa con ese filtro.</strong></p>
+            <p class="muted">Cuando alguien registre una, aparecerá aquí al instante.</p>
+          </div>
+        }
       }
     </div>
   </aside>

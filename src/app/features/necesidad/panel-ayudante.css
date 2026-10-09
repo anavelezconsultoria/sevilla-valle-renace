@@ -18,7 +18,7 @@ h2 {
 .identidad {
   padding: var(--space-4);
   border-radius: var(--radius-md);
-  background: var(--color-lavender-soft);
+  background: var(--color-arena);
 }
 
 .grande {
@@ -53,7 +53,7 @@ h2 {
   margin: 0;
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  background: var(--color-blue-soft);
+  background: var(--color-primario-suave);
 }
 
 .contacto div {
@@ -64,7 +64,7 @@ h2 {
 }
 
 dt {
-  color: var(--color-muted);
+  color: var(--color-tenue);
 }
 
 dd {

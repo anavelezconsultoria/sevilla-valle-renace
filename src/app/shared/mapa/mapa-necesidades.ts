@@ -30,6 +30,8 @@ export class MapaNecesidades {
   private readonly lienzo = viewChild.required<ElementRef<HTMLDivElement>>('lienzo');
   private mapa: L.Map | null = null;
   private readonly capa = L.layerGroup();
+  /** Los pines caen solo la primera vez; las actualizaciones en vivo no repiten la animacion. */
+  private yaPintado = false;
 
   constructor() {
     afterNextRender(() => {
@@ -49,12 +51,20 @@ export class MapaNecesidades {
     if (!this.mapa) return;
     this.capa.clearLayers();
     const seleccionada = this.seleccionadaId();
-    for (const n of this.necesidades()) {
-      const icono = iconoNecesidad({ categoria: infoCategoria(n.categoria), estado: n.estado, seleccionado: n.id === seleccionada });
+    const animar = !this.yaPintado && this.necesidades().length > 0;
+    for (const [orden, n] of this.necesidades().entries()) {
+      const icono = iconoNecesidad({
+        categoria: infoCategoria(n.categoria),
+        estado: n.estado,
+        seleccionado: n.id === seleccionada,
+        orden,
+        animar,
+      });
       L.marker([n.ubicacionAproximada.lat, n.ubicacionAproximada.lng], { icon: icono, title: n.titulo, zIndexOffset: n.id === seleccionada ? 1000 : 0 })
         .on('click', () => this.seleccionar.emit(n.id))
         .addTo(this.capa);
     }
+    if (animar) this.yaPintado = true;
     this.centrarEnSeleccionada();
   }
 

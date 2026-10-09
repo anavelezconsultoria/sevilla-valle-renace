@@ -30,12 +30,13 @@ import { NAVEGACION } from './navegacion';
   styles: `
     :host { display: none; }
     @media (max-width: 860px) { :host { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; } }
-    .barra { display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.96); backdrop-filter: blur(10px); border-top: 1px solid var(--color-line); }
-    a { display: grid; justify-items: center; gap: 2px; padding: 4px 0; font-size: 11px; font-weight: 550; color: var(--color-muted); text-decoration: none; }
-    a.activo { color: var(--color-blue); }
+    .barra { display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: rgba(250,247,242,.97); backdrop-filter: blur(10px); border-top: 1px solid var(--color-linea); }
+    a { display: grid; justify-items: center; gap: 2px; padding: 4px 0; font-size: 11px; font-weight: 550; color: var(--color-tenue); text-decoration: none; }
+    a.activo { color: var(--color-primario); }
+    .principal:active .mas { transform: scale(.92); }
     svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-    .principal { margin-top: -22px; color: var(--color-ink); }
-    .mas { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--color-blue); color: #fff; font-size: 30px; font-weight: 300; line-height: 1; box-shadow: 0 6px 16px rgba(0,60,255,.35); border: 4px solid var(--color-cream); }
+    .principal { margin-top: -22px; color: var(--color-tinta); }
+    .mas { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--color-accion); color: #fff; font-size: 30px; font-weight: 300; line-height: 1; box-shadow: 0 6px 16px rgba(185,83,43,.35); border: 4px solid var(--color-fondo); transition: transform var(--dur-corta) var(--ease-salida); }
   `,
 })
 export class NavMovil {

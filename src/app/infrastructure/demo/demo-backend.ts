@@ -32,7 +32,7 @@ import { filtrarNecesidades } from '../../core/application/filtrar-necesidades';
 import { calcularCifras } from '../../core/application/calcular-cifras';
 import { crearSemillaDemo, RegistroDemo } from './demo-semilla';
 
-const CLAVE_ALMACEN = 'sevilla-renace-demo-v1';
+const CLAVE_ALMACEN = 'sevilla-renace-demo-v2';
 const CLAVE_SESION = 'sevilla-renace-demo-sesion';
 const INTERVALO_VENCIMIENTOS_MS = 60_000;
 

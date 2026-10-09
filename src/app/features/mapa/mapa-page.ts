@@ -23,6 +23,7 @@ export class MapaPage {
   protected readonly categoria = signal<Categoria | null>(null);
   protected readonly seleccionadaId = signal<string | null>(null);
   protected readonly listaAbierta = signal(false);
+  protected readonly cargando = this.lectura.cargando;
 
   protected readonly activas = computed(() =>
     this.lectura.filtrar({

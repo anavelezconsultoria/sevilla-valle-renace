@@ -62,7 +62,7 @@ import { PanelAyudante } from './panel-ayudante';
   `,
   styles: `
     .pagina { padding-block: var(--space-5) var(--space-6); }
-    .volver { display: inline-block; margin-bottom: var(--space-4); font-size: var(--text-sm); font-weight: 600; color: var(--color-blue); text-decoration: none; }
+    .volver { display: inline-block; margin-bottom: var(--space-4); font-size: var(--text-sm); font-weight: 600; color: var(--color-primario); text-decoration: none; }
     .layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr); gap: var(--space-4); align-items: start; }
     .principal, .lateral { display: grid; gap: var(--space-4); }
     .lateral { position: sticky; top: calc(var(--header-height) + 16px); }
@@ -70,14 +70,14 @@ import { PanelAyudante } from './panel-ayudante';
     .titulo { display: flex; gap: var(--space-4); align-items: center; }
     h1 { font-size: var(--text-xl); line-height: 1.25; }
     .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .chip { font-size: var(--text-xs); font-weight: 550; padding: 3px 10px; border-radius: var(--radius-pill); background: var(--color-lavender-soft); color: var(--color-text); }
+    .chip { font-size: var(--text-xs); font-weight: 550; padding: 3px 10px; border-radius: var(--radius-pill); background: var(--color-arena); color: var(--color-texto); }
     .chip.urgente { background: var(--estado-pendiente-bg); color: var(--urgencia-alta); }
     .descripcion { font-size: var(--text-md); line-height: 1.65; }
     .bloque { padding: var(--space-5); display: grid; gap: var(--space-4); }
     h2 { font-family: var(--font-body); font-weight: 700; font-size: var(--text-lg); }
     .mapa-card { overflow: hidden; }
     .mapa { display: block; height: 220px; }
-    .nota-mapa { font-size: var(--text-xs); color: var(--color-muted); padding: var(--space-3) var(--space-4); }
+    .nota-mapa { font-size: var(--text-xs); color: var(--color-tenue); padding: var(--space-3) var(--space-4); }
     .vacio { padding: var(--space-6); display: grid; gap: var(--space-3); justify-items: start; }
     @media (max-width: 960px) { .layout { grid-template-columns: minmax(0, 1fr); } .lateral { position: static; } }
   `,
