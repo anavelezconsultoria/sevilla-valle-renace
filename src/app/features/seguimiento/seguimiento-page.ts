@@ -50,6 +50,13 @@ export class SeguimientoPage {
   /** Se celebra solo cuando la ayuda llego: es el momento que da sentido a todo el flujo. */
   protected readonly celebrar = signal(false);
 
+  /** Solo las solicitudes de este celular que siguen existiendo (las borradas desaparecen solas). */
+  protected readonly localesVigentes = computed<readonly SolicitudLocal[]>(() => {
+    if (this.lectura.cargando()) return [];
+    this.lectura.todas();
+    return this.locales.todas().filter((s) => this.lectura.obtener(s.necesidadId) !== undefined);
+  });
+
   protected readonly puedeEntrar = computed(
     () => this.telefono().length === LARGO_TELEFONO && this.clave().length === LARGO_CLAVE && !this.entrando(),
   );

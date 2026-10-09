@@ -67,11 +67,11 @@
       <h1>¿Cómo va mi necesidad?</h1>
     </header>
 
-    @if (locales.todas().length) {
+    @if (localesVigentes().length) {
       <section class="card propias">
         <h2>Registradas desde este celular</h2>
         <ul>
-          @for (s of locales.todas(); track s.necesidadId) {
+          @for (s of localesVigentes(); track s.necesidadId) {
             <li>
               <button type="button" (click)="abrirLocal(s)">
                 <span><strong>{{ s.titulo }}</strong><small>Toca para ver cómo va</small></span>
@@ -100,7 +100,7 @@
     } @else {
       <form class="card acceso" (submit)="entrar($event)">
         <div>
-          <h2>{{ locales.todas().length ? '¿La registraste desde otro celular?' : 'Entra con tu celular y tu clave' }}</h2>
+          <h2>{{ localesVigentes().length ? '¿La registraste desde otro celular?' : 'Entra con tu celular y tu clave' }}</h2>
           <p class="muted">Usa el número y la clave de 4 números que creaste al pedir la ayuda.</p>
         </div>
         <div class="campos">
