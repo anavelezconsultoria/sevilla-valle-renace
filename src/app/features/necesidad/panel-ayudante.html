@@ -1,0 +1,61 @@
+@let n = necesidad();
+<section class="card panel" aria-label="Acciones">
+  @if (acciones().includes('tomar')) {
+    <h2>¿Puedes ayudar?</h2>
+    <p class="muted">Al tomarla te comprometes a llevar la ayuda en las próximas 48 horas. Verás el nombre, el celular y la ubicación exacta de la familia.</p>
+    @if (pidiendoIdentidad()) {
+      <div class="identidad">
+        <p class="subtitulo">Primero, dinos quién eres</p>
+        <sr-identificarse-form (identificado)="alIdentificarse()" />
+      </div>
+    } @else {
+      <button type="button" class="btn btn-primary btn-block grande" [disabled]="ocupado()" (click)="atender()">
+        {{ ocupado() ? 'Tomando...' : 'Atender esta necesidad' }}
+      </button>
+    }
+  } @else if (esAsignado()) {
+    <div class="asignada">
+      <span class="etiqueta">La estás atendiendo</span>
+      @if (vence(); as v) {
+        <span class="vence">Vence {{ v }}</span>
+      }
+    </div>
+
+    @if (contacto(); as c) {
+      <dl class="contacto">
+        <div><dt>Nombre</dt><dd>{{ c.nombre }}</dd></div>
+        <div><dt>Celular</dt><dd><a [href]="'tel:' + c.telefono">{{ c.telefono }}</a></dd></div>
+        @if (c.referencias) {
+          <div><dt>Cómo llegar</dt><dd>{{ c.referencias }}</dd></div>
+        }
+      </dl>
+      <div class="atajos">
+        <a class="btn btn-secondary" [href]="enlaceWhatsapp()" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+        <a class="btn btn-secondary" [href]="enlaceMapa()" target="_blank" rel="noopener">Cómo llegar</a>
+      </div>
+    }
+
+    @if (entregando()) {
+      <sr-entrega-form [necesidadId]="n.id" (entregada)="entregando.set(false)" (cancelar)="entregando.set(false)" />
+    } @else {
+      <button type="button" class="btn btn-success btn-block grande" (click)="entregando.set(true)">Ya la entregué</button>
+      <button type="button" class="btn btn-ghost btn-block" [disabled]="ocupado()" (click)="liberar()">No puedo atenderla, liberarla</button>
+    }
+  } @else if (n.estado === 'en_atencion') {
+    <h2>Alguien ya va en camino</h2>
+    <p class="muted"><strong>{{ n.ayudanteAlias }}</strong> la está atendiendo. Si no la entrega en 48 horas, vuelve a estar disponible.</p>
+  } @else if (n.estado === 'entregada') {
+    <h2>Entregada, falta confirmar</h2>
+    <p class="muted">{{ n.ayudanteAlias }} registró la entrega. Quien la pidió tiene 48 horas para confirmarla con su código.</p>
+  } @else if (n.estado === 'atendida') {
+    <h2>Esta necesidad fue atendida</h2>
+    <p class="muted">Gracias a <strong>{{ n.ayudanteAlias }}</strong>. Mira la línea de tiempo para ver cómo se resolvió.</p>
+  } @else {
+    <h2>Ya no está activa</h2>
+    <p class="muted">Quien la registró la canceló.</p>
+  }
+
+  @if (error(); as e) {
+    <p class="field-error" role="alert">{{ e }}</p>
+  }
+</section>

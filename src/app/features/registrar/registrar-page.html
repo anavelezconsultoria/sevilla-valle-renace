@@ -1,0 +1,122 @@
+@if (resultado(); as r) {
+  <sr-codigo-confirmacion [resultado]="r" (otra)="nuevaSolicitud()" />
+} @else {
+  <div class="container pagina">
+    <header class="encabezado">
+      <p class="eyebrow">Pedir ayuda</p>
+      <h1>Cuéntanos qué necesitas</h1>
+      <p class="muted">No necesitas crear una cuenta. Tu nombre, tu teléfono y tu ubicación exacta solo los verá quien vaya a ayudarte.</p>
+    </header>
+
+    <form class="formulario" (submit)="enviar($event)" novalidate>
+      <!-- 1. Categoria -->
+      <fieldset class="bloque card">
+        <legend><span class="paso">1</span> ¿Qué tipo de ayuda necesitas?</legend>
+        <div class="categorias">
+          @for (c of categorias; track c.valor) {
+            <button type="button" class="categoria" [class.activa]="modelo().categoria === c.valor" [attr.aria-pressed]="modelo().categoria === c.valor" (click)="elegirCategoria(c.valor)">
+              <sr-categoria-icono [categoria]="c.valor" [tamano]="36" />
+              <span>{{ c.etiqueta }}</span>
+            </button>
+          }
+        </div>
+        <sr-errores-campo [estado]="estado(formulario.categoria)" />
+      </fieldset>
+
+      <!-- 2. Detalle -->
+      <fieldset class="bloque card">
+        <legend><span class="paso">2</span> Cuéntanos más</legend>
+        <label class="field">
+          <span class="field-label">¿Qué necesitas? <span class="muted">(en pocas palabras)</span></span>
+          <input class="input" [formField]="formulario.titulo" placeholder="Ej.: Agua potable para una semana" />
+          <sr-errores-campo [estado]="estado(formulario.titulo)" />
+        </label>
+        <label class="field">
+          <span class="field-label">Detalles</span>
+          <textarea class="input" [formField]="formulario.descripcion" rows="4" placeholder="¿Qué pasó? ¿Qué te hace falta exactamente? ¿Hay niños, adultos mayores o alguien enfermo?"></textarea>
+          <span class="field-hint">{{ modelo().descripcion.length }}/600</span>
+          <sr-errores-campo [estado]="estado(formulario.descripcion)" />
+        </label>
+        <div class="dos-columnas">
+          <div class="field">
+            <span class="field-label">¿Qué tan urgente es?</span>
+            <div class="segmento" role="radiogroup" aria-label="Urgencia">
+              @for (u of urgencias; track u[0]) {
+                <button type="button" role="radio" [attr.aria-checked]="modelo().urgencia === u[0]" (click)="elegirUrgencia(u[0])">{{ u[1] }}</button>
+              }
+            </div>
+          </div>
+          <div class="field">
+            <span class="field-label">Personas en el hogar</span>
+            <div class="contador">
+              <button type="button" (click)="cambiarPersonas(-1)" aria-label="Una persona menos">−</button>
+              <input class="input" type="number" [formField]="formulario.personasHogar" aria-label="Personas en el hogar" />
+              <button type="button" (click)="cambiarPersonas(1)" aria-label="Una persona más">+</button>
+            </div>
+            <sr-errores-campo [estado]="estado(formulario.personasHogar)" />
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- 3. Ubicacion -->
+      <fieldset class="bloque card">
+        <legend><span class="paso">3</span> ¿Dónde estás?</legend>
+        <label class="field">
+          <span class="field-label">Barrio, vereda o corregimiento</span>
+          <input class="input" [formField]="formulario.sector" placeholder="Ej.: Barrio El Centro" />
+          <sr-errores-campo [estado]="estado(formulario.sector)" />
+        </label>
+        <div class="field">
+          <div class="ubicacion-cabecera">
+            <span class="field-label">Marca el punto en el mapa</span>
+            <button type="button" class="btn btn-secondary" (click)="usarMiUbicacion()" [disabled]="ubicando()">
+              {{ ubicando() ? 'Buscando...' : 'Usar mi ubicación' }}
+            </button>
+          </div>
+          <sr-selector-punto class="selector card" [(punto)]="punto" />
+          <span class="field-hint">En el mapa público solo aparece un punto aproximado, a unos 200 metros, nunca tu casa.</span>
+          @if (intentoEnviar() && !punto()) {
+            <p class="field-error" role="alert">Toca el mapa o usa tu ubicación para marcar dónde estás.</p>
+          }
+        </div>
+        <label class="field">
+          <span class="field-label">Cómo llegar <span class="muted">(opcional)</span></span>
+          <input class="input" [formField]="formulario.referencias" placeholder="Ej.: Casa azul frente a la escuela" />
+        </label>
+      </fieldset>
+
+      <!-- 4. Contacto -->
+      <fieldset class="bloque card">
+        <legend><span class="paso">4</span> ¿Cómo te contactamos?</legend>
+        <div class="dos-columnas">
+          <label class="field">
+            <span class="field-label">Nombre</span>
+            <input class="input" [formField]="formulario.nombre" autocomplete="given-name" placeholder="Tu nombre" />
+            <sr-errores-campo [estado]="estado(formulario.nombre)" />
+          </label>
+          <label class="field">
+            <span class="field-label">Celular</span>
+            <input class="input" [formField]="formulario.telefono" type="tel" inputmode="numeric" autocomplete="tel" placeholder="3001234567" />
+            <sr-errores-campo [estado]="estado(formulario.telefono)" />
+          </label>
+        </div>
+        <label class="autorizacion">
+          <input type="checkbox" [formField]="formulario.autorizaDatos" />
+          <span>Autorizo que mi nombre, celular y ubicación se compartan <strong>solo</strong> con la persona que tome mi solicitud para ayudarme (Ley 1581 de 2012).</span>
+        </label>
+        <sr-errores-campo [estado]="estado(formulario.autorizaDatos)" />
+      </fieldset>
+
+      @if (errorGeneral(); as e) {
+        <p class="error-general" role="alert">{{ e }}</p>
+      }
+
+      <div class="enviar">
+        <button type="submit" class="btn btn-primary btn-block grande" [disabled]="enviando()">
+          {{ enviando() ? 'Registrando...' : 'Registrar mi necesidad' }}
+        </button>
+        <p class="field-hint">Al registrarla recibirás un código para seguir tu solicitud y confirmar cuando te llegue la ayuda.</p>
+      </div>
+    </form>
+  </div>
+}

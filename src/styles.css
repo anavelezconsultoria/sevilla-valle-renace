@@ -1,0 +1,319 @@
+@import '@fontsource/krona-one/400.css';
+@import '@fontsource-variable/inter';
+
+/*
+ * Design system — Sevilla Renace (marca Ana Vélez).
+ * Los componentes solo consumen tokens; no definen colores ni tamaños propios.
+ */
+:root {
+  /* Marca */
+  --color-blue: #003cff;
+  --color-blue-strong: #0030cc;
+  --color-blue-soft: #e6ecff;
+  --color-navy: #001f80;
+  --color-lavender: #d7bafc;
+  --color-lavender-soft: #f3edff;
+
+  /* Neutros */
+  --color-ink: #0a0a0a;
+  --color-text: #1f1f3a;
+  --color-muted: #5a5a85;
+  --color-cream: #fff6f1;
+  --color-surface: #ffffff;
+  --color-line: #ece6f7;
+  --color-line-strong: #d9d1ea;
+
+  /* Estados del ciclo de vida */
+  --estado-pendiente: #c2410c;
+  --estado-pendiente-bg: #fff1e8;
+  --estado-progreso: #0030cc;
+  --estado-progreso-bg: #e6ecff;
+  --estado-entregada: #7c3aed;
+  --estado-entregada-bg: #f3edff;
+  --estado-exito: #15803d;
+  --estado-exito-bg: #e8f7ee;
+  --estado-neutro: #5a5a85;
+  --estado-neutro-bg: #f1f1f6;
+
+  /* Urgencia */
+  --urgencia-alta: #d9480f;
+
+  /* Tipografía */
+  --font-display: 'Krona One', system-ui, sans-serif;
+  --font-body: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1.2rem + 1.4vw, 2.25rem);
+
+  /* Espaciado: escala de 4px */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Forma y profundidad */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgba(0, 31, 128, 0.06), 0 2px 8px rgba(0, 31, 128, 0.06);
+  --shadow-md: 0 8px 28px rgba(0, 31, 128, 0.12);
+
+  /* Layout */
+  --header-height: 68px;
+  --container: 1240px;
+  --gutter: clamp(16px, 3vw, 32px);
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--color-cream);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  color: var(--color-ink);
+  text-wrap: balance;
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-weight: 650;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 2px;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ---------- Botones ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-blue);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-blue-strong);
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  border-color: var(--color-line-strong);
+  color: var(--color-ink);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--color-blue);
+  color: var(--color-blue);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-blue);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-blue-soft);
+}
+
+.btn-success {
+  background: var(--estado-exito);
+  color: #fff;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* ---------- Superficies ---------- */
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.eyebrow {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-blue);
+}
+
+.muted {
+  color: var(--color-muted);
+}
+
+/* ---------- Formularios ---------- */
+
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.field-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.field-hint {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+.field-error {
+  font-size: var(--text-xs);
+  color: #c92a2a;
+}
+
+.input {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-md);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+textarea.input {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 3px var(--color-blue-soft);
+}
+
+.input[aria-invalid='true'] {
+  border-color: #c92a2a;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Leaflet: integración con la marca ---------- */
+
+.leaflet-container {
+  font-family: var(--font-body);
+  background: #eef0f5;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.leaflet-popup-content {
+  margin: 14px 16px;
+  font-size: var(--text-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

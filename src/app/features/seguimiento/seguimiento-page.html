@@ -1,0 +1,76 @@
+<div class="container pagina">
+  <header class="encabezado">
+    <p class="eyebrow">Seguir mi solicitud</p>
+    <h1>¿Cómo va mi necesidad?</h1>
+    <p class="muted">Escribe el código que recibiste al registrarla.</p>
+  </header>
+
+  <form class="card buscador" (submit)="alEnviar($event)">
+    <label class="visually-hidden" for="codigo">Código de seguimiento</label>
+    <input id="codigo" class="input codigo" [value]="entrada()" (input)="alEscribir($event)" placeholder="XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+    <button type="submit" class="btn btn-primary" [disabled]="buscando() || entrada().length < 4">{{ buscando() ? 'Buscando...' : 'Consultar' }}</button>
+  </form>
+
+  @if (noEncontrada()) {
+    <p class="card alerta" role="alert">No encontramos una solicitud con ese código. Revisa que esté bien escrito.</p>
+  }
+
+  @if (necesidad(); as n) {
+    <section class="card resultado">
+      <div class="cabecera">
+        <div>
+          <h2>{{ n.titulo }}</h2>
+          <p class="muted">{{ n.sector }}</p>
+        </div>
+        <sr-estado-badge [estado]="n.estado" [cierre]="n.cierre" />
+      </div>
+
+      @if (mensaje(); as m) {
+        <p class="ok" role="status">{{ m }}</p>
+      }
+
+      @if (acciones().includes('confirmar')) {
+        <div class="destacado">
+          <h3>¿Te llegó la ayuda?</h3>
+          <p><strong>{{ n.ayudanteAlias }}</strong> registró la entrega. Confírmalo para cerrar tu solicitud.
+            @if (vence(); as v) { Si no respondes, se cerrará como atendida {{ v }}. }
+          </p>
+          @if (reclamando()) {
+            <label class="field">
+              <span class="field-label">¿Qué pasó?</span>
+              <textarea class="input" rows="3" maxlength="300" placeholder="Ej.: No ha llegado nadie / llegó incompleto" (input)="alEscribirReclamo($event)"></textarea>
+            </label>
+            <div class="botones">
+              <button type="button" class="btn btn-primary" [disabled]="ocupado()" (click)="reclamar()">Enviar reclamo</button>
+              <button type="button" class="btn btn-ghost" (click)="reclamando.set(false)">Volver</button>
+            </div>
+          } @else {
+            <div class="botones">
+              <button type="button" class="btn btn-success" [disabled]="ocupado()" (click)="confirmar()">Sí, la recibí</button>
+              <button type="button" class="btn btn-secondary" [disabled]="ocupado()" (click)="reclamando.set(true)">No la he recibido</button>
+            </div>
+          }
+        </div>
+      }
+
+      @if (n.estado === 'en_atencion') {
+        <p class="info"><strong>{{ n.ayudanteAlias }}</strong> tomó tu solicitud y va a contactarte. Si no la entrega en 48 horas, vuelve a estar disponible para otra persona.</p>
+      }
+      @if (n.estado === 'registrada') {
+        <p class="info">Tu solicitud ya está en el mapa. Te avisaremos aquí cuando alguien la tome.</p>
+      }
+
+      <sr-linea-tiempo [eventos]="n.eventos" />
+
+      @if (acciones().includes('cancelar')) {
+        <button type="button" class="btn btn-ghost cancelar" [disabled]="ocupado()" (click)="cancelar()">Ya no la necesito, cancelar</button>
+      }
+
+      @if (error(); as e) {
+        <p class="field-error" role="alert">{{ e }}</p>
+      }
+
+      <a [routerLink]="['/necesidades', n.id]" class="enlace">Ver la página pública de esta necesidad</a>
+    </section>
+  }
+</div>
