@@ -28,7 +28,7 @@ import { NAVEGACION } from './navegacion';
     </header>
   `,
   styles: `
-    .header { position: sticky; top: 0; z-index: 1000; background: rgba(250,247,242,.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--color-linea); }
+    .header { position: sticky; top: 0; z-index: 1000; background: rgba(255,255,255,.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--color-linea); }
     .barra { height: var(--header-height); display: flex; align-items: center; gap: var(--space-5); padding-inline: var(--gutter); max-width: 1600px; margin-inline: auto; }
     .marca { text-decoration: none; display: inline-flex; }
     .nav { display: flex; gap: var(--space-1); margin-left: var(--space-4); }

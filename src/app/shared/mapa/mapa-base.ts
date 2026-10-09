@@ -22,9 +22,9 @@ export function crearMapa(contenedor: HTMLElement, { centro = CENTRO_SEVILLA, zo
 }
 
 const ANILLO_POR_ESTADO: Partial<Record<EstadoNecesidad, string>> = {
-  [EstadoNecesidad.EnAtencion]: '#16336f',
-  [EstadoNecesidad.Entregada]: '#c9922e',
-  [EstadoNecesidad.Atendida]: '#2f5d46',
+  [EstadoNecesidad.EnAtencion]: '#2b4cf2',
+  [EstadoNecesidad.Entregada]: '#7c5cf0',
+  [EstadoNecesidad.Atendida]: '#1b8a5e',
 };
 
 export interface MarcadorNecesidad {

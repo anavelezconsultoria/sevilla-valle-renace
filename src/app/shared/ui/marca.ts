@@ -2,18 +2,18 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 /**
  * Marca de Sevilla Renace: un brote cafetero que sale de la tierra.
- * Azul marino de Ana Vélez, hojas en café maduro y papel, tierra en terracota.
+ * Azul y lavanda de Ana Vélez, como su logo.
  */
 @Component({
   selector: 'sr-marca',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <svg class="simbolo" [attr.width]="tamano()" [attr.height]="tamano()" viewBox="0 0 64 64" aria-hidden="true">
-      <rect width="64" height="64" rx="16" fill="#16336f" />
-      <path class="tallo" d="M32 49V29" stroke="#faf7f2" stroke-width="4.5" stroke-linecap="round" />
-      <path class="hoja hoja-der" d="M32 33c0-9 7-15 16-15 0 9-7 15-16 15z" fill="#c9922e" />
-      <path class="hoja hoja-izq" d="M32 29c0-7-5-12-13-12 0 7 5 12 13 12z" fill="#faf7f2" />
-      <path d="M17 50h30" stroke="#b9532b" stroke-width="4.5" stroke-linecap="round" />
+      <rect width="64" height="64" rx="16" fill="#2b4cf2" />
+      <path class="tallo" d="M32 49V29" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" />
+      <path class="hoja hoja-der" d="M32 33c0-9 7-15 16-15 0 9-7 15-16 15z" fill="#d7bafc" />
+      <path class="hoja hoja-izq" d="M32 29c0-7-5-12-13-12 0 7 5 12 13 12z" fill="#ffffff" />
+      <path d="M17 50h30" stroke="#d7bafc" stroke-width="4.5" stroke-linecap="round" />
     </svg>
     @if (conTexto()) {
       <span class="texto">Sevilla<span class="renace">Renace</span></span>

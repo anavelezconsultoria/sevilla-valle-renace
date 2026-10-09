@@ -1,63 +1,62 @@
 @import '@fontsource/krona-one/400.css';
 @import '@fontsource-variable/inter';
-@import '@fontsource-variable/fraunces/opsz.css';
 
 /*
  * Design system: Sevilla Renace
- * Tierra cafetera con la firma de Ana Vélez.
- *   - Azul marino (Ana Vélez): institucional, confianza; "quiero ayudar".
- *   - Terracota: la casa que se reconstruye; "necesito ayuda".
- *   - Verde montaña: lo resuelto.
- *   - Café maduro: acento cálido.
+ * Marca Ana Vélez, luminosa: blanco, azul y morado lavanda.
+ *   - Azul Ana Vélez: la acción principal; "necesito ayuda".
+ *   - Morado: quien ayuda; "quiero ayudar".
+ *   - Lavanda: acentos y decoración.
+ *   - Verde de montaña cafetera: lo resuelto.
  * Los componentes solo consumen estos tokens.
  */
 :root {
   /* Marca */
-  --color-primario: #16336f;
-  --color-primario-fuerte: #0d2350;
-  --color-primario-suave: #e9eef7;
-  --color-accion: #b9532b;
-  --color-accion-fuerte: #9a4220;
-  --color-accion-suave: #fbede5;
-  --color-acento: #c9922e;
-  --color-acento-suave: #fbf2df;
-  --color-montana: #2f5d46;
-  --color-montana-suave: #e6f0ea;
+  --color-primario: #6a4fe0;
+  --color-primario-fuerte: #5136c7;
+  --color-primario-suave: #f1ecff;
+  --color-accion: #2b4cf2;
+  --color-accion-fuerte: #1d37cc;
+  --color-accion-suave: #eaefff;
+  --color-acento: #7c5cf0;
+  --color-acento-suave: #f3eeff;
+  --color-montana: #1b8a5e;
+  --color-montana-suave: #e5f6ee;
 
   /* Neutros cálidos */
-  --color-fondo: #faf7f2;
+  --color-fondo: #fbfaff;
   --color-superficie: #ffffff;
-  --color-arena: #f3ede4;
-  --color-tinta: #1e1b18;
-  --color-texto: #3a332d;
-  --color-tenue: #71675d;
-  --color-linea: #ece5da;
-  --color-linea-fuerte: #dcd2c4;
+  --color-arena: #f4f1fd;
+  --color-tinta: #15132b;
+  --color-texto: #33304d;
+  --color-tenue: #6b6889;
+  --color-linea: #ebe7f7;
+  --color-linea-fuerte: #d9d2ef;
 
   /* Estados del ciclo de vida */
-  --estado-pendiente: #b9532b;
-  --estado-pendiente-bg: #fbede5;
-  --estado-progreso: #16336f;
-  --estado-progreso-bg: #e9eef7;
-  --estado-entregada: #96660f;
-  --estado-entregada-bg: #fbf2df;
-  --estado-exito: #2f6b4f;
-  --estado-exito-bg: #e6f0ea;
-  --estado-neutro: #71675d;
-  --estado-neutro-bg: #f1ece4;
-  --urgencia-alta: #b9532b;
+  --estado-pendiente: #d9582e;
+  --estado-pendiente-bg: #fff0e9;
+  --estado-progreso: #2b4cf2;
+  --estado-progreso-bg: #eaefff;
+  --estado-entregada: #6a4fe0;
+  --estado-entregada-bg: #f1ecff;
+  --estado-exito: #1b8a5e;
+  --estado-exito-bg: #e5f6ee;
+  --estado-neutro: #6b6889;
+  --estado-neutro-bg: #f1eff7;
+  --urgencia-alta: #d9582e;
   --color-error: #b3261e;
 
   /* Tipografía */
   --font-marca: 'Krona One', system-ui, sans-serif;
-  --font-titulo: 'Fraunces Variable', Georgia, serif;
+  --font-titulo: 'Krona One', system-ui, sans-serif;
   --font-body: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-md: 1rem;
   --text-lg: 1.125rem;
-  --text-xl: clamp(1.35rem, 1.15rem + 0.8vw, 1.75rem);
-  --text-2xl: clamp(1.8rem, 1.35rem + 2vw, 2.75rem);
+  --text-xl: clamp(1.15rem, 1rem + 0.6vw, 1.45rem);
+  --text-2xl: clamp(1.45rem, 1.1rem + 1.6vw, 2.2rem);
 
   /* Espaciado: escala de 4px */
   --space-1: 4px;
@@ -73,9 +72,9 @@
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-pill: 999px;
-  --shadow-sm: 0 1px 2px rgba(30, 27, 24, 0.05), 0 2px 10px rgba(30, 27, 24, 0.05);
-  --shadow-md: 0 10px 30px rgba(30, 27, 24, 0.1);
-  --shadow-lg: 0 18px 50px rgba(30, 27, 24, 0.16);
+  --shadow-sm: 0 1px 2px rgba(21, 19, 43, 0.04), 0 2px 12px rgba(106, 79, 224, 0.06);
+  --shadow-md: 0 10px 30px rgba(106, 79, 224, 0.12);
+  --shadow-lg: 0 18px 50px rgba(21, 19, 43, 0.16);
 
   /* Movimiento */
   --ease-salida: cubic-bezier(0.22, 1, 0.36, 1);
@@ -88,7 +87,7 @@
   --gutter: clamp(16px, 3vw, 32px);
 
   /* Curvas de nivel de montaña: textura de los encabezados */
-  --textura-montana: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='240' viewBox='0 0 600 240'%3E%3Cg fill='none' stroke='%23c9922e' stroke-opacity='.22' stroke-width='1.2'%3E%3Cpath d='M0 200 C80 150 140 170 210 120 S330 60 400 90 S520 150 600 110'/%3E%3Cpath d='M0 220 C90 175 150 190 220 145 S340 90 410 115 S525 170 600 135'/%3E%3Cpath d='M0 180 C70 125 130 150 200 95 S320 30 390 62 S515 130 600 85'/%3E%3Cpath d='M0 160 C60 100 120 130 190 72 S310 5 380 36 S510 108 600 60'/%3E%3C/g%3E%3C/svg%3E");
+  --textura-montana: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='240' viewBox='0 0 600 240'%3E%3Cg fill='none' stroke='%237c5cf0' stroke-opacity='.18' stroke-width='1.2'%3E%3Cpath d='M0 200 C80 150 140 170 210 120 S330 60 400 90 S520 150 600 110'/%3E%3Cpath d='M0 220 C90 175 150 190 220 145 S340 90 410 115 S525 170 600 135'/%3E%3Cpath d='M0 180 C70 125 130 150 200 95 S320 30 390 62 S515 130 600 85'/%3E%3Cpath d='M0 160 C60 100 120 130 190 72 S310 5 380 36 S510 108 600 60'/%3E%3C/g%3E%3C/svg%3E");
 
   color-scheme: light;
 }
@@ -125,10 +124,9 @@ h3 {
 h1,
 h2 {
   font-family: var(--font-titulo);
-  font-weight: 620;
-  font-optical-sizing: auto;
-  letter-spacing: -0.015em;
-  line-height: 1.12;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
 h3 {
@@ -223,7 +221,7 @@ textarea {
 .btn-primary {
   background: var(--color-primario);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(22, 51, 111, 0.22);
+  box-shadow: 0 4px 14px rgba(106, 79, 224, 0.28);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -233,7 +231,7 @@ textarea {
 .btn-accion {
   background: var(--color-accion);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(185, 83, 43, 0.28);
+  box-shadow: 0 4px 14px rgba(43, 76, 242, 0.3);
 }
 
 .btn-accion:hover:not(:disabled) {
@@ -263,7 +261,7 @@ textarea {
 .btn-success {
   background: var(--color-montana);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(47, 93, 70, 0.25);
+  box-shadow: 0 4px 14px rgba(27, 138, 94, 0.25);
 }
 
 .btn-block {
@@ -387,7 +385,7 @@ textarea.input {
 
 .esqueleto {
   border-radius: var(--radius-md);
-  background: linear-gradient(90deg, var(--color-arena) 0%, #fbf8f3 50%, var(--color-arena) 100%) 0 0 / 200% 100%;
+  background: linear-gradient(90deg, var(--color-arena) 0%, #ffffff 50%, var(--color-arena) 100%) 0 0 / 200% 100%;
   animation: brillo 1.4s linear infinite;
 }
 
@@ -410,11 +408,11 @@ textarea.input {
 
 .leaflet-container {
   font-family: var(--font-body);
-  background: #efe9df;
+  background: #eef0f6;
 }
 
 .leaflet-tile-pane {
-  filter: saturate(0.5) sepia(0.14) contrast(1.02) brightness(1.03);
+  filter: saturate(0.6) contrast(1.02) brightness(1.04);
 }
 
 .leaflet-popup-content-wrapper {

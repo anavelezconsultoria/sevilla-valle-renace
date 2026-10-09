@@ -1,4 +1,15 @@
-<div class="escena">
+<div class="escena" [class.paneles-ocultos]="panelesOcultos()">
+  <button type="button" class="alternar-paneles" (click)="panelesOcultos.set(!panelesOcultos())" [attr.aria-pressed]="panelesOcultos()">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      @if (panelesOcultos()) {
+        <path d="M4 6h6v12H4zM14 6h6v12h-6z" />
+      } @else {
+        <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" />
+      }
+    </svg>
+    {{ panelesOcultos() ? 'Mostrar paneles' : 'Ver mapa completo' }}
+  </button>
+
   <sr-mapa-necesidades
     class="mapa"
     [necesidades]="activas()"
@@ -6,13 +17,13 @@
     (seleccionar)="seleccionadaId.set($event)"
   />
 
-  <aside class="panel panel-izquierdo">
+  <aside class="panel panel-izquierdo" aria-label="Bienvenida, búsqueda y cifras">
     <section class="card bienvenida entrada">
       <svg class="montanas" viewBox="0 0 360 90" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M0 90 L0 58 Q40 30 80 46 T160 30 T250 40 T360 22 L360 90Z" fill="#e6f0ea" />
-        <path d="M0 90 L0 70 Q50 48 110 62 T220 52 T360 50 L360 90Z" fill="#cfe1d5" />
-        <path d="M0 90 L0 80 Q70 66 140 76 T280 70 T360 72 L360 90Z" fill="#2f5d46" opacity=".85" />
-        <g fill="#b9532b" opacity=".9">
+        <path d="M0 90 L0 58 Q40 30 80 46 T160 30 T250 40 T360 22 L360 90Z" fill="#efeafe" />
+        <path d="M0 90 L0 70 Q50 48 110 62 T220 52 T360 50 L360 90Z" fill="#dcd2fb" />
+        <path d="M0 90 L0 80 Q70 66 140 76 T280 70 T360 72 L360 90Z" fill="#2b4cf2" opacity=".9" />
+        <g fill="#d7bafc">
           <circle cx="72" cy="66" r="2.6" /><circle cx="80" cy="64" r="2.6" /><circle cx="76" cy="58" r="2.6" />
           <circle cx="232" cy="58" r="2.6" /><circle cx="240" cy="55" r="2.6" />
         </g>
@@ -50,7 +61,7 @@
     </div>
   }
 
-  <aside class="panel panel-derecho card" [class.abierta]="listaAbierta()">
+  <aside class="panel panel-derecho card" [class.abierta]="listaAbierta()" aria-label="Necesidades activas">
     <button type="button" class="asa" (click)="listaAbierta.set(!listaAbierta())" [attr.aria-expanded]="listaAbierta()">
       <span class="asa-barra" aria-hidden="true"></span>
       <span><strong>{{ activas().length }}</strong> necesidades activas</span>

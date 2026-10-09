@@ -23,6 +23,8 @@ export class MapaPage {
   protected readonly categoria = signal<Categoria | null>(null);
   protected readonly seleccionadaId = signal<string | null>(null);
   protected readonly listaAbierta = signal(false);
+  /** En escritorio los paneles se pueden esconder para ver el mapa completo. */
+  protected readonly panelesOcultos = signal(false);
   protected readonly cargando = this.lectura.cargando;
 
   protected readonly activas = computed(() =>
