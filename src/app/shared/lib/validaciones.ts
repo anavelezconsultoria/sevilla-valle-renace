@@ -33,3 +33,15 @@ export const LARGOS = {
 } as const satisfies Record<string, ReglaLargo>;
 
 export const MAX_REFERENCIAS = 200;
+
+/**
+ * El sector es PUBLICO (sale en el mapa y en las imagenes para compartir): no debe
+ * llevar la direccion. Detecta nomenclatura tipica colombiana o un numero de celular.
+ */
+const PARECE_DIRECCION = /#|\b\d+\s*-\s*\d+\b|\b(calle|carrera|cra|cl|kr|cr|diagonal|transversal|manzana|mz|lote)\b\.?\s*\d|\b3\d{9}\b/i;
+
+export function validarSectorSinDireccion(valor: string): ErrorValidacion | null {
+  return PARECE_DIRECCION.test(valor)
+    ? { kind: 'direccion', message: 'Escribe solo el barrio o la vereda: este dato es público. La dirección va abajo, en "Cómo llegar", que es privado.' }
+    : null;
+}

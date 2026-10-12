@@ -8,6 +8,7 @@ import { accionesDelAyudante, accionesDelSolicitante, HORAS_PARA_CONFIRMAR, HORA
 import { filtrarNecesidades } from './core/application/filtrar-necesidades';
 import { calcularDimensiones } from './shared/lib/imagen';
 import { CENTRO_SEVILLA } from './core/domain/catalogos';
+import { validarSectorSinDireccion } from './shared/lib/validaciones';
 
 function distanciaMetros(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
   const r = 6_371_000;
@@ -43,6 +44,17 @@ describe('Privacidad', () => {
   it('genera llaves internas sin caracteres ambiguos', () => {
     const codigo = generarCodigoSeguimiento();
     expect(codigo).toMatch(/^[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/);
+  });
+});
+
+describe('Sector publico sin direccion', () => {
+  it('rechaza direcciones y celulares, acepta barrios y veredas', () => {
+    expect(validarSectorSinDireccion('Margaritas calle 46 #37-49')).not.toBeNull();
+    expect(validarSectorSinDireccion('Cra 52 15-20')).not.toBeNull();
+    expect(validarSectorSinDireccion('vereda el cebollal 3108380281')).not.toBeNull();
+    expect(validarSectorSinDireccion('Barrio Las Margaritas')).toBeNull();
+    expect(validarSectorSinDireccion('Vereda La Melva')).toBeNull();
+    expect(validarSectorSinDireccion('Las margaritas primera etapa')).toBeNull();
   });
 });
 

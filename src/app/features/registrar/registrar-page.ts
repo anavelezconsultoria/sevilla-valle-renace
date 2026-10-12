@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormField, form, max, maxLength, min, validate } from '@angular/forms/signals';
-import { LARGOS, MAX_REFERENCIAS, validarLargo } from '../../shared/lib/validaciones';
+import { LARGOS, MAX_REFERENCIAS, validarLargo, validarSectorSinDireccion } from '../../shared/lib/validaciones';
 import { SolicitudesLocales } from '../../shared/lib/solicitudes-locales';
 import { ErrorClaveDistinta, SolicitanteGateway } from '../../core/ports/necesidades.ports';
 import { Categoria, Coordenada, RegistroResultado, Urgencia } from '../../core/domain/necesidad.model';
@@ -122,7 +122,7 @@ export class RegistrarPage {
     validate(p.descripcion, ({ value }) => validarLargo(value(), LARGOS.descripcion));
     min(p.personasHogar, 1, { message: 'Al menos 1 persona.' });
     max(p.personasHogar, 30, { message: 'Máximo 30 personas.' });
-    validate(p.sector, ({ value }) => validarLargo(value(), LARGOS.sector));
+    validate(p.sector, ({ value }) => validarLargo(value(), LARGOS.sector) ?? validarSectorSinDireccion(value()));
     validate(p.nombre, ({ value }) => validarLargo(value(), LARGOS.nombre));
     maxLength(p.referencias, MAX_REFERENCIAS, { message: `Máximo ${MAX_REFERENCIAS} caracteres.` });
     validate(p.telefono, ({ value }) =>
