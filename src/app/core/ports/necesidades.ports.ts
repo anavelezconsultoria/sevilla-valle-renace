@@ -69,6 +69,8 @@ export interface EntregaPayload {
 export abstract class AyudanteGateway {
   abstract tomar(necesidadId: string): Promise<Necesidad>;
   abstract liberar(necesidadId: string): Promise<Necesidad>;
+  /** Pide 24 horas mas para entregar (una vez por toma). */
+  abstract extenderPlazo(necesidadId: string): Promise<Necesidad>;
   abstract entregar(payload: EntregaPayload): Promise<Necesidad>;
   abstract contacto(necesidadId: string): Promise<ContactoPrivado>;
   abstract misAtenciones(): readonly Necesidad[];

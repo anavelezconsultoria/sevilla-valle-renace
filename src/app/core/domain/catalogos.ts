@@ -51,7 +51,8 @@ export const URGENCIAS: Record<Urgencia, string> = {
 
 export const EVENTOS: Record<TipoEvento, string> = {
   [TipoEvento.Registrada]: 'Necesidad registrada',
-  [TipoEvento.Tomada]: 'Alguien la tomó para atenderla',
+  [TipoEvento.Tomada]: 'La tomó para atenderla',
+  [TipoEvento.PlazoExtendido]: 'Pidió 24 horas más para entregarla',
   [TipoEvento.Liberada]: 'Quien la tomó la liberó',
   [TipoEvento.LiberadaPorVencimiento]: 'Volvió a la lista: pasaron 48 horas sin entrega',
   [TipoEvento.Entregada]: 'Ayuda entregada',

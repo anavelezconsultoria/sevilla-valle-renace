@@ -19,8 +19,13 @@ import { ESTADOS } from '../../core/domain/catalogos';
 export class EstadoBadge {
   readonly estado = input.required<EstadoNecesidad>();
   readonly cierre = input<CierreAtencion>();
+  /** Quien la atiende: "En atencion por Nana". */
+  readonly quien = input<string>();
   protected readonly info = computed(() => ESTADOS[this.estado()]);
-  protected readonly etiqueta = computed(() =>
-    this.cierre() === CierreAtencion.Automatica ? 'Atendida (sin reclamo)' : this.info().etiqueta,
-  );
+  protected readonly etiqueta = computed(() => {
+    if (this.cierre() === CierreAtencion.Automatica) return 'Atendida (sin reclamo)';
+    const quien = this.quien();
+    const conQuien = quien && (this.estado() === EstadoNecesidad.EnAtencion || this.estado() === EstadoNecesidad.Entregada);
+    return conQuien ? `${this.info().etiqueta} por ${quien}` : this.info().etiqueta;
+  });
 }

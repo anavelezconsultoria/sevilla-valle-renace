@@ -5,6 +5,7 @@ import { EstadoNecesidad, Necesidad } from '../../core/domain/necesidad.model';
 import { NecesidadCard } from '../../shared/ui/necesidad-card';
 import { IdentificarseForm } from '../sesion/identificarse-form';
 import { RestablecerClave } from './restablecer-clave';
+import { AvisoVencimientos } from './aviso-vencimientos';
 
 interface Columna {
   readonly titulo: string;
@@ -15,7 +16,7 @@ interface Columna {
 /** Tablero de seguimiento de quien ayuda: lo que tengo en curso, lo que espera confirmacion y lo resuelto. */
 @Component({
   selector: 'sr-mis-atenciones-page',
-  imports: [RouterLink, NecesidadCard, IdentificarseForm, RestablecerClave],
+  imports: [RouterLink, NecesidadCard, IdentificarseForm, RestablecerClave, AvisoVencimientos],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="container pagina">
@@ -31,6 +32,8 @@ interface Columna {
             <button type="button" class="btn btn-ghost" (click)="salir()">Salir</button>
           </div>
         </header>
+
+        <sr-aviso-vencimientos [necesidades]="mias()" />
 
         <div class="columnas">
           @for (col of columnas(); track col.titulo) {
@@ -87,7 +90,7 @@ export class MisAtencionesPage {
   private readonly ayudanteGw = inject(AyudanteGateway);
   protected readonly ayudante = this.sesion.ayudante;
 
-  private readonly mias = computed(() => {
+  protected readonly mias = computed(() => {
     this.ayudante();
     return this.ayudanteGw.misAtenciones();
   });

@@ -155,6 +155,10 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
     return this.ejecutarYObtener('liberar_necesidad', { p_necesidad: necesidadId });
   }
 
+  async extenderPlazo(necesidadId: string): Promise<Necesidad> {
+    return this.ejecutarYObtener('extender_plazo', { p_necesidad: necesidadId });
+  }
+
   async entregar({ necesidadId, nota, fotos }: EntregaPayload): Promise<Necesidad> {
     const rutas = await Promise.all(fotos.map((foto) => this.subirEvidencia(necesidadId, foto)));
     return this.ejecutarYObtener('entregar_necesidad', { p_necesidad: necesidadId, p_nota: nota, p_rutas: rutas });

@@ -40,6 +40,7 @@ export enum Urgencia {
 export enum TipoEvento {
   Registrada = 'registrada',
   Tomada = 'tomada',
+  PlazoExtendido = 'plazo_extendido',
   Liberada = 'liberada',
   LiberadaPorVencimiento = 'liberada_por_vencimiento',
   Entregada = 'entregada',

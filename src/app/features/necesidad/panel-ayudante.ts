@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { AyudanteGateway, SesionGateway } from '../../core/ports/necesidades.ports';
 import { ContactoPrivado, EstadoNecesidad, Necesidad } from '../../core/domain/necesidad.model';
-import { accionesDelAyudante } from '../../core/domain/ciclo-de-vida';
+import { accionesDelAyudante, HORAS_AVISO_VENCIMIENTO, horasRestantes, puedeExtenderPlazo } from '../../core/domain/ciclo-de-vida';
 import { tiempoRelativo } from '../../shared/lib/tiempo';
 import { enlaceWhatsappA } from '../../shared/lib/whatsapp';
 import { IdentificarseForm } from '../sesion/identificarse-form';
@@ -40,6 +40,16 @@ export class PanelAyudante {
   protected readonly acciones = computed(() =>
     accionesDelAyudante({ estado: this.necesidad().estado, esAsignado: this.esAsignado() }),
   );
+  /** Horas que le quedan a quien atiende para entregar. */
+  protected readonly horasQuedan = computed(() => {
+    const h = horasRestantes(this.necesidad().venceEn);
+    return h === null ? null : Math.max(0, Math.floor(h));
+  });
+  protected readonly plazoCorto = computed(() => {
+    const h = horasRestantes(this.necesidad().venceEn);
+    return h !== null && h <= HORAS_AVISO_VENCIMIENTO;
+  });
+  protected readonly puedeExtender = computed(() => puedeExtenderPlazo(this.necesidad()));
   protected readonly vence = computed(() => {
     const v = this.necesidad().venceEn;
     return v ? tiempoRelativo(v) : null;
@@ -82,6 +92,10 @@ export class PanelAyudante {
   protected async alIdentificarse(): Promise<void> {
     this.pidiendoIdentidad.set(false);
     await this.atender();
+  }
+
+  protected async extender(): Promise<void> {
+    await this.ejecutar(() => this.ayudanteGw.extenderPlazo(this.necesidad().id));
   }
 
   protected async liberar(): Promise<void> {

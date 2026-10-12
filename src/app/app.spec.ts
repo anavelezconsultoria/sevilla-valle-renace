@@ -4,7 +4,7 @@ import { Categoria, CierreAtencion, EstadoNecesidad, NuevaNecesidad, TipoEvento,
 import { desplazarCoordenada, DESPLAZAMIENTO_MAX_M, DESPLAZAMIENTO_MIN_M, generarCodigoSeguimiento } from './core/domain/privacidad';
 import { enmascararTelefono, motivoClaveInvalida } from './core/domain/clave-solicitante';
 import { ErrorAccesoSolicitante, ErrorClaveDistinta } from './core/ports/necesidades.ports';
-import { accionesDelAyudante, accionesDelSolicitante, HORAS_PARA_CONFIRMAR, HORAS_PARA_ENTREGAR } from './core/domain/ciclo-de-vida';
+import { accionesDelAyudante, accionesDelSolicitante, HORAS_PARA_CONFIRMAR, HORAS_PARA_ENTREGAR, puedeExtenderPlazo } from './core/domain/ciclo-de-vida';
 import { filtrarNecesidades } from './core/application/filtrar-necesidades';
 import { calcularDimensiones } from './shared/lib/imagen';
 import { CENTRO_SEVILLA } from './core/domain/catalogos';
@@ -44,6 +44,28 @@ describe('Privacidad', () => {
   it('genera llaves internas sin caracteres ambiguos', () => {
     const codigo = generarCodigoSeguimiento();
     expect(codigo).toMatch(/^[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/);
+  });
+});
+
+describe('Mas tiempo para entregar', () => {
+  let backend: DemoBackend;
+
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({});
+    backend = TestBed.inject(DemoBackend);
+  });
+
+  it('quien atiende pide 24 horas mas una sola vez por toma', async () => {
+    const { necesidad } = await backend.registrar(NUEVA);
+    await backend.iniciarSesion({ celular: '3001112222', alias: 'Nana' });
+    const tomada = await backend.tomar(necesidad.id);
+    expect(puedeExtenderPlazo(tomada)).toBe(true);
+    const extendida = await backend.extenderPlazo(necesidad.id);
+    expect(new Date(extendida.venceEn!).getTime() - new Date(tomada.venceEn!).getTime()).toBe(24 * 3_600_000);
+    expect(puedeExtenderPlazo(extendida)).toBe(false);
+    await expect(backend.extenderPlazo(necesidad.id)).rejects.toThrow();
+    expect(extendida.eventos.at(-1)).toMatchObject({ tipo: TipoEvento.PlazoExtendido, actor: 'Nana' });
   });
 });
 

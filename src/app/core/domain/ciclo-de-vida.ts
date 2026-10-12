@@ -1,4 +1,4 @@
-import { EstadoNecesidad } from './necesidad.model';
+import { EstadoNecesidad, Necesidad, TipoEvento } from './necesidad.model';
 
 /**
  * Reglas del ciclo de vida. El backend las aplica de verdad (funciones de la
@@ -7,6 +7,22 @@ import { EstadoNecesidad } from './necesidad.model';
 
 export const HORAS_PARA_ENTREGAR = 48;
 export const HORAS_PARA_CONFIRMAR = 48;
+/** Horas extra que puede pedir quien atiende, una vez por toma. */
+export const HORAS_EXTRA = 24;
+/** Desde cuantas horas antes del vencimiento se avisa a quien atiende. */
+export const HORAS_AVISO_VENCIMIENTO = 12;
+
+/** Horas que faltan para que venza la etapa actual (negativo si ya vencio). */
+export function horasRestantes(venceEn: string | undefined, ahora: Date = new Date()): number | null {
+  return venceEn ? (new Date(venceEn).getTime() - ahora.getTime()) / 3_600_000 : null;
+}
+
+/** Solo se puede pedir mas tiempo una vez desde la ultima vez que se tomo. */
+export function puedeExtenderPlazo(n: Necesidad): boolean {
+  if (n.estado !== EstadoNecesidad.EnAtencion) return false;
+  const ultimaToma = n.eventos.findLastIndex((e) => e.tipo === TipoEvento.Tomada);
+  return !n.eventos.slice(ultimaToma + 1).some((e) => e.tipo === TipoEvento.PlazoExtendido);
+}
 
 export type AccionAyudante = 'tomar' | 'liberar' | 'entregar';
 export type AccionSolicitante = 'confirmar' | 'no_recibida' | 'cancelar';

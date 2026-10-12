@@ -32,7 +32,7 @@ import { EstadoNecesidad } from '../../core/domain/necesidad.model';
                 </div>
               </div>
               <div class="chips">
-                <sr-estado-badge [estado]="n.estado" [cierre]="n.cierre" />
+                <sr-estado-badge [estado]="n.estado" [cierre]="n.cierre" [quien]="n.ayudanteAlias" />
                 <span class="chip" [class.urgente]="n.urgencia === 'alta'">{{ urgencia() }}</span>
                 <span class="chip">{{ n.personasHogar }} {{ n.personasHogar === 1 ? 'persona' : 'personas' }}</span>
                 <span class="chip">{{ n.sector }}</span>

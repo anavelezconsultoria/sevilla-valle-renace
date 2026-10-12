@@ -11,7 +11,7 @@
           <h2>{{ n.titulo }}</h2>
           <p class="muted">{{ n.sector }}</p>
         </div>
-        <sr-estado-badge [estado]="n.estado" [cierre]="n.cierre" />
+        <sr-estado-badge [estado]="n.estado" [cierre]="n.cierre" [quien]="n.ayudanteAlias" />
       </div>
 
       @if (mensaje(); as m) {
@@ -83,7 +83,7 @@
                     }
                   </span>
                   @if (nec) {
-                    <sr-estado-badge [estado]="nec.estado" [cierre]="nec.cierre" />
+                    <sr-estado-badge [estado]="nec.estado" [cierre]="nec.cierre" [quien]="nec.ayudanteAlias" />
                   }
                 </button>
               </li>
@@ -102,7 +102,7 @@
                   <button type="button" (click)="abrirLocal(s)">
                     <span class="textos"><strong>{{ s.titulo }}</strong><small>{{ nec?.sector }} · registrada {{ haceDe(s.registradaEn) }}</small></span>
                     @if (nec) {
-                      <sr-estado-badge [estado]="nec.estado" [cierre]="nec.cierre" />
+                      <sr-estado-badge [estado]="nec.estado" [cierre]="nec.cierre" [quien]="nec.ayudanteAlias" />
                     }
                   </button>
                 </li>
@@ -121,7 +121,7 @@
             <li>
               <button type="button" (click)="abrirConClave(n.id)">
                 <span><strong>{{ n.titulo }}</strong><small>{{ n.sector }}</small></span>
-                <sr-estado-badge [estado]="n.estado" [cierre]="n.cierre" />
+                <sr-estado-badge [estado]="n.estado" [cierre]="n.cierre" [quien]="n.ayudanteAlias" />
               </button>
             </li>
           }

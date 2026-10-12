@@ -21,6 +21,20 @@
       }
     </div>
 
+    @if (plazoCorto()) {
+      <div class="alerta-plazo" role="status">
+        <strong>Te quedan {{ horasQuedan() }} {{ horasQuedan() === 1 ? 'hora' : 'horas' }} para entregarla.</strong>
+        @if (puedeExtender()) {
+          Si aún no alcanzas, pide 24 horas más. Si no, se libera sola para que otra persona la tome.
+        } @else {
+          Ya pediste más tiempo una vez. Si no alcanzas, libérala para que otra persona la tome.
+        }
+      </div>
+    }
+    @if (puedeExtender()) {
+      <button type="button" class="btn btn-secondary btn-block" [disabled]="ocupado()" (click)="extender()">Necesito 24 horas más</button>
+    }
+
     @if (contacto(); as c) {
       <dl class="contacto">
         <div><dt>Nombre</dt><dd>{{ c.nombre }}</dd></div>

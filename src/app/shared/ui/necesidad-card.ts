@@ -34,7 +34,7 @@ import { EstadoBadge } from './estado-badge';
         <p class="descripcion">{{ n.descripcion }}</p>
       }
       <div class="pie">
-        <sr-estado-badge [estado]="n.estado" [cierre]="n.cierre" />
+        <sr-estado-badge [estado]="n.estado" [cierre]="n.cierre" [quien]="n.ayudanteAlias" />
         @if (esUrgente()) {
           <span class="urgente">{{ urgencia() }}</span>
         }

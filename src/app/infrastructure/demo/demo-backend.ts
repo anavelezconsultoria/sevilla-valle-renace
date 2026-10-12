@@ -13,8 +13,10 @@ import {
   TipoEvento,
 } from '../../core/domain/necesidad.model';
 import {
+  HORAS_EXTRA,
   HORAS_PARA_CONFIRMAR,
   HORAS_PARA_ENTREGAR,
+  puedeExtenderPlazo,
   sumarHoras,
 } from '../../core/domain/ciclo-de-vida';
 import { desplazarCoordenada, generarCodigoSeguimiento } from '../../core/domain/privacidad';
@@ -180,6 +182,18 @@ export class DemoBackend
       estado: EstadoNecesidad.Registrada,
       evento: { tipo: TipoEvento.Liberada, actor: ayudante.alias, evidencias: [] },
       cambios: { ayudanteAlias: undefined, venceEn: undefined },
+    });
+  }
+
+  async extenderPlazo(necesidadId: string): Promise<Necesidad> {
+    const ayudante = this.exigirSesion();
+    const registro = this.exigirAsignado(necesidadId, ayudante);
+    if (!puedeExtenderPlazo(registro.necesidad)) throw new Error('Ya pediste más tiempo una vez. Si no alcanzas, libérala para que otra persona la tome.');
+    return this.transicionar({
+      registro,
+      estado: EstadoNecesidad.EnAtencion,
+      evento: { tipo: TipoEvento.PlazoExtendido, actor: ayudante.alias, evidencias: [] },
+      cambios: { venceEn: sumarHoras(registro.necesidad.venceEn ?? new Date().toISOString(), HORAS_EXTRA) },
     });
   }
 

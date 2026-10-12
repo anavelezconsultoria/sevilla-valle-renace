@@ -311,6 +311,39 @@ do $$ begin
   raise notice 'OK  la clave nueva funciona y la vieja ya no';
 end $$;
 
+-- "Necesito mas tiempo": una vez por toma, solo quien atiende.
+do $$ declare r record; begin
+  select * into r from public.registrar_necesidad('agua', 'Agua potable', 'Necesitamos agua para tomar esta semana', 'media', 2, 'Sector', 4.26, -75.93, 'Teo', '3165550001', '5793');
+  perform set_config('prueba.id3', r.necesidad_id::text, true);
+end $$;
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a"}', true);
+do $$ declare v_antes timestamptz; v_despues timestamptz; begin
+  perform public.tomar_necesidad(current_setting('prueba.id3')::uuid);
+  select vence_en into v_antes from public.necesidades where id = current_setting('prueba.id3')::uuid;
+  perform public.extender_plazo(current_setting('prueba.id3')::uuid);
+  select vence_en into v_despues from public.necesidades where id = current_setting('prueba.id3')::uuid;
+  if v_despues - v_antes <> interval '24 hours' then raise exception 'FALLO: no sumo 24 horas'; end if;
+  if not exists (select 1 from public.eventos_necesidad where necesidad_id = current_setting('prueba.id3')::uuid and tipo = 'plazo_extendido' and actor_alias = 'Ayudante A') then
+    raise exception 'FALLO: no quedo en el historial';
+  end if;
+  raise notice 'OK  quien atiende pide 24 horas mas y queda en el historial';
+end $$;
+
+do $$ begin
+  perform public.extender_plazo(current_setting('prueba.id3')::uuid);
+  raise exception 'FALLO: se extendio dos veces en la misma toma';
+exception when sqlstate 'P0001' then raise notice 'OK  solo se puede pedir mas tiempo una vez por toma';
+end $$;
+
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000b"}', true);
+do $$ begin
+  perform public.extender_plazo(current_setting('prueba.id3')::uuid);
+  raise exception 'FALLO: otra persona extendio el plazo';
+exception when sqlstate 'P0001' then raise notice 'OK  nadie mas puede extender el plazo de una necesidad ajena';
+end $$;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.
