@@ -11,10 +11,15 @@ const ESTADOS_LEYENDA = [EstadoNecesidad.Registrada, EstadoNecesidad.EnAtencion,
 import { MapaNecesidades } from '../../shared/mapa/mapa-necesidades';
 import { NecesidadCard } from '../../shared/ui/necesidad-card';
 import { PanelCifras } from './panel-cifras';
+import { BotonCompartir } from '../../shared/ui/boton-compartir';
+import { Compartible, tarjetaListaHoy } from '../../shared/lib/tarjeta-compartir';
+
+/** Cuantas necesidades caben en la imagen de "Hoy necesitan". */
+const MAX_EN_LISTA_HOY = 6;
 
 @Component({
   selector: 'sr-mapa-page',
-  imports: [RouterLink, MapaNecesidades, NecesidadCard, PanelCifras],
+  imports: [RouterLink, MapaNecesidades, NecesidadCard, PanelCifras, BotonCompartir],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './mapa-page.html',
   styleUrl: './mapa-page.css',
@@ -57,6 +62,17 @@ export class MapaPage {
     return this.lectura.cifras();
   });
   protected readonly seleccionada = computed(() => this.activas().find((n) => n.id === this.seleccionadaId()));
+
+  /** Imagen del dia con lo que espera ayuda (prioridad 0 primero), para grupos y estados. */
+  protected readonly prepararListaHoy = async (): Promise<Compartible> => {
+    const esperando = this.lectura.filtrar({ estados: [EstadoNecesidad.Registrada] });
+    if (!esperando.length) throw new Error('Ahora mismo nadie está esperando ayuda.');
+    return {
+      imagen: await tarjetaListaHoy(esperando.slice(0, MAX_EN_LISTA_HOY), esperando.length),
+      archivo: 'sevilla-renace-hoy-necesitan.png',
+      texto: `Hoy en Sevilla ${esperando.length} ${esperando.length === 1 ? 'necesidad espera' : 'necesidades esperan'} ayuda. Entra, elige una y llévala: ${location.origin}`,
+    };
+  };
 
   protected alternarCategoria(valor: Categoria): void {
     this.categoria.update((actual) => (actual === valor ? null : valor));

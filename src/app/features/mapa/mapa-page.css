@@ -237,6 +237,10 @@
   border-radius: 50%;
 }
 
+.compartir-hoy {
+  margin: var(--space-3) var(--space-3) 0;
+}
+
 .avisos {
   display: grid;
   gap: 6px;

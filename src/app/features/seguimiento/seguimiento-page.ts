@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AccionSolicitante, NecesidadesLectura, SolicitanteGateway } from '../../core/ports/necesidades.ports';
-import { CredencialSolicitante, Necesidad } from '../../core/domain/necesidad.model';
-import { accionesDelSolicitante } from '../../core/domain/ciclo-de-vida';
+import { CredencialSolicitante, EstadoNecesidad, Necesidad } from '../../core/domain/necesidad.model';
+import { accionesDelSolicitante, ESTADOS_ACTIVOS } from '../../core/domain/ciclo-de-vida';
 import { LARGO_CLAVE, soloDigitos } from '../../core/domain/clave-solicitante';
 import { EstadoBadge } from '../../shared/ui/estado-badge';
 import { LineaTiempo } from '../../shared/ui/linea-tiempo';
@@ -58,6 +58,10 @@ export class SeguimientoPage {
     return this.locales.todas().filter((s) => this.lectura.obtener(s.necesidadId) !== undefined);
   });
 
+  /** Activas arriba (lo que todavia puede cambiar), cerradas plegadas abajo. */
+  protected readonly localesActivas = computed(() => this.localesVigentes().filter((s) => this.esActiva(s.necesidadId)));
+  protected readonly localesCerradas = computed(() => this.localesVigentes().filter((s) => !this.esActiva(s.necesidadId)));
+
   protected readonly puedeEntrar = computed(
     () => this.telefono().length === LARGO_TELEFONO && this.clave().length === LARGO_CLAVE && !this.entrando(),
   );
@@ -96,6 +100,18 @@ export class SeguimientoPage {
     const detalle = celular.length === 10 ? ` Mi celular registrado es ${celular}.` : '';
     return enlaceWhatsappA(WHATSAPP_COORDINACION, `Hola, olvidé mi clave de Sevilla Renace.${detalle} ¿Me ayudan a recuperarla?`);
   });
+
+  private esActiva(necesidadId: string): boolean {
+    const estado = this.lectura.obtener(necesidadId)?.estado;
+    return estado !== undefined && ESTADOS_ACTIVOS.includes(estado);
+  }
+
+  /** Que le toca a la persona ahora, en palabras simples. */
+  protected queSigue(n: Necesidad): string {
+    if (n.estado === EstadoNecesidad.Registrada) return 'En el mapa, esperando que alguien la tome.';
+    if (n.estado === EstadoNecesidad.EnAtencion) return `${n.ayudanteAlias ?? 'Alguien'} la tomó y va a contactarte.`;
+    return 'Ya te la entregaron: toca para confirmar que te llegó.';
+  }
 
   protected necesidadDe(id: string): Necesidad | undefined {
     return this.lectura.obtener(id);

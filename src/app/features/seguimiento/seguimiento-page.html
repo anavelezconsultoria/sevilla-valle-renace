@@ -70,19 +70,46 @@
     @if (localesVigentes().length) {
       <section class="card propias">
         <h2>Registradas desde este celular</h2>
-        <ul>
-          @for (s of localesVigentes(); track s.necesidadId) {
-            <li>
-              @let nec = necesidadDe(s.necesidadId);
-              <button type="button" (click)="abrirLocal(s)">
-                <span><strong>{{ s.titulo }}</strong><small>{{ nec?.sector }} · registrada {{ haceDe(s.registradaEn) }}</small></span>
-                @if (nec) {
-                  <sr-estado-badge [estado]="nec.estado" [cierre]="nec.cierre" />
-                }
-              </button>
-            </li>
-          }
-        </ul>
+        @if (localesActivas().length) {
+          <p class="grupo">En curso <span class="conteo">{{ localesActivas().length }}</span></p>
+          <ul>
+            @for (s of localesActivas(); track s.necesidadId) {
+              <li>
+                @let nec = necesidadDe(s.necesidadId);
+                <button type="button" class="activa" (click)="abrirLocal(s)">
+                  <span class="textos"><strong>{{ s.titulo }}</strong><small>{{ nec?.sector }} · registrada {{ haceDe(s.registradaEn) }}</small>
+                    @if (nec) {
+                      <small class="que-sigue">{{ queSigue(nec) }}</small>
+                    }
+                  </span>
+                  @if (nec) {
+                    <sr-estado-badge [estado]="nec.estado" [cierre]="nec.cierre" />
+                  }
+                </button>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted">No tienes solicitudes en curso.</p>
+        }
+        @if (localesCerradas().length) {
+          <details class="cerradas">
+            <summary>Cerradas <span class="conteo">{{ localesCerradas().length }}</span></summary>
+            <ul>
+              @for (s of localesCerradas(); track s.necesidadId) {
+                <li>
+                  @let nec = necesidadDe(s.necesidadId);
+                  <button type="button" (click)="abrirLocal(s)">
+                    <span class="textos"><strong>{{ s.titulo }}</strong><small>{{ nec?.sector }} · registrada {{ haceDe(s.registradaEn) }}</small></span>
+                    @if (nec) {
+                      <sr-estado-badge [estado]="nec.estado" [cierre]="nec.cierre" />
+                    }
+                  </button>
+                </li>
+              }
+            </ul>
+          </details>
+        }
       </section>
     }
 

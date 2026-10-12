@@ -95,6 +95,10 @@
       }
     </ul>
 
+    @if (vista() === 'esperando' && esperando().length) {
+      <sr-boton-compartir class="compartir-hoy" texto="Compartir la lista de hoy" [preparar]="prepararListaHoy" />
+    }
+
     <div class="avisos">
       <p><strong>{{ avisos.prioridadTitulo }}:</strong> {{ avisos.prioridad }}</p>
       <p><strong>{{ avisos.materialesTitulo }}:</strong> {{ avisos.materiales }}</p>

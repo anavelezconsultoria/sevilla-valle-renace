@@ -9,10 +9,13 @@ import { MapaNecesidades } from '../../shared/mapa/mapa-necesidades';
 import { tiempoRelativo } from '../../shared/lib/tiempo';
 import { PanelAyudante } from './panel-ayudante';
 import { PanelSolicitante } from './panel-solicitante';
+import { BotonCompartir } from '../../shared/ui/boton-compartir';
+import { Compartible, tarjetaNecesidad } from '../../shared/lib/tarjeta-compartir';
+import { EstadoNecesidad } from '../../core/domain/necesidad.model';
 
 @Component({
   selector: 'sr-detalle-page',
-  imports: [RouterLink, CategoriaIcono, EstadoBadge, LineaTiempo, MapaNecesidades, PanelAyudante, PanelSolicitante],
+  imports: [RouterLink, CategoriaIcono, EstadoBadge, LineaTiempo, MapaNecesidades, PanelAyudante, PanelSolicitante, BotonCompartir],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="container pagina">
@@ -53,6 +56,13 @@ import { PanelSolicitante } from './panel-solicitante';
           <aside class="lateral">
             <sr-panel-solicitante [necesidad]="n" />
             <sr-panel-ayudante [necesidad]="n" />
+            @if (n.estado === 'registrada') {
+              <section class="card difundir">
+                <h2>Ayuda a que alguien la vea</h2>
+                <p class="muted">Comparte esta necesidad en tus grupos o estados. La imagen no lleva el nombre ni el celular de la familia: quien quiera ayudar la toma aquí y recibe el contacto.</p>
+                <sr-boton-compartir texto="Compartir para conseguir ayuda" [preparar]="prepararCompartir" />
+              </section>
+            }
             <section class="card mapa-card">
               <sr-mapa-necesidades class="mapa" [necesidades]="[n]" [seleccionadaId]="n.id" />
               <p class="nota-mapa">Ubicación aproximada. La dirección exacta solo la ve quien atiende.</p>
@@ -86,6 +96,8 @@ import { PanelSolicitante } from './panel-solicitante';
     .aviso.externa { background: #f4eee6; }
     .bloque { padding: var(--space-5); display: grid; gap: var(--space-4); }
     h2 { font-family: var(--font-body); font-weight: 700; font-size: var(--text-lg); }
+    .difundir { display: grid; gap: var(--space-3); padding: var(--space-5); }
+    .difundir .muted { font-size: var(--text-sm); }
     .mapa-card { overflow: hidden; }
     .mapa { display: block; height: 220px; }
     .nota-mapa { font-size: var(--text-xs); color: var(--color-tenue); padding: var(--space-3) var(--space-4); }
@@ -107,6 +119,17 @@ export class DetallePage {
     const n = this.necesidad();
     return n ? infoCategoria(n.categoria) : null;
   });
+  /** Imagen + texto para compartir esta necesidad (sin datos personales). */
+  protected readonly prepararCompartir = async (): Promise<Compartible> => {
+    const n = this.necesidad();
+    if (!n || n.estado !== EstadoNecesidad.Registrada) throw new Error('Esta necesidad ya no está esperando ayuda.');
+    const enlace = `${location.origin}/necesidades/${n.id}`;
+    return {
+      imagen: await tarjetaNecesidad(n),
+      archivo: `sevilla-renace-${n.id.slice(0, 8)}.png`,
+      texto: `Una familia de ${n.sector} necesita: ${n.titulo}.${n.prioridadCero ? ' Es prioridad 0: hay bebés o adultos mayores.' : ''} ¿Puedes ayudar? Tómala aquí: ${enlace}`,
+    };
+  };
   protected readonly gestionExterna = computed(() => {
     const n = this.necesidad();
     return n ? esGestionExterna(n.categoria) : false;
