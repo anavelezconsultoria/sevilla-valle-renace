@@ -311,6 +311,14 @@ do $$ begin
   raise notice 'OK  la clave nueva funciona y la vieja ya no';
 end $$;
 
+-- Toques repetidos: la misma solicitud en minutos no se duplica.
+do $$ begin
+  perform public.registrar_necesidad('aseo', 'Pañales talla 3', 'Bebe de 8 meses necesita pañales', 'media', 3, 'Sector', 4.26, -75.93, 'Eva', '3175550002', '5793');
+  perform public.registrar_necesidad('aseo', 'Pañales talla 3 ', 'bebe de 8 meses necesita pañales', 'media', 3, 'Sector', 4.26, -75.93, 'Eva', '3175550002', '5793');
+  raise exception 'FALLO: se registro dos veces la misma solicitud';
+exception when sqlstate 'P0001' then raise notice 'OK  un toque repetido no crea una solicitud duplicada';
+end $$;
+
 -- "Necesito mas tiempo": una vez por toma, solo quien atiende.
 do $$ declare r record; begin
   select * into r from public.registrar_necesidad('agua', 'Agua potable', 'Necesitamos agua para tomar esta semana', 'media', 2, 'Sector', 4.26, -75.93, 'Teo', '3165550001', '5793');
