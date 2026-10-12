@@ -59,6 +59,7 @@ interface SemillaBase {
   descripcion: string;
   urgencia: Urgencia;
   personasHogar: number;
+  prioridadCero?: boolean;
   sector: string;
   dLat: number;
   dLng: number;
@@ -78,6 +79,7 @@ function base(s: SemillaBase, estado: EstadoNecesidad, eventos: EventoNecesidad[
       descripcion: s.descripcion,
       urgencia: s.urgencia,
       personasHogar: s.personasHogar,
+      prioridadCero: s.prioridadCero ?? false,
       sector: s.sector,
       ubicacionAproximada: cerca(s.dLat + 0.0012, s.dLng - 0.0009),
       estado,
@@ -92,9 +94,9 @@ function base(s: SemillaBase, estado: EstadoNecesidad, eventos: EventoNecesidad[
 export function crearSemillaDemo(): RegistroDemo[] {
   const r = (id: string, horas: number) => evento(`${id}-e0`, TipoEvento.Registrada, horas, 'Solicitante');
   return [
-    base({ id: 'demo-1', codigo: 'DEMO-AGUA', categoria: Categoria.Agua, titulo: 'Agua potable para una semana', descripcion: 'El tanque se rajó con el temblor. Somos 5 en casa, dos niños.', urgencia: Urgencia.Alta, personasHogar: 5, sector: 'Sector de ejemplo A', dLat: 0.004, dLng: 0.006, registradaHace: 5 }, EstadoNecesidad.Registrada, [r('demo-1', 5)]),
+    base({ id: 'demo-1', codigo: 'DEMO-AGUA', categoria: Categoria.Agua, titulo: 'Agua potable para una semana', descripcion: 'El tanque se rajó con el temblor. Somos 5 en casa, dos niños.', urgencia: Urgencia.Alta, personasHogar: 5, prioridadCero: true, sector: 'Sector de ejemplo A', dLat: 0.004, dLng: 0.006, registradaHace: 5 }, EstadoNecesidad.Registrada, [r('demo-1', 5)]),
     base({ id: 'demo-2', codigo: 'DEMO-TECH', categoria: Categoria.Techo, titulo: 'Tejas para cubrir una habitación', descripcion: 'Se cayó parte del techo del cuarto de los niños. Necesitamos unas 20 tejas o un plástico grueso.', urgencia: Urgencia.Alta, personasHogar: 4, sector: 'Sector de ejemplo B', dLat: -0.006, dLng: 0.003, registradaHace: 20 }, EstadoNecesidad.Registrada, [r('demo-2', 20)]),
-    base({ id: 'demo-3', codigo: 'DEMO-MEDI', categoria: Categoria.Medicamentos, titulo: 'Medicamento para la presión', descripcion: 'Adulto mayor sin su medicamento de la presión desde hace tres días. Tenemos la fórmula.', urgencia: Urgencia.Alta, personasHogar: 2, sector: 'Sector de ejemplo C', dLat: 0.009, dLng: -0.004, registradaHace: 9 }, EstadoNecesidad.EnAtencion, [r('demo-3', 9), evento('demo-3-e1', TipoEvento.Tomada, 3, 'Voluntaria Marta (demo)')], { ayudanteAlias: 'Voluntaria Marta (demo)', venceEn: sumarHoras(haceHoras(3), HORAS_PARA_ENTREGAR) }),
+    base({ id: 'demo-3', codigo: 'DEMO-MEDI', categoria: Categoria.Medicamentos, titulo: 'Medicamento para la presión', descripcion: 'Adulto mayor sin su medicamento de la presión desde hace tres días. Tenemos la fórmula.', urgencia: Urgencia.Alta, personasHogar: 2, prioridadCero: true, sector: 'Sector de ejemplo C', dLat: 0.009, dLng: -0.004, registradaHace: 9 }, EstadoNecesidad.EnAtencion, [r('demo-3', 9), evento('demo-3-e1', TipoEvento.Tomada, 3, 'Voluntaria Marta (demo)')], { ayudanteAlias: 'Voluntaria Marta (demo)', venceEn: sumarHoras(haceHoras(3), HORAS_PARA_ENTREGAR) }),
     base({ id: 'demo-4', codigo: 'DEMO-ALIM', categoria: Categoria.Alimentos, titulo: 'Mercado básico', descripcion: 'Perdimos lo que teníamos en la cocina. Arroz, granos, aceite.', urgencia: Urgencia.Media, personasHogar: 6, sector: 'Sector de ejemplo A', dLat: 0.002, dLng: 0.011, registradaHace: 30 }, EstadoNecesidad.Entregada, [r('demo-4', 30), evento('demo-4-e1', TipoEvento.Tomada, 26, 'Parroquia (demo)'), evento('demo-4-e2', TipoEvento.Entregada, 4, 'Parroquia (demo)', 'Se entregó un mercado para 6 personas.', [ilustracion('#c2612c', 'Mercado entregado')])], { ayudanteAlias: 'Parroquia (demo)', venceEn: sumarHoras(haceHoras(4), HORAS_PARA_CONFIRMAR) }),
     base({ id: 'demo-5', codigo: 'DEMO-ROPA', categoria: Categoria.Ropa, titulo: 'Cobijas para la noche', descripcion: 'Dormimos en el patio por miedo a las réplicas y hace mucho frío.', urgencia: Urgencia.Media, personasHogar: 3, sector: 'Sector de ejemplo D', dLat: -0.003, dLng: -0.008, registradaHace: 70 }, EstadoNecesidad.Atendida, [r('demo-5', 70), evento('demo-5-e1', TipoEvento.Tomada, 66, 'Juan (demo)'), evento('demo-5-e2', TipoEvento.Entregada, 60, 'Juan (demo)', 'Tres cobijas térmicas.', [ilustracion('#3f7f86', 'Cobijas entregadas')]), evento('demo-5-e3', TipoEvento.Confirmada, 58, 'Solicitante', 'Gracias, llegaron bien.')], { ayudanteAlias: 'Juan (demo)', cierre: CierreAtencion.Confirmada }),
     base({ id: 'demo-6', codigo: 'DEMO-MASC', categoria: Categoria.Mascotas, titulo: 'Concentrado para dos perros', descripcion: 'Los perros quedaron con nosotros pero no tenemos con qué alimentarlos.', urgencia: Urgencia.Baja, personasHogar: 2, sector: 'Sector de ejemplo B', dLat: -0.008, dLng: 0.009, registradaHace: 14 }, EstadoNecesidad.Registrada, [r('demo-6', 14)]),

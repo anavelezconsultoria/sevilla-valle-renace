@@ -73,9 +73,12 @@
         <ul>
           @for (s of localesVigentes(); track s.necesidadId) {
             <li>
+              @let nec = necesidadDe(s.necesidadId);
               <button type="button" (click)="abrirLocal(s)">
-                <span><strong>{{ s.titulo }}</strong><small>Toca para ver cómo va</small></span>
-                <span aria-hidden="true">→</span>
+                <span><strong>{{ s.titulo }}</strong><small>{{ nec?.sector }} · registrada {{ haceDe(s.registradaEn) }}</small></span>
+                @if (nec) {
+                  <sr-estado-badge [estado]="nec.estado" [cierre]="nec.cierre" />
+                }
               </button>
             </li>
           }
@@ -117,7 +120,11 @@
         @if (errorAcceso(); as e) {
           <p class="field-error" role="alert">{{ e }}</p>
         }
-        <p class="olvido"><strong>¿Olvidaste tu clave?</strong> No te preocupes: cuando quien te ayuda registra la entrega, tu solicitud se cierra sola como atendida a las 48 horas.</p>
+        <div class="olvido">
+          <p><strong>¿Olvidaste tu clave?</strong> Escríbele a la coordinación: te llamamos a tu celular para confirmar que eres tú y te damos una clave nueva.</p>
+          <a class="btn btn-whatsapp" [href]="enlaceRecuperar()" target="_blank" rel="noopener">Recuperar mi clave por WhatsApp</a>
+          <p class="muted">Mientras tanto, cuando quien te ayuda registra la entrega, tu solicitud se cierra sola como atendida a las 48 horas.</p>
+        </div>
       </form>
     }
   }

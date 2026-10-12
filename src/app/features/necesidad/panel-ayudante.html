@@ -44,6 +44,12 @@
   } @else if (n.estado === 'en_atencion') {
     <h2>Alguien ya va en camino</h2>
     <p class="muted"><strong>{{ n.ayudanteAlias }}</strong> la está atendiendo. Si no la entrega en 48 horas, vuelve a estar disponible.</p>
+  } @else if (n.estado === 'entregada' && soyQuienAtiende()) {
+    <h2>¡Gracias por entregarla!</h2>
+    <p class="muted">Avísale a la familia por WhatsApp: el mensaje ya lleva el enlace para que confirme que la recibió. Si no responde en 48 horas, se cierra sola como atendida.</p>
+    @if (enlaceAvisoEntrega(); as enlace) {
+      <a class="btn btn-whatsapp btn-block grande" [href]="enlace" target="_blank" rel="noopener">Avisar por WhatsApp que ya la entregué</a>
+    }
   } @else if (n.estado === 'entregada') {
     <h2>Entregada, falta confirmar</h2>
     <p class="muted">{{ n.ayudanteAlias }} registró la entrega. Quien la pidió tiene 48 horas para confirmarla; si no responde, se cierra sola como atendida.</p>

@@ -3,7 +3,7 @@ import { DemoBackend } from './infrastructure/demo/demo-backend';
 import { Categoria, CierreAtencion, EstadoNecesidad, NuevaNecesidad, TipoEvento, Urgencia } from './core/domain/necesidad.model';
 import { desplazarCoordenada, DESPLAZAMIENTO_MAX_M, DESPLAZAMIENTO_MIN_M, generarCodigoSeguimiento } from './core/domain/privacidad';
 import { enmascararTelefono, motivoClaveInvalida } from './core/domain/clave-solicitante';
-import { ErrorAccesoSolicitante } from './core/ports/necesidades.ports';
+import { ErrorAccesoSolicitante, ErrorClaveDistinta } from './core/ports/necesidades.ports';
 import { accionesDelAyudante, accionesDelSolicitante, HORAS_PARA_CONFIRMAR, HORAS_PARA_ENTREGAR } from './core/domain/ciclo-de-vida';
 import { filtrarNecesidades } from './core/application/filtrar-necesidades';
 import { calcularDimensiones } from './shared/lib/imagen';
@@ -23,6 +23,7 @@ const NUEVA: NuevaNecesidad = {
   descripcion: 'Se rompió el tanque con el temblor',
   urgencia: Urgencia.Alta,
   personasHogar: 4,
+  prioridadCero: false,
   sector: 'Sector de prueba',
   ubicacion: CENTRO_SEVILLA,
   contacto: { nombre: 'Prueba', telefono: '3157770000', referencias: '', clave: '5793' },
@@ -142,6 +143,30 @@ describe('Flujo completo en modo demostracion', () => {
       backend.confirmarRecibida({ necesidadId: necesidad.id, credencial: { tipo: 'clave', ...ajena } }),
     ).rejects.toBeInstanceOf(ErrorAccesoSolicitante);
     expect(backend.obtener(necesidad.id)?.estado).toBe(EstadoNecesidad.Entregada);
+  });
+
+  it('prioridad 0 (bebes o adultos mayores) va primero aunque sea menos urgente', async () => {
+    const urgente = await backend.registrar({ ...NUEVA, titulo: 'Urgente sin prioridad' });
+    const prioridad = await backend.registrar({ ...NUEVA, titulo: 'Leche para bebe', urgencia: Urgencia.Baja, prioridadCero: true });
+    const lista = filtrarNecesidades(backend.todas(), { estados: [EstadoNecesidad.Registrada] });
+    const ids = lista.map((n) => n.id);
+    expect(ids.indexOf(prioridad.necesidad.id)).toBeLessThan(ids.indexOf(urgente.necesidad.id));
+  });
+
+  it('un celular usa una sola clave para todas sus solicitudes', async () => {
+    await backend.registrar(NUEVA);
+    await expect(backend.registrar({ ...NUEVA, contacto: { ...NUEVA.contacto, clave: '8642' } })).rejects.toBeInstanceOf(ErrorClaveDistinta);
+    await expect(backend.registrar(NUEVA)).resolves.toBeDefined();
+  });
+
+  it('solo la coordinacion asigna una clave nueva, y la vieja deja de servir', async () => {
+    await backend.registrar(NUEVA);
+    await backend.iniciarSesion({ celular: '3001112222', alias: 'Ayudante' });
+    await expect(backend.restablecerClave({ telefono: ACCESO.telefono, clave: '7319' })).rejects.toThrow();
+    await backend.iniciarSesion({ celular: '3000000001', alias: 'Coordinacion' });
+    await expect(backend.restablecerClave({ telefono: ACCESO.telefono, clave: '7319' })).resolves.toBe(1);
+    await expect(backend.misNecesidades({ telefono: ACCESO.telefono, clave: '7319' })).resolves.toHaveLength(1);
+    await expect(backend.misNecesidades(ACCESO)).rejects.toBeInstanceOf(ErrorAccesoSolicitante);
   });
 
   it('nadie puede tomar una necesidad que ya esta en atencion', async () => {

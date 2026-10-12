@@ -272,6 +272,45 @@ do $$ begin
 exception when check_violation then raise notice 'OK  la base rechaza datos invalidos aunque el cliente no valide';
 end $$;
 
+-- Un celular, una clave; y prioridad 0.
+do $$ declare r record; begin
+  select * into r from public.registrar_necesidad('alimentos', 'Leche para bebe', 'Bebe de 3 meses sin leche de formula', 'alta', 3, 'Sector', 4.26, -75.93, 'Luz', '3157001122', '5793', '', true);
+  if r.necesidad_id is null then raise exception 'FALLO: no se registro la primera solicitud'; end if;
+  if not (select prioridad_cero from public.necesidades where id = r.necesidad_id) then raise exception 'FALLO: no quedo como prioridad 0'; end if;
+  select * into r from public.registrar_necesidad('ropa', 'Cobijas', 'Necesitamos cobijas para la noche', 'media', 3, 'Sector', 4.26, -75.93, 'Luz', '3157001122', '8642');
+  if r.necesidad_id is not null or r.codigo <> 'clave_no_coincide' then raise exception 'FALLO: se acepto otra clave para el mismo celular'; end if;
+  select * into r from public.registrar_necesidad('ropa', 'Cobijas', 'Necesitamos cobijas para la noche', 'media', 3, 'Sector', 4.26, -75.93, 'Luz', '3157001122', '5793');
+  if r.necesidad_id is null then raise exception 'FALLO: la misma clave no sirvio para la segunda solicitud'; end if;
+  if (select prioridad_cero from public.necesidades where id = r.necesidad_id) then raise exception 'FALLO: prioridad 0 por defecto'; end if;
+  raise notice 'OK  prioridad 0 se guarda; un celular usa una sola clave para todas sus solicitudes';
+end $$;
+
+-- Solo la coordinacion asigna claves nuevas.
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a"}', true);
+do $$ begin
+  perform public.restablecer_clave_solicitante('3157001122', '7319');
+  raise exception 'FALLO: un ayudante comun cambio una clave';
+exception when insufficient_privilege then raise notice 'OK  un ayudante comun NO puede cambiar claves';
+end $$;
+
+reset role;
+update public.perfiles set rol = 'coordinacion' where id = '00000000-0000-0000-0000-00000000000a';
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a"}', true);
+do $$ begin
+  if public.restablecer_clave_solicitante('315 700 1122', '7319') <> 2 then raise exception 'FALLO: no cambio las 2 solicitudes'; end if;
+  raise notice 'OK  la coordinacion asigna una clave nueva a todas las solicitudes del celular';
+end $$;
+
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$ begin
+  if (select count(*) from public.mis_necesidades('3157001122', '7319')) <> 2 then raise exception 'FALLO: la clave nueva no abre las solicitudes'; end if;
+  if exists (select 1 from public.mis_necesidades('3157001122', '5793')) then raise exception 'FALLO: la clave vieja sigue sirviendo'; end if;
+  raise notice 'OK  la clave nueva funciona y la vieja ya no';
+end $$;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.

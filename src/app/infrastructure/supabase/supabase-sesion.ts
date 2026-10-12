@@ -2,7 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { Session } from '@supabase/supabase-js';
 import { Ayudante, ErrorLimiteEnvios, InicioSesionPayload, SesionGateway } from '../../core/ports/necesidades.ports';
 import { exigir, SUPABASE_CLIENTE } from './supabase-cliente';
-import { FilaPerfil } from './supabase-filas';
+import { aAyudante, FilaPerfil } from './supabase-filas';
 
 const SEGUNDOS_ESPERA_LIMITE = 60;
 
@@ -28,7 +28,7 @@ export class SupabaseSesion implements SesionGateway {
     const perfil = exigir<FilaPerfil>(
       await this.cliente.rpc('asegurar_perfil', { p_alias: alias.trim(), p_celular: celular.replace(/\D/g, '') }),
     );
-    this.ayudante.set({ id: perfil.id, alias: perfil.alias });
+    this.ayudante.set(aAyudante(perfil));
   }
 
   async cerrarSesion(): Promise<void> {
@@ -51,9 +51,9 @@ export class SupabaseSesion implements SesionGateway {
       return;
     }
     const perfil = exigir<FilaPerfil | null>(
-      await this.cliente.from('perfiles').select('id, alias').eq('id', sesion.user.id).maybeSingle(),
+      await this.cliente.from('perfiles').select('id, alias, rol').eq('id', sesion.user.id).maybeSingle(),
     );
-    this.ayudante.set(perfil ? { id: perfil.id, alias: perfil.alias } : null);
+    this.ayudante.set(perfil ? aAyudante(perfil) : null);
   }
 
   private traducirError(estado: number | undefined, mensaje: string): Error {

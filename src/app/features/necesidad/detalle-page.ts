@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NecesidadesLectura } from '../../core/ports/necesidades.ports';
-import { infoCategoria, URGENCIAS } from '../../core/domain/catalogos';
+import { AVISOS, esGestionExterna, infoCategoria, URGENCIAS } from '../../core/domain/catalogos';
 import { CategoriaIcono } from '../../shared/ui/categoria-icono';
 import { EstadoBadge } from '../../shared/ui/estado-badge';
 import { LineaTiempo } from '../../shared/ui/linea-tiempo';
@@ -36,6 +36,12 @@ import { PanelSolicitante } from './panel-solicitante';
                 <span class="chip">Registrada {{ hace() }}</span>
               </div>
               <p class="descripcion">{{ n.descripcion }}</p>
+              @if (n.prioridadCero) {
+                <p class="aviso prioridad"><strong>{{ avisos.prioridadTitulo }}:</strong> en este hogar hay bebés o adultos mayores. Se atiende primero.</p>
+              }
+              @if (gestionExterna()) {
+                <p class="aviso externa"><strong>{{ avisos.materialesTitulo }}:</strong> {{ avisos.materiales }}</p>
+              }
             </header>
 
             <section class="card bloque">
@@ -75,6 +81,9 @@ import { PanelSolicitante } from './panel-solicitante';
     .chip { font-size: var(--text-xs); font-weight: 550; padding: 3px 10px; border-radius: var(--radius-pill); background: var(--color-arena); color: var(--color-texto); }
     .chip.urgente { background: var(--estado-pendiente-bg); color: var(--urgencia-alta); }
     .descripcion { font-size: var(--text-md); line-height: 1.65; }
+    .aviso { font-size: var(--text-sm); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); }
+    .aviso.prioridad { background: var(--estado-pendiente-bg); }
+    .aviso.externa { background: #f4eee6; }
     .bloque { padding: var(--space-5); display: grid; gap: var(--space-4); }
     h2 { font-family: var(--font-body); font-weight: 700; font-size: var(--text-lg); }
     .mapa-card { overflow: hidden; }
@@ -86,6 +95,7 @@ import { PanelSolicitante } from './panel-solicitante';
 })
 export class DetallePage {
   private readonly lectura = inject(NecesidadesLectura);
+  protected readonly avisos = AVISOS;
   /** Viene del parametro de ruta :id (withComponentInputBinding). */
   readonly id = input.required<string>();
 
@@ -96,6 +106,10 @@ export class DetallePage {
   protected readonly categoria = computed(() => {
     const n = this.necesidad();
     return n ? infoCategoria(n.categoria) : null;
+  });
+  protected readonly gestionExterna = computed(() => {
+    const n = this.necesidad();
+    return n ? esGestionExterna(n.categoria) : false;
   });
   protected readonly urgencia = computed(() => {
     const n = this.necesidad();

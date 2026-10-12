@@ -3,6 +3,7 @@ import { provideRouter, withComponentInputBinding, withInMemoryScrolling, withVi
 import { routes } from './app.routes';
 import {
   AyudanteGateway,
+  CoordinacionGateway,
   ModoDatos,
   NecesidadesLectura,
   SesionGateway,
@@ -21,6 +22,7 @@ const PUERTOS_DEMO: Provider[] = [
   { provide: NecesidadesLectura, useExisting: DemoBackend },
   { provide: SolicitanteGateway, useExisting: DemoBackend },
   { provide: AyudanteGateway, useExisting: DemoBackend },
+  { provide: CoordinacionGateway, useExisting: DemoBackend },
   { provide: SesionGateway, useExisting: DemoBackend },
   { provide: ModoDatos, useExisting: DemoBackend },
 ];
@@ -31,6 +33,7 @@ const PUERTOS_SUPABASE: Provider[] = [
   { provide: NecesidadesLectura, useExisting: SupabaseNecesidades },
   { provide: SolicitanteGateway, useExisting: SupabaseNecesidades },
   { provide: AyudanteGateway, useExisting: SupabaseNecesidades },
+  { provide: CoordinacionGateway, useExisting: SupabaseNecesidades },
   { provide: ModoDatos, useExisting: SupabaseNecesidades },
 ];
 

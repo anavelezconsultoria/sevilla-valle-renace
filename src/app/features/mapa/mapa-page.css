@@ -169,16 +169,84 @@
   display: none;
 }
 
-.lista-cabecera {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding: var(--space-4) var(--space-4) var(--space-3);
-  border-bottom: 1px solid var(--color-linea);
+/* Pestanas: lo que espera ayuda va primero y en el color de "esperando". */
+.pestanas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: var(--space-3) var(--space-3) 0;
 }
 
-.lista-cabecera h2 {
-  font-size: var(--text-md);
+.pestana {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1.5px solid var(--color-linea);
+  border-radius: var(--radius-pill);
+  background: var(--color-superficie);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 650;
+  color: var(--color-tenue);
+  cursor: pointer;
+  transition: background-color var(--dur-corta), border-color var(--dur-corta), color var(--dur-corta);
+}
+
+.pestana.activa {
+  color: var(--estado-progreso);
+  border-color: #f2c770;
+  background: var(--estado-progreso-bg);
+}
+
+.pestana.espera.activa {
+  color: #fff;
+  border-color: var(--estado-pendiente);
+  background: var(--estado-pendiente);
+}
+
+.pestana .conteo {
+  min-width: 26px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--color-tinta);
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  padding: var(--space-3) var(--space-4) 0;
+  list-style: none;
+  font-size: var(--text-xs);
+  color: var(--color-tenue);
+}
+
+.leyenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.leyenda .punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.avisos {
+  display: grid;
+  gap: 6px;
+  margin: var(--space-3) var(--space-3) 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--estado-pendiente-bg);
+  font-size: var(--text-xs);
+  line-height: 1.45;
+  color: var(--color-tinta);
 }
 
 .lista {
@@ -321,8 +389,29 @@
     background: var(--color-linea-fuerte);
   }
 
-  .lista-cabecera {
-    display: none;
+  .asa-texto {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-tinta);
+  }
+
+  .asa-texto strong {
+    color: var(--estado-pendiente);
+    font-size: var(--text-md);
+  }
+
+  .latido {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--estado-pendiente);
+    animation: latido-punto 1.6s ease-out infinite;
+  }
+
+  @keyframes latido-punto {
+    0% { box-shadow: 0 0 0 0 rgba(200, 67, 31, 0.5); }
+    100% { box-shadow: 0 0 0 10px rgba(200, 67, 31, 0); }
   }
 
   .vista-previa {
@@ -337,6 +426,12 @@
 
   :host ::ng-deep .leaflet-bottom {
     bottom: 56px;
+  }
+
+  /* Con la lista abierta, nada del mapa se monta encima del texto. */
+  .lista-abierta .alternar-paneles,
+  .lista-abierta ::ng-deep .leaflet-bottom {
+    display: none;
   }
 }
 

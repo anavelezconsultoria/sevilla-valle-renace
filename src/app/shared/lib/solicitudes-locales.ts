@@ -14,13 +14,44 @@ export interface SolicitudLocal {
   readonly registradaEn: string;
 }
 
+/**
+ * Datos de quien pide ayuda en ESTE celular: la segunda solicitud no vuelve a
+ * pedir nombre, celular ni clave. La clave queda solo en este navegador.
+ */
+export interface PerfilSolicitante {
+  readonly nombre: string;
+  readonly telefono: string;
+  readonly clave: string;
+}
+
 const CLAVE = 'sevilla-renace-mis-solicitudes';
+const CLAVE_PERFIL = 'sevilla-renace-solicitante';
 const MAXIMO = 20;
 
 @Injectable({ providedIn: 'root' })
 export class SolicitudesLocales {
   private readonly lista = signal<readonly SolicitudLocal[]>(this.leer());
   readonly todas = this.lista.asReadonly();
+  private readonly perfilGuardado = signal<PerfilSolicitante | null>(this.leerPerfil());
+  readonly perfil = this.perfilGuardado.asReadonly();
+
+  guardarPerfil(perfil: PerfilSolicitante): void {
+    this.perfilGuardado.set(perfil);
+    try {
+      localStorage.setItem(CLAVE_PERFIL, JSON.stringify(perfil));
+    } catch {
+      /* Sin almacenamiento: se recuerda solo mientras la pestaña este abierta. */
+    }
+  }
+
+  private leerPerfil(): PerfilSolicitante | null {
+    try {
+      const crudo = localStorage.getItem(CLAVE_PERFIL);
+      return crudo ? (JSON.parse(crudo) as PerfilSolicitante) : null;
+    } catch {
+      return null;
+    }
+  }
 
   guardar(solicitud: SolicitudLocal): void {
     const sinRepetir = this.lista().filter((s) => s.necesidadId !== solicitud.necesidadId);

@@ -14,7 +14,10 @@ function coincideTexto(necesidad: Necesidad, texto: string): boolean {
   );
 }
 
-/** Filtra y ordena: primero lo mas urgente y, a igual urgencia, lo que lleva mas tiempo esperando. */
+/**
+ * Filtra y ordena: primero prioridad 0 (bebes o adultos mayores), luego lo mas
+ * urgente y, a igual urgencia, lo que lleva mas tiempo esperando.
+ */
 export function filtrarNecesidades(todas: readonly Necesidad[], filtro: FiltroNecesidades): readonly Necesidad[] {
   return todas
     .filter((n) => !filtro.estados?.length || filtro.estados.includes(n.estado))
@@ -23,6 +26,7 @@ export function filtrarNecesidades(todas: readonly Necesidad[], filtro: FiltroNe
     .filter((n) => coincideTexto(n, filtro.texto ?? ''))
     .toSorted(
       (a, b) =>
+        Number(b.prioridadCero) - Number(a.prioridadCero) ||
         PESO_URGENCIA[a.urgencia] - PESO_URGENCIA[b.urgencia] ||
         new Date(a.registradaEn).getTime() - new Date(b.registradaEn).getTime(),
     );

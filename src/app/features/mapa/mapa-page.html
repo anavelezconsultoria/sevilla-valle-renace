@@ -1,4 +1,4 @@
-<div class="escena" [class.paneles-ocultos]="panelesOcultos()">
+<div class="escena" [class.paneles-ocultos]="panelesOcultos()" [class.lista-abierta]="listaAbierta()">
   <button type="button" class="alternar-paneles" (click)="panelesOcultos.set(!panelesOcultos())" [attr.aria-pressed]="panelesOcultos()">
     <svg viewBox="0 0 24 24" aria-hidden="true">
       @if (panelesOcultos()) {
@@ -77,26 +77,47 @@
   <aside class="panel panel-derecho card" [class.abierta]="listaAbierta()" aria-label="Necesidades activas">
     <button type="button" class="asa" (click)="listaAbierta.set(!listaAbierta())" [attr.aria-expanded]="listaAbierta()">
       <span class="asa-barra" aria-hidden="true"></span>
-      <span><strong>{{ activas().length }}</strong> necesidades activas</span>
+      <span class="asa-texto"><span class="latido" aria-hidden="true"></span><strong>{{ esperando().length }}</strong> esperando ayuda · {{ enCurso().length }} en curso</span>
     </button>
-    <div class="lista-cabecera">
-      <h2>Necesidades activas</h2>
-      <span class="conteo">{{ activas().length }}</span>
+
+    <div class="pestanas" role="tablist" aria-label="Necesidades">
+      <button type="button" role="tab" class="pestana espera" [class.activa]="vista() === 'esperando'" [attr.aria-selected]="vista() === 'esperando'" (click)="vista.set('esperando')">
+        Esperando ayuda <span class="conteo">{{ esperando().length }}</span>
+      </button>
+      <button type="button" role="tab" class="pestana" [class.activa]="vista() === 'curso'" [attr.aria-selected]="vista() === 'curso'" (click)="vista.set('curso')">
+        En curso <span class="conteo">{{ enCurso().length }}</span>
+      </button>
     </div>
+
+    <ul class="leyenda" aria-label="Colores del mapa">
+      @for (e of leyenda; track e.etiqueta) {
+        <li><span class="punto" [style.background]="e.color" aria-hidden="true"></span>{{ e.etiqueta }}</li>
+      }
+    </ul>
+
+    <div class="avisos">
+      <p><strong>{{ avisos.prioridadTitulo }}:</strong> {{ avisos.prioridad }}</p>
+      <p><strong>{{ avisos.materialesTitulo }}:</strong> {{ avisos.materiales }}</p>
+    </div>
+
     <div class="lista">
       @if (cargando()) {
         @for (i of [0, 1, 2, 3]; track i) {
           <div class="esqueleto tarjeta-esqueleto"></div>
         }
       } @else {
-        @for (n of activas(); track n.id; let i = $index) {
+        @for (n of lista(); track n.id; let i = $index) {
           <div class="entrada" [style.--i]="i" (mouseenter)="seleccionadaId.set(n.id)">
             <sr-necesidad-card [necesidad]="n" [compacta]="true" />
           </div>
         } @empty {
           <div class="vacio">
-            <p><strong>Ninguna necesidad activa con ese filtro.</strong></p>
-            <p class="muted">Cuando alguien registre una, aparecerá aquí al instante.</p>
+            @if (vista() === 'esperando') {
+              <p><strong>Nadie está esperando ayuda con ese filtro.</strong></p>
+              <p class="muted">Cuando alguien registre una necesidad, aparecerá aquí al instante.</p>
+            } @else {
+              <p><strong>No hay necesidades en curso con ese filtro.</strong></p>
+            }
           </div>
         }
       }

@@ -88,5 +88,27 @@ export const OPCIONES_URGENCIA: readonly UrgenciaInfo[] = [
   { valor: Urgencia.Baja, etiqueta: 'Puede esperar', descripcion: 'Ayuda para seguir adelante' },
 ];
 
+/** Color de cada estado en el mapa y en las etiquetas: un semaforo facil de leer. */
+export const COLOR_ESTADO: Record<EstadoNecesidad, string> = {
+  [EstadoNecesidad.Registrada]: '#e4572e',
+  [EstadoNecesidad.EnAtencion]: '#e09a10',
+  [EstadoNecesidad.Entregada]: '#7c5cf0',
+  [EstadoNecesidad.Atendida]: '#1b8a5e',
+  [EstadoNecesidad.Cancelada]: '#8b8aa0',
+};
+
+/** Avisos de como se prioriza y que tarda mas. Mismo texto en la portada y en el registro. */
+export const AVISOS = {
+  prioridadTitulo: 'Prioridad 0',
+  prioridad: 'Los hogares con bebés o adultos mayores se atienden primero.',
+  materialesTitulo: 'Materiales de construcción',
+  materiales: 'Se gestionan con entidades externas: es un proceso un poco más demorado.',
+} as const;
+
+/** Las solicitudes de materiales se gestionan por fuera: se marcan para no crear falsas expectativas. */
+export function esGestionExterna(categoria: Categoria): boolean {
+  return categoria === Categoria.Materiales;
+}
+
 /** Centro de Sevilla, Valle del Cauca. */
 export const CENTRO_SEVILLA = { lat: 4.2667, lng: -75.9333 } as const;

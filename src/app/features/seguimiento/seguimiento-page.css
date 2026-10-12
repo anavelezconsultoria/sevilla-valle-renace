@@ -164,3 +164,9 @@ h2 {
     grid-template-columns: 1fr;
   }
 }
+
+.olvido {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}

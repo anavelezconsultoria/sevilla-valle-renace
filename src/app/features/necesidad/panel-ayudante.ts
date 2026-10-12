@@ -3,6 +3,7 @@ import { AyudanteGateway, SesionGateway } from '../../core/ports/necesidades.por
 import { ContactoPrivado, EstadoNecesidad, Necesidad } from '../../core/domain/necesidad.model';
 import { accionesDelAyudante } from '../../core/domain/ciclo-de-vida';
 import { tiempoRelativo } from '../../shared/lib/tiempo';
+import { enlaceWhatsappA } from '../../shared/lib/whatsapp';
 import { IdentificarseForm } from '../sesion/identificarse-form';
 import { EntregaForm } from './entrega-form';
 
@@ -30,6 +31,12 @@ export class PanelAyudante {
     const n = this.necesidad();
     return n.estado === EstadoNecesidad.EnAtencion && this.ayudanteGw.misAtenciones().some((m) => m.id === n.id);
   });
+  /** Quien la atiende (en curso o ya entregada): conserva el contacto para avisar por WhatsApp. */
+  protected readonly soyQuienAtiende = computed(() => {
+    const n = this.necesidad();
+    const yo = this.ayudante()?.id;
+    return !!yo && n.ayudanteId === yo && (n.estado === EstadoNecesidad.EnAtencion || n.estado === EstadoNecesidad.Entregada);
+  });
   protected readonly acciones = computed(() =>
     accionesDelAyudante({ estado: this.necesidad().estado, esAsignado: this.esAsignado() }),
   );
@@ -43,12 +50,23 @@ export class PanelAyudante {
   });
   protected readonly enlaceWhatsapp = computed(() => {
     const c = this.contacto();
-    return c ? `https://wa.me/57${c.telefono}?text=${encodeURIComponent(`Hola ${c.nombre}, te escribo de Sevilla Renace por tu solicitud "${this.necesidad().titulo}". Voy a ayudarte.`)}` : '';
+    return c ? enlaceWhatsappA(c.telefono, `Hola ${c.nombre}, te escribo de Sevilla Renace por tu solicitud "${this.necesidad().titulo}". Voy a ayudarte.`) : '';
+  });
+  /** Aviso de entrega: lleva el enlace para que la familia confirme con un toque. */
+  protected readonly enlaceAvisoEntrega = computed(() => {
+    const c = this.contacto();
+    const n = this.necesidad();
+    if (!c) return '';
+    const confirmar = `${location.origin}/seguimiento?necesidad=${n.id}`;
+    return enlaceWhatsappA(
+      c.telefono,
+      `Hola ${c.nombre}, ya te entregué la ayuda de Sevilla Renace: "${n.titulo}". Por favor confirma que la recibiste aquí: ${confirmar}`,
+    );
   });
 
   constructor() {
     effect(() => {
-      if (this.esAsignado()) void this.cargarContacto();
+      if (this.soyQuienAtiende()) void this.cargarContacto();
       else this.contacto.set(null);
     });
   }

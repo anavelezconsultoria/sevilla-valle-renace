@@ -34,10 +34,10 @@
   --color-linea-fuerte: #d9d2ef;
 
   /* Estados del ciclo de vida */
-  --estado-pendiente: #d9582e;
+  --estado-pendiente: #c8431f;
   --estado-pendiente-bg: #fff0e9;
-  --estado-progreso: #2b4cf2;
-  --estado-progreso-bg: #eaefff;
+  --estado-progreso: #9a6400;
+  --estado-progreso-bg: #fff3d6;
   --estado-entregada: #6a4fe0;
   --estado-entregada-bg: #f1ecff;
   --estado-exito: #1b8a5e;
@@ -486,4 +486,14 @@ textarea.input {
   ::view-transition-new(root) {
     animation: none;
   }
+}
+
+/* WhatsApp: verde reconocible, para los avisos que se envian desde el celular de quien ayuda. */
+.btn-whatsapp {
+  background: #1faa53;
+  color: #fff;
+}
+
+.btn-whatsapp:hover {
+  background: #17924a;
 }

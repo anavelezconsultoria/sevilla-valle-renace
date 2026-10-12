@@ -23,8 +23,11 @@ import {
   AccionSolicitante,
   Ayudante,
   AyudanteGateway,
+  CoordinacionGateway,
   EntregaPayload,
   ErrorAccesoSolicitante,
+  ErrorClaveDistinta,
+  RestablecerClavePayload,
   InicioSesionPayload,
   ModoDatos,
   NecesidadesLectura,
@@ -36,7 +39,7 @@ import { filtrarNecesidades } from '../../core/application/filtrar-necesidades';
 import { calcularCifras } from '../../core/application/calcular-cifras';
 import { crearSemillaDemo, RegistroDemo } from './demo-semilla';
 
-const CLAVE_ALMACEN = 'sevilla-renace-demo-v3';
+const CLAVE_ALMACEN = 'sevilla-renace-demo-v4';
 const CLAVE_SESION = 'sevilla-renace-demo-sesion';
 const INTERVALO_VENCIMIENTOS_MS = 60_000;
 
@@ -64,7 +67,7 @@ interface Transicion {
  */
 @Injectable({ providedIn: 'root' })
 export class DemoBackend
-  implements NecesidadesLectura, SolicitanteGateway, AyudanteGateway, SesionGateway, ModoDatos
+  implements NecesidadesLectura, SolicitanteGateway, AyudanteGateway, CoordinacionGateway, SesionGateway, ModoDatos
 {
   readonly esDemo = true;
   private readonly registros = signal<RegistroDemo[]>(this.cargar());
@@ -95,6 +98,8 @@ export class DemoBackend
   // ---- Solicitante ----
 
   async registrar(nueva: NuevaNecesidad): Promise<RegistroResultado> {
+    const delCelular = this.registros().filter((r) => soloDigitos(r.contacto.telefono) === soloDigitos(nueva.contacto.telefono));
+    if (delCelular.length && !delCelular.some((r) => r.clave === nueva.contacto.clave)) throw new ErrorClaveDistinta();
     const ahora = new Date().toISOString();
     const id = crypto.randomUUID();
     const codigo = generarCodigoSeguimiento();
@@ -105,6 +110,7 @@ export class DemoBackend
       descripcion: nueva.descripcion.trim(),
       urgencia: nueva.urgencia,
       personasHogar: nueva.personasHogar,
+      prioridadCero: nueva.prioridadCero,
       sector: nueva.sector.trim(),
       ubicacionAproximada: desplazarCoordenada(nueva.ubicacion),
       estado: EstadoNecesidad.Registrada,
@@ -199,6 +205,16 @@ export class DemoBackend
     return this.exigirAsignado(necesidadId, ayudante).contacto;
   }
 
+  // ---- Coordinacion ----
+
+  async restablecerClave({ telefono, clave }: RestablecerClavePayload): Promise<number> {
+    if (!this.ayudante()?.esCoordinador) throw new Error('Solo la coordinación puede asignar claves.');
+    const delCelular = this.registros().filter((r) => soloDigitos(r.contacto.telefono) === soloDigitos(telefono));
+    if (!delCelular.length) throw new Error('No hay solicitudes registradas con ese celular.');
+    this.guardar(this.registros().map((r) => (delCelular.includes(r) ? { ...r, clave } : r)));
+    return delCelular.length;
+  }
+
   misAtenciones(): readonly Necesidad[] {
     const id = this.ayudante()?.id;
     return id ? this.registros().filter((r) => r.ayudanteId === id).map((r) => r.necesidad) : [];
@@ -207,7 +223,9 @@ export class DemoBackend
   // ---- Sesion ----
 
   async iniciarSesion({ celular, alias }: InicioSesionPayload): Promise<void> {
-    const ayudante: Ayudante = { id: `demo-${celular.replace(/\D/g, '')}`, alias: alias.trim() };
+    // En la demo, el celular 3000000001 entra como coordinacion para probar sus herramientas.
+    const digitos = celular.replace(/\D/g, '');
+    const ayudante: Ayudante = { id: `demo-${digitos}`, alias: alias.trim(), esCoordinador: digitos === '3000000001' };
     this.ayudante.set(ayudante);
     this.escribir(CLAVE_SESION, ayudante);
   }

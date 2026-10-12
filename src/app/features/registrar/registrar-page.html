@@ -91,6 +91,14 @@
             </div>
             <sr-errores-campo [estado]="estado(formulario.urgencia)" />
 
+            <button type="button" class="prioridad-cero" [class.marcada]="modelo().prioridadCero" [attr.aria-pressed]="modelo().prioridadCero" (click)="alternarPrioridad()">
+              <span class="interruptor" aria-hidden="true"><span></span></span>
+              <span class="textos">
+                <strong>En mi hogar hay bebés o adultos mayores</strong>
+                <small>{{ avisos.prioridadTitulo }}: {{ avisos.prioridad }}</small>
+              </span>
+            </button>
+
             <div class="personas">
               <h2>¿Cuántas personas viven en tu hogar?</h2>
               <div class="contador">
@@ -118,6 +126,9 @@
             <h1 id="titulo-paso">{{ paso().titulo }}</h1>
             @if (categoriaElegida(); as c) {
               <p class="ayuda con-icono"><sr-categoria-icono [categoria]="c.valor" [tamano]="28" /> {{ c.etiqueta }}</p>
+            }
+            @if (gestionExterna()) {
+              <p class="aviso-externa"><strong>Ten en cuenta:</strong> {{ avisos.materiales }} Igual registra tu necesidad para que quede en la lista.</p>
             }
             <div class="field">
               <label class="field-label" for="titulo">¿Qué necesitas, en pocas palabras?</label>
@@ -203,6 +214,16 @@
             <h1 id="titulo-paso">{{ paso().titulo }}</h1>
             <p class="ayuda">Como la clave del cajero. Con tu celular <strong>{{ telefonoVisible() }}</strong> y esta clave sigues tu solicitud y confirmas cuando te llegue la ayuda, desde cualquier celular.</p>
 
+            @if (errorClave(); as e) {
+              <p class="error-general" role="alert">{{ e }}</p>
+            }
+
+            @if (claveRecordada()) {
+              <div class="clave-recordada">
+                <span class="puntos" aria-hidden="true">••••</span>
+                <p><strong>Usamos la misma clave de tus otras solicitudes.</strong> No tienes que escribirla de nuevo.</p>
+              </div>
+            } @else {
             <div class="field">
               <label class="field-label" for="clave">Tu clave</label>
               <div class="pin" [class.completa]="m.clave.length === largoClave">
@@ -226,6 +247,8 @@
             </div>
 
             <p class="consejo">No uses 1234 ni el final de tu celular: quien te ayude ve tu número. No le digas la clave a nadie.</p>
+            <p class="consejo">Si este celular ya pidió ayuda antes, escribe la misma clave de esa vez.</p>
+            }
           </div>
         }
 

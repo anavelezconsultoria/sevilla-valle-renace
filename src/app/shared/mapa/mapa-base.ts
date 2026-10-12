@@ -1,6 +1,6 @@
 import * as L from 'leaflet';
 import { Coordenada, EstadoNecesidad } from '../../core/domain/necesidad.model';
-import { CategoriaInfo, CENTRO_SEVILLA } from '../../core/domain/catalogos';
+import { CategoriaInfo, CENTRO_SEVILLA, COLOR_ESTADO } from '../../core/domain/catalogos';
 
 /** Fabrica del mapa base y de los marcadores, compartida por el mapa publico y el selector de punto. */
 
@@ -21,12 +21,10 @@ export function crearMapa(contenedor: HTMLElement, { centro = CENTRO_SEVILLA, zo
   return mapa;
 }
 
-const ANILLO_POR_ESTADO: Partial<Record<EstadoNecesidad, string>> = {
-  [EstadoNecesidad.EnAtencion]: '#2b4cf2',
-  [EstadoNecesidad.Entregada]: '#7c5cf0',
-  [EstadoNecesidad.Atendida]: '#1b8a5e',
-};
-
+/**
+ * Marcador: el COLOR dice el estado (semaforo, igual que la leyenda) y el ICONO dice
+ * la categoria. Antes el color era la categoria y se confundia con los estados.
+ */
 export interface MarcadorNecesidad {
   readonly categoria: CategoriaInfo;
   readonly estado: EstadoNecesidad;
@@ -41,12 +39,12 @@ export interface MarcadorNecesidad {
 }
 
 export function iconoNecesidad({ categoria, estado, seleccionado, orden, animar, esperando, urgente }: MarcadorNecesidad): L.DivIcon {
-  const anillo = ANILLO_POR_ESTADO[estado] ?? '#ffffff';
+  const color = COLOR_ESTADO[estado];
   const tamano = seleccionado ? 46 : 38;
   const latido = urgente ? 'sr-pin--urgente' : esperando ? 'sr-pin--espera' : '';
   const clases = ['sr-pin', seleccionado ? 'sr-pin--activo' : '', animar ? 'sr-pin--cae' : '', latido].join(' ');
   const html = `
-    <div class="${clases}" style="--pin:${categoria.color};--anillo:${anillo};--t:${tamano}px;--i:${orden}">
+    <div class="${clases}" style="--pin:${color};--anillo:#ffffff;--t:${tamano}px;--i:${orden}">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${categoria.icono}"/></svg>
     </div>`;
   return L.divIcon({ html, className: 'sr-pin-wrap', iconSize: [tamano, tamano], iconAnchor: [tamano / 2, tamano] });

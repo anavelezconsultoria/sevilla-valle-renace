@@ -4,6 +4,7 @@ import { AyudanteGateway, SesionGateway } from '../../core/ports/necesidades.por
 import { EstadoNecesidad, Necesidad } from '../../core/domain/necesidad.model';
 import { NecesidadCard } from '../../shared/ui/necesidad-card';
 import { IdentificarseForm } from '../sesion/identificarse-form';
+import { RestablecerClave } from './restablecer-clave';
 
 interface Columna {
   readonly titulo: string;
@@ -14,7 +15,7 @@ interface Columna {
 /** Tablero de seguimiento de quien ayuda: lo que tengo en curso, lo que espera confirmacion y lo resuelto. */
 @Component({
   selector: 'sr-mis-atenciones-page',
-  imports: [RouterLink, NecesidadCard, IdentificarseForm],
+  imports: [RouterLink, NecesidadCard, IdentificarseForm, RestablecerClave],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="container pagina">
@@ -41,7 +42,7 @@ interface Columna {
               <p class="ayuda muted">{{ col.ayuda }}</p>
               <div class="tarjetas">
                 @for (n of col.necesidades; track n.id) {
-                  <sr-necesidad-card [necesidad]="n" [compacta]="true" />
+                  <sr-necesidad-card [necesidad]="n" [compacta]="true" [descripcionVisible]="true" />
                 } @empty {
                   <p class="vacia">Nada por aquí.</p>
                 }
@@ -49,6 +50,10 @@ interface Columna {
             </section>
           }
         </div>
+
+        @if (a.esCoordinador) {
+          <sr-restablecer-clave />
+        }
       } @else {
         <section class="card acceso">
           <p class="eyebrow">Quiero ayudar</p>

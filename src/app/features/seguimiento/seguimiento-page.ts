@@ -9,6 +9,7 @@ import { LineaTiempo } from '../../shared/ui/linea-tiempo';
 import { tiempoRelativo } from '../../shared/lib/tiempo';
 import { Celebracion } from '../../shared/ui/celebracion';
 import { SolicitudesLocales, SolicitudLocal } from '../../shared/lib/solicitudes-locales';
+import { enlaceWhatsappA, WHATSAPP_COORDINACION } from '../../shared/lib/whatsapp';
 
 const LARGO_TELEFONO = 10;
 
@@ -87,6 +88,21 @@ export class SeguimientoPage {
       const local = id ? untracked(() => this.locales.todas().find((s) => s.necesidadId === id)) : undefined;
       if (local) untracked(() => this.abrirLocal(local));
     });
+  }
+
+  /** Pide a la coordinacion una clave nueva, con el celular ya escrito si lo tecleo. */
+  protected readonly enlaceRecuperar = computed(() => {
+    const celular = this.telefono();
+    const detalle = celular.length === 10 ? ` Mi celular registrado es ${celular}.` : '';
+    return enlaceWhatsappA(WHATSAPP_COORDINACION, `Hola, olvidé mi clave de Sevilla Renace.${detalle} ¿Me ayudan a recuperarla?`);
+  });
+
+  protected necesidadDe(id: string): Necesidad | undefined {
+    return this.lectura.obtener(id);
+  }
+
+  protected haceDe(fecha: string): string {
+    return tiempoRelativo(fecha);
   }
 
   // ---- Entrar ----

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Necesidad, Urgencia } from '../../core/domain/necesidad.model';
-import { infoCategoria, URGENCIAS } from '../../core/domain/catalogos';
+import { esGestionExterna, infoCategoria, URGENCIAS } from '../../core/domain/catalogos';
 import { tiempoRelativo } from '../lib/tiempo';
 import { CategoriaIcono } from './categoria-icono';
 import { EstadoBadge } from './estado-badge';
@@ -20,7 +20,17 @@ import { EstadoBadge } from './estado-badge';
           <p class="meta">{{ categoria().etiqueta }} · {{ n.sector }}</p>
         </div>
       </div>
-      @if (!compacta()) {
+      @if (n.prioridadCero || gestionExterna()) {
+        <div class="marcas">
+          @if (n.prioridadCero) {
+            <span class="marca prioridad" title="En el hogar hay bebés o adultos mayores">Prioridad 0 · bebés o adultos mayores</span>
+          }
+          @if (gestionExterna()) {
+            <span class="marca externa" title="Se gestiona con entidades externas: tarda un poco más">Gestión externa · puede tardar más</span>
+          }
+        </div>
+      }
+      @if (!compacta() || descripcionVisible()) {
         <p class="descripcion">{{ n.descripcion }}</p>
       }
       <div class="pie">
@@ -44,12 +54,19 @@ import { EstadoBadge } from './estado-badge';
     .descripcion { font-size: var(--text-sm); color: var(--color-tenue); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .pie { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: var(--text-xs); color: var(--color-tenue); }
     .urgente { color: var(--urgencia-alta); font-weight: 650; }
+    .marcas { display: flex; flex-wrap: wrap; gap: 6px; }
+    .marca { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: var(--radius-pill); font-size: var(--text-xs); font-weight: 650; }
+    .prioridad { color: #fff; background: #c8431f; }
+    .externa { color: #5a4a3a; background: #efe7dd; }
     .hace { margin-left: auto; }
   `,
 })
 export class NecesidadCard {
   readonly necesidad = input.required<Necesidad>();
   readonly compacta = input(false);
+  /** En listas compactas, mostrar igual la descripcion (por ejemplo, en Mi panel). */
+  readonly descripcionVisible = input(false);
+  protected readonly gestionExterna = computed(() => esGestionExterna(this.necesidad().categoria));
   protected readonly categoria = computed(() => infoCategoria(this.necesidad().categoria));
   protected readonly esUrgente = computed(() => this.necesidad().urgencia === Urgencia.Alta);
   protected readonly urgencia = computed(() => URGENCIAS[this.necesidad().urgencia]);

@@ -78,6 +78,8 @@ export interface Necesidad {
   readonly descripcion: string;
   readonly urgencia: Urgencia;
   readonly personasHogar: number;
+  /** Prioridad 0: en el hogar hay bebes o adultos mayores. Se atiende primero. */
+  readonly prioridadCero: boolean;
   readonly sector: string;
   readonly ubicacionAproximada: Coordenada;
   readonly estado: EstadoNecesidad;
@@ -106,6 +108,7 @@ export interface NuevaNecesidad {
   readonly descripcion: string;
   readonly urgencia: Urgencia;
   readonly personasHogar: number;
+  readonly prioridadCero: boolean;
   readonly sector: string;
   readonly ubicacion: Coordenada;
   readonly contacto: {

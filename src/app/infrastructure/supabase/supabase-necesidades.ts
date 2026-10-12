@@ -13,7 +13,10 @@ import {
   AccionSolicitante,
   AyudanteGateway,
   EntregaPayload,
+  CoordinacionGateway,
   ErrorAccesoSolicitante,
+  ErrorClaveDistinta,
+  RestablecerClavePayload,
   ModoDatos,
   NecesidadesLectura,
   NoRecibidaPayload,
@@ -51,7 +54,7 @@ interface EjecucionSolicitante {
  * Todas las escrituras van por funciones RPC: la base aplica las reglas.
  */
 @Injectable({ providedIn: 'root' })
-export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGateway, AyudanteGateway, ModoDatos {
+export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGateway, AyudanteGateway, CoordinacionGateway, ModoDatos {
   private readonly cliente = inject(SUPABASE_CLIENTE);
   private readonly config = inject(SUPABASE_CONFIG);
   private readonly sesion = inject(SesionGateway);
@@ -113,10 +116,12 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
         p_telefono: nueva.contacto.telefono,
         p_clave: nueva.contacto.clave,
         p_referencias: nueva.contacto.referencias,
+        p_prioridad_cero: nueva.prioridadCero,
       }),
     );
     const registro = filas[0];
     if (!registro) throw new Error('No pudimos registrar la necesidad.');
+    if (!registro.necesidad_id) throw new ErrorClaveDistinta();
     const necesidad = await this.recargarYObtener(registro.necesidad_id);
     return { necesidad, codigoDispositivo: registro.codigo };
   }
@@ -164,6 +169,12 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
 
   misAtenciones(): readonly Necesidad[] {
     return this.mias();
+  }
+
+  // ---- Coordinacion ----
+
+  async restablecerClave({ telefono, clave }: RestablecerClavePayload): Promise<number> {
+    return exigir<number>(await this.cliente.rpc('restablecer_clave_solicitante', { p_telefono: telefono, p_clave: clave }));
   }
 
   // ---- Internos ----

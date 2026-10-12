@@ -42,6 +42,14 @@ export class ErrorAccesoSolicitante extends Error {
   }
 }
 
+/** El celular ya tiene clave de una solicitud anterior y la escrita es otra. */
+export class ErrorClaveDistinta extends Error {
+  constructor() {
+    super('Este celular ya tiene una clave de una solicitud anterior. Escribe esa misma clave.');
+    this.name = 'ErrorClaveDistinta';
+  }
+}
+
 export abstract class SolicitanteGateway {
   abstract registrar(nueva: NuevaNecesidad): Promise<RegistroResultado>;
   /** Solicitudes de ese celular. Lanza ErrorAccesoSolicitante si el celular o la clave no coinciden. */
@@ -69,6 +77,19 @@ export abstract class AyudanteGateway {
 export interface Ayudante {
   readonly id: string;
   readonly alias: string;
+  /** Coordinacion: puede asignar una clave nueva a quien la olvido. */
+  readonly esCoordinador: boolean;
+}
+
+export interface RestablecerClavePayload {
+  readonly telefono: string;
+  readonly clave: string;
+}
+
+/** Herramientas de la coordinacion (solo perfiles con rol coordinacion). */
+export abstract class CoordinacionGateway {
+  /** Devuelve cuantas solicitudes de ese celular quedaron con la clave nueva. */
+  abstract restablecerClave(payload: RestablecerClavePayload): Promise<number>;
 }
 
 export interface InicioSesionPayload {

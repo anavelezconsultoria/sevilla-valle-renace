@@ -2,8 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { NecesidadesLectura } from '../../core/ports/necesidades.ports';
 import { ESTADOS_ACTIVOS } from '../../core/domain/ciclo-de-vida';
-import { Categoria } from '../../core/domain/necesidad.model';
-import { CATEGORIAS } from '../../core/domain/catalogos';
+import { Categoria, EstadoNecesidad } from '../../core/domain/necesidad.model';
+import { AVISOS, CATEGORIAS, COLOR_ESTADO, ESTADOS } from '../../core/domain/catalogos';
+
+type VistaLista = 'esperando' | 'curso';
+
+const ESTADOS_LEYENDA = [EstadoNecesidad.Registrada, EstadoNecesidad.EnAtencion, EstadoNecesidad.Entregada] as const;
 import { MapaNecesidades } from '../../shared/mapa/mapa-necesidades';
 import { NecesidadCard } from '../../shared/ui/necesidad-card';
 import { PanelCifras } from './panel-cifras';
@@ -19,6 +23,11 @@ export class MapaPage {
   private readonly lectura = inject(NecesidadesLectura);
 
   protected readonly categorias = CATEGORIAS;
+  protected readonly avisos = AVISOS;
+  /** Leyenda del mapa: mismo color que los pines y las etiquetas de estado. */
+  protected readonly leyenda = ESTADOS_LEYENDA.map((e) => ({ etiqueta: ESTADOS[e].etiqueta, color: COLOR_ESTADO[e] }));
+  /** La lista abre en lo que espera ayuda: es lo que mas importa ver. */
+  protected readonly vista = signal<VistaLista>('esperando');
   protected readonly texto = signal('');
   protected readonly categoria = signal<Categoria | null>(null);
   protected readonly seleccionadaId = signal<string | null>(null);
@@ -40,6 +49,9 @@ export class MapaPage {
       categoria: this.categoria() ?? undefined,
     }),
   );
+  protected readonly esperando = computed(() => this.activas().filter((n) => n.estado === EstadoNecesidad.Registrada));
+  protected readonly enCurso = computed(() => this.activas().filter((n) => n.estado !== EstadoNecesidad.Registrada));
+  protected readonly lista = computed(() => (this.vista() === 'esperando' ? this.esperando() : this.enCurso()));
   protected readonly cifras = computed(() => {
     this.lectura.todas();
     return this.lectura.cifras();

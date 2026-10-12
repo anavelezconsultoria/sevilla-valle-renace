@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormField, form, max, maxLength, min, validate } from '@angular/forms/signals';
 import { LARGOS, MAX_REFERENCIAS, validarLargo } from '../../shared/lib/validaciones';
 import { SolicitudesLocales } from '../../shared/lib/solicitudes-locales';
-import { SolicitanteGateway } from '../../core/ports/necesidades.ports';
+import { ErrorClaveDistinta, SolicitanteGateway } from '../../core/ports/necesidades.ports';
 import { Categoria, Coordenada, RegistroResultado, Urgencia } from '../../core/domain/necesidad.model';
-import { CATEGORIAS, infoCategoria, OPCIONES_URGENCIA, SUGERENCIAS, URGENCIAS } from '../../core/domain/catalogos';
+import { AVISOS, CATEGORIAS, esGestionExterna, infoCategoria, OPCIONES_URGENCIA, SUGERENCIAS, URGENCIAS } from '../../core/domain/catalogos';
 import { SelectorPunto } from '../../shared/mapa/selector-punto';
 import { CategoriaIcono } from '../../shared/ui/categoria-icono';
 import { ErroresCampo, EstadoCampo } from '../../shared/ui/errores-campo';
@@ -19,6 +19,7 @@ interface FormularioNecesidad {
   descripcion: string;
   urgencia: Urgencia | '';
   personasHogar: number;
+  prioridadCero: boolean;
   sector: string;
   nombre: string;
   telefono: string;
@@ -34,6 +35,7 @@ const VACIO: FormularioNecesidad = {
   descripcion: '',
   urgencia: '',
   personasHogar: 1,
+  prioridadCero: false,
   sector: '',
   nombre: '',
   telefono: '',
@@ -75,7 +77,10 @@ export class RegistrarPage {
   protected readonly opcionesUrgencia = OPCIONES_URGENCIA;
   protected readonly etiquetasUrgencia = URGENCIAS;
 
-  protected readonly modelo = signal<FormularioNecesidad>({ ...VACIO });
+  protected readonly avisos = AVISOS;
+  protected readonly modelo = signal<FormularioNecesidad>(this.modeloInicial());
+  /** Error de clave que llega del servidor (el celular ya tiene otra clave). */
+  protected readonly errorClave = signal<string | null>(null);
   protected readonly punto = signal<Coordenada | null>(null);
   protected readonly indice = signal(0);
   protected readonly direccion = signal<'adelante' | 'atras'>('adelante');
@@ -95,6 +100,16 @@ export class RegistrarPage {
   protected readonly categoriaElegida = computed(() => {
     const categoria = this.modelo().categoria;
     return categoria ? infoCategoria(categoria) : null;
+  });
+  protected readonly gestionExterna = computed(() => {
+    const categoria = this.modelo().categoria;
+    return categoria ? esGestionExterna(categoria) : false;
+  });
+  /** Este celular ya registro antes con ese numero: se reutiliza la misma clave sin pedirla. */
+  protected readonly claveRecordada = computed(() => {
+    const perfil = this.solicitudesLocales.perfil();
+    const m = this.modelo();
+    return perfil !== null && soloDigitos(m.telefono) === perfil.telefono && m.clave === perfil.clave;
   });
   protected readonly figurasPersonas = computed(() =>
     Array.from({ length: Math.min(this.modelo().personasHogar, MAX_PERSONAS_DIBUJADAS) }, (_, i) => i),
@@ -199,6 +214,10 @@ export class RegistrarPage {
     this.modelo.update((m) => ({ ...m, titulo: texto }));
   }
 
+  protected alternarPrioridad(): void {
+    this.modelo.update((m) => ({ ...m, prioridadCero: !m.prioridadCero }));
+  }
+
   protected cambiarPersonas(delta: number): void {
     this.modelo.update((m) => ({ ...m, personasHogar: Math.min(30, Math.max(1, m.personasHogar + delta)) }));
   }
@@ -240,6 +259,7 @@ export class RegistrarPage {
     }
     this.enviando.set(true);
     this.errorGeneral.set(null);
+    this.errorClave.set(null);
     try {
       const resultado = await this.solicitante.registrar({
         categoria: m.categoria,
@@ -247,6 +267,7 @@ export class RegistrarPage {
         descripcion: m.descripcion,
         urgencia: m.urgencia,
         personasHogar: m.personasHogar,
+        prioridadCero: m.prioridadCero,
         sector: m.sector,
         ubicacion: punto,
         contacto: { nombre: m.nombre.trim(), telefono: soloDigitos(m.telefono), referencias: m.referencias.trim(), clave: m.clave },
@@ -257,9 +278,16 @@ export class RegistrarPage {
         titulo: resultado.necesidad.titulo,
         registradaEn: resultado.necesidad.registradaEn,
       });
+      this.solicitudesLocales.guardarPerfil({ nombre: m.nombre.trim(), telefono: soloDigitos(m.telefono), clave: m.clave });
       this.resultado.set(resultado);
       window.scrollTo({ top: 0 });
     } catch (error) {
+      if (error instanceof ErrorClaveDistinta) {
+        this.errorClave.set(error.message);
+        this.modelo.update((x) => ({ ...x, clave: '', confirmacionClave: '' }));
+        this.irAPaso('clave');
+        return;
+      }
       this.errorGeneral.set(error instanceof Error ? error.message : 'No pudimos registrar la necesidad. Inténtalo de nuevo.');
     } finally {
       this.enviando.set(false);
@@ -267,11 +295,19 @@ export class RegistrarPage {
   }
 
   protected nuevaSolicitud(): void {
-    this.modelo.set({ ...VACIO });
+    this.modelo.set(this.modeloInicial());
     this.punto.set(null);
     this.indice.set(0);
     this.mostrarErrores.set(false);
     this.resultado.set(null);
+  }
+
+  /** Si este celular ya pidio ayuda antes, nombre, celular y clave llegan llenos. */
+  private modeloInicial(): FormularioNecesidad {
+    const perfil = this.solicitudesLocales.perfil();
+    return perfil
+      ? { ...VACIO, nombre: perfil.nombre, telefono: perfil.telefono, clave: perfil.clave, confirmacionClave: perfil.clave }
+      : { ...VACIO };
   }
 
   /** Las opciones de un toque avanzan solas, con una pausa breve para ver la seleccion. */

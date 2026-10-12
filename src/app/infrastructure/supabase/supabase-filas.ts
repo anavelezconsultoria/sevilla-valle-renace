@@ -8,6 +8,7 @@ import {
   TipoEvento,
   Urgencia,
 } from '../../core/domain/necesidad.model';
+import { Ayudante } from '../../core/ports/necesidades.ports';
 
 /** Forma de las filas que devuelve la API de Supabase (snake_case, tal cual la base). */
 
@@ -32,6 +33,7 @@ export interface FilaNecesidad {
   readonly descripcion: string;
   readonly urgencia: Urgencia;
   readonly personas_hogar: number;
+  readonly prioridad_cero: boolean;
   readonly sector: string;
   readonly lat_aprox: number;
   readonly lng_aprox: number;
@@ -54,18 +56,24 @@ export interface FilaContacto {
 }
 
 export interface FilaRegistro {
-  readonly necesidad_id: string;
+  /** Nulo cuando el celular ya tiene otra clave (codigo = 'clave_no_coincide'). */
+  readonly necesidad_id: string | null;
   readonly codigo: string;
 }
 
 export interface FilaPerfil {
   readonly id: string;
   readonly alias: string;
+  readonly rol: 'ayudante' | 'coordinacion';
+}
+
+export function aAyudante(fila: FilaPerfil): Ayudante {
+  return { id: fila.id, alias: fila.alias, esCoordinador: fila.rol === 'coordinacion' };
 }
 
 /** Columnas y relaciones que se piden: solo datos publicos. */
 export const SELECT_NECESIDADES = [
-  'id, categoria, titulo, descripcion, urgencia, personas_hogar, sector, lat_aprox, lng_aprox',
+  'id, categoria, titulo, descripcion, urgencia, personas_hogar, prioridad_cero, sector, lat_aprox, lng_aprox',
   'estado, cierre, ayudante_id, registrada_en, actualizada_en, vence_en',
   'ayudante:perfiles(alias)',
   'eventos:eventos_necesidad(id, tipo, ocurrido_en, actor_alias, nota, evidencias(id, ruta))',
@@ -92,6 +100,7 @@ export function aNecesidad(fila: FilaNecesidad, urlPublica: UrlPublica): Necesid
     descripcion: fila.descripcion,
     urgencia: fila.urgencia,
     personasHogar: fila.personas_hogar,
+    prioridadCero: fila.prioridad_cero,
     sector: fila.sector,
     ubicacionAproximada: { lat: fila.lat_aprox, lng: fila.lng_aprox },
     estado: fila.estado,
