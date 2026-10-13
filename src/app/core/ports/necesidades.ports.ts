@@ -98,6 +98,16 @@ export interface InicioSesionPayload {
   readonly alias: string;
   /** Privado: solo para coordinacion. Nunca se muestra en la plataforma. */
   readonly celular: string;
+  /** Clave de 4 numeros: con celular + clave se entra al mismo perfil desde cualquier celular. */
+  readonly clave: string;
+}
+
+/** El celular ya tiene perfil con clave y la escrita no coincide. */
+export class ErrorClaveAyudante extends Error {
+  constructor() {
+    super('Ese celular ya tiene una clave y no coincide. Revísala e inténtalo de nuevo.');
+    this.name = 'ErrorClaveAyudante';
+  }
 }
 
 /** El servicio de acceso rechazo el intento por exceso de solicitudes: hay que esperar antes de reintentar. */
@@ -113,6 +123,9 @@ export abstract class SesionGateway {
   /** Entra al instante con alias y celular: sin correos ni contrasenas. */
   abstract iniciarSesion(payload: InicioSesionPayload): Promise<void>;
   abstract cerrarSesion(): Promise<void>;
+  /** El perfil de esta sesion ya tiene clave (para entrar desde otros celulares). */
+  abstract tengoClave(): Promise<boolean>;
+  abstract establecerClave(clave: string): Promise<void>;
 }
 
 /** Indica a la UI si los datos son de demostracion, para decirlo siempre con claridad. */

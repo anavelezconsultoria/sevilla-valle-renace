@@ -311,6 +311,42 @@ do $$ begin
   raise notice 'OK  la clave nueva funciona y la vieja ya no';
 end $$;
 
+-- Ayudante con celular + clave: desde otro navegador se une al mismo perfil.
+reset role;
+insert into auth.users (id, email, aud, role)
+values ('00000000-0000-0000-0000-00000000000c', 'c@prueba.local', 'authenticated', 'authenticated'),
+       ('00000000-0000-0000-0000-00000000000d', 'd@prueba.local', 'authenticated', 'authenticated');
+do $$ declare r record; begin
+  select * into r from public.registrar_necesidad('ropa', 'Cobijas para la noche', 'Necesitamos cobijas para 3 personas', 'media', 3, 'Sector', 4.26, -75.93, 'Paz', '3185550003', '5793');
+  perform set_config('prueba.id4', r.necesidad_id::text, true);
+end $$;
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000c"}', true);
+do $$ begin
+  if public.asegurar_perfil('Marta', '3186660001', '4826') is null then raise exception 'FALLO: no creo el perfil'; end if;
+  perform public.tomar_necesidad(current_setting('prueba.id4')::uuid);
+  if not public.tengo_clave_ayudante() then raise exception 'FALLO: no guardo la clave'; end if;
+  raise notice 'OK  quien ayuda entra con celular y clave';
+end $$;
+
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000d"}', true);
+do $$ begin
+  if public.asegurar_perfil('Marta', '3186660001', '9137') is not null then raise exception 'FALLO: entro con otra clave'; end if;
+  raise notice 'OK  con el celular pero sin la clave NO se entra al perfil de otra persona';
+end $$;
+
+do $$ begin
+  if public.asegurar_perfil('Marta celular nuevo', '318 666 0001', '4826') is null then raise exception 'FALLO: no entro con la clave correcta'; end if;
+  if (select ayudante_id from public.necesidades where id = current_setting('prueba.id4')::uuid) <> '00000000-0000-0000-0000-00000000000d' then
+    raise exception 'FALLO: la necesidad no paso al perfil nuevo';
+  end if;
+  if exists (select 1 from public.perfiles where id = '00000000-0000-0000-0000-00000000000c') then raise exception 'FALLO: quedo el perfil viejo'; end if;
+  raise notice 'OK  con celular y clave correctos, el navegador nuevo ve todo lo del mismo ayudante';
+end $$;
+
+reset role;
+
 -- Toques repetidos: la misma solicitud en minutos no se duplica.
 do $$ begin
   perform public.registrar_necesidad('aseo', 'Pañales talla 3', 'Bebe de 8 meses necesita pañales', 'media', 3, 'Sector', 4.26, -75.93, 'Eva', '3175550002', '5793');

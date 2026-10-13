@@ -244,6 +244,14 @@ export class DemoBackend
     this.escribir(CLAVE_SESION, ayudante);
   }
 
+  async tengoClave(): Promise<boolean> {
+    return this.ayudante() !== null;
+  }
+
+  async establecerClave(): Promise<void> {
+    this.exigirSesion();
+  }
+
   async cerrarSesion(): Promise<void> {
     this.ayudante.set(null);
     this.escribir(CLAVE_SESION, null);

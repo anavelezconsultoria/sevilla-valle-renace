@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { Session } from '@supabase/supabase-js';
-import { Ayudante, ErrorLimiteEnvios, InicioSesionPayload, SesionGateway } from '../../core/ports/necesidades.ports';
+import { Ayudante, ErrorClaveAyudante, ErrorLimiteEnvios, InicioSesionPayload, SesionGateway } from '../../core/ports/necesidades.ports';
 import { exigir, SUPABASE_CLIENTE } from './supabase-cliente';
 import { aAyudante, FilaPerfil } from './supabase-filas';
 
@@ -23,12 +23,21 @@ export class SupabaseSesion implements SesionGateway {
     });
   }
 
-  async iniciarSesion({ alias, celular }: InicioSesionPayload): Promise<void> {
+  async iniciarSesion({ alias, celular, clave }: InicioSesionPayload): Promise<void> {
     await this.asegurarSesion();
-    const perfil = exigir<FilaPerfil>(
-      await this.cliente.rpc('asegurar_perfil', { p_alias: alias.trim(), p_celular: celular.replace(/\D/g, '') }),
+    const perfil = exigir<FilaPerfil | null>(
+      await this.cliente.rpc('asegurar_perfil', { p_alias: alias.trim(), p_celular: celular.replace(/\D/g, ''), p_clave: clave }),
     );
+    if (!perfil?.id) throw new ErrorClaveAyudante();
     this.ayudante.set(aAyudante(perfil));
+  }
+
+  async tengoClave(): Promise<boolean> {
+    return exigir<boolean>(await this.cliente.rpc('tengo_clave_ayudante'));
+  }
+
+  async establecerClave(clave: string): Promise<void> {
+    exigir<null>(await this.cliente.rpc('establecer_clave_ayudante', { p_clave: clave }));
   }
 
   async cerrarSesion(): Promise<void> {

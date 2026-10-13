@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, output, signal } from '@angular/core';
+import { LARGO_CLAVE, motivoClaveInvalida, soloDigitos } from '../../core/domain/clave-solicitante';
 import { form, FormField, maxLength, minLength, required, submit, validate } from '@angular/forms/signals';
 import { ErrorLimiteEnvios, SesionGateway } from '../../core/ports/necesidades.ports';
 
 interface DatosIdentificacion {
   alias: string;
   celular: string;
+  clave: string;
 }
 
 const CELULAR_CO = /^3\d{9}$/;
@@ -35,6 +37,14 @@ const CELULAR_CO = /^3\d{9}$/;
           <span class="field-error">{{ formulario.celular().errors()[0]?.message }}</span>
         }
       </label>
+      <label class="field">
+        <span class="field-label">Clave de 4 números</span>
+        <input class="input clave" type="password" inputmode="numeric" maxlength="4" [value]="modelo().clave" (input)="alEscribirClave($event)" autocomplete="off" placeholder="••••" />
+        <span class="field-hint">Si es tu primera vez, créala. Si ya ayudaste antes, usa la misma: así ves todo lo tuyo desde cualquier celular.</span>
+        @if (intento() && motivoClave(); as m) {
+          <span class="field-error">{{ m }}</span>
+        }
+      </label>
       @if (error(); as e) {
         <p class="error" role="alert">{{ e }}</p>
       }
@@ -51,6 +61,7 @@ const CELULAR_CO = /^3\d{9}$/;
   `,
   styles: `
     .form { display: grid; gap: var(--space-3); }
+    .clave { font-family: var(--font-marca); letter-spacing: .4em; max-width: 200px; }
     .error { font-size: var(--text-sm); padding: var(--space-3); border-radius: var(--radius-sm); background: var(--estado-pendiente-bg); color: var(--estado-pendiente); animation: aparecer var(--dur-media) var(--ease-salida); }
   `,
 })
@@ -58,7 +69,10 @@ export class IdentificarseForm {
   private readonly sesion = inject(SesionGateway);
   readonly identificado = output<void>();
 
-  protected readonly modelo = signal<DatosIdentificacion>({ alias: '', celular: '' });
+  protected readonly modelo = signal<DatosIdentificacion>({ alias: '', celular: '', clave: '' });
+  protected readonly motivoClave = computed(() =>
+    motivoClaveInvalida({ clave: this.modelo().clave, telefono: soloDigitos(this.modelo().celular) }),
+  );
   protected readonly enviando = signal(false);
   protected readonly intento = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -79,6 +93,13 @@ export class IdentificarseForm {
     );
   });
 
+  protected alEscribirClave(evento: Event): void {
+    const entrada = evento.target as HTMLInputElement;
+    const limpia = soloDigitos(entrada.value).slice(0, LARGO_CLAVE);
+    entrada.value = limpia;
+    this.modelo.update((m) => ({ ...m, clave: limpia }));
+  }
+
   protected mostrarError(errores: readonly unknown[], tocado: boolean): boolean {
     return errores.length > 0 && (tocado || this.intento());
   }
@@ -86,6 +107,7 @@ export class IdentificarseForm {
   protected async enviar(evento: Event): Promise<void> {
     evento.preventDefault();
     this.intento.set(true);
+    if (this.motivoClave()) return;
     await submit(this.formulario, async () => {
       this.enviando.set(true);
       this.error.set(null);

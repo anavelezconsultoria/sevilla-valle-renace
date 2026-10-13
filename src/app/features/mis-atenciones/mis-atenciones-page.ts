@@ -6,6 +6,7 @@ import { NecesidadCard } from '../../shared/ui/necesidad-card';
 import { IdentificarseForm } from '../sesion/identificarse-form';
 import { RestablecerClave } from './restablecer-clave';
 import { AvisoVencimientos } from './aviso-vencimientos';
+import { ClaveAyudante } from './clave-ayudante';
 
 interface Columna {
   readonly titulo: string;
@@ -16,7 +17,7 @@ interface Columna {
 /** Tablero de seguimiento de quien ayuda: lo que tengo en curso, lo que espera confirmacion y lo resuelto. */
 @Component({
   selector: 'sr-mis-atenciones-page',
-  imports: [RouterLink, NecesidadCard, IdentificarseForm, RestablecerClave, AvisoVencimientos],
+  imports: [RouterLink, NecesidadCard, IdentificarseForm, RestablecerClave, AvisoVencimientos, ClaveAyudante],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="container pagina">
@@ -33,6 +34,7 @@ interface Columna {
           </div>
         </header>
 
+        <sr-clave-ayudante />
         <sr-aviso-vencimientos [necesidades]="mias()" />
 
         <div class="columnas">

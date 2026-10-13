@@ -58,7 +58,7 @@ describe('Mas tiempo para entregar', () => {
 
   it('quien atiende pide 24 horas mas una sola vez por toma', async () => {
     const { necesidad } = await backend.registrar(NUEVA);
-    await backend.iniciarSesion({ celular: '3001112222', alias: 'Nana' });
+    await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'Nana' });
     const tomada = await backend.tomar(necesidad.id);
     expect(puedeExtenderPlazo(tomada)).toBe(true);
     const extendida = await backend.extenderPlazo(necesidad.id);
@@ -135,7 +135,7 @@ describe('Flujo completo en modo demostracion', () => {
     const { necesidad, codigoDispositivo } = await backend.registrar(NUEVA);
     expect(distanciaMetros(necesidad.ubicacionAproximada, CENTRO_SEVILLA)).toBeGreaterThan(100);
 
-    await backend.iniciarSesion({ celular: '3001112222', alias: 'Ayudante de prueba' });
+    await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'Ayudante de prueba' });
     await backend.tomar(necesidad.id);
     const contacto = await backend.contacto(necesidad.id);
     expect(contacto.telefono).toBe('3157770000');
@@ -158,7 +158,7 @@ describe('Flujo completo en modo demostracion', () => {
     const propias = await backend.misNecesidades(ACCESO);
     expect(propias.map((n) => n.id)).toEqual([necesidad.id]);
 
-    await backend.iniciarSesion({ celular: '3001112222', alias: 'A' });
+    await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'A' });
     await backend.tomar(necesidad.id);
     await backend.entregar({ necesidadId: necesidad.id, nota: 'Listo', fotos: [] });
     const final = await backend.confirmarRecibida({ necesidadId: necesidad.id, credencial: { tipo: 'clave', ...ACCESO } });
@@ -170,7 +170,7 @@ describe('Flujo completo en modo demostracion', () => {
     const ajena = { telefono: ACCESO.telefono, clave: '8642' };
     await expect(backend.misNecesidades(ajena)).rejects.toBeInstanceOf(ErrorAccesoSolicitante);
 
-    await backend.iniciarSesion({ celular: '3001112222', alias: 'A' });
+    await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'A' });
     await backend.tomar(necesidad.id);
     await backend.entregar({ necesidadId: necesidad.id, nota: 'Listo', fotos: [] });
     await expect(
@@ -195,9 +195,9 @@ describe('Flujo completo en modo demostracion', () => {
 
   it('solo la coordinacion asigna una clave nueva, y la vieja deja de servir', async () => {
     await backend.registrar(NUEVA);
-    await backend.iniciarSesion({ celular: '3001112222', alias: 'Ayudante' });
+    await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'Ayudante' });
     await expect(backend.restablecerClave({ telefono: ACCESO.telefono, clave: '7319' })).rejects.toThrow();
-    await backend.iniciarSesion({ celular: '3000000001', alias: 'Coordinacion' });
+    await backend.iniciarSesion({ celular: '3000000001', clave: '5793', alias: 'Coordinacion' });
     await expect(backend.restablecerClave({ telefono: ACCESO.telefono, clave: '7319' })).resolves.toBe(1);
     await expect(backend.misNecesidades({ telefono: ACCESO.telefono, clave: '7319' })).resolves.toHaveLength(1);
     await expect(backend.misNecesidades(ACCESO)).rejects.toBeInstanceOf(ErrorAccesoSolicitante);
@@ -205,16 +205,16 @@ describe('Flujo completo en modo demostracion', () => {
 
   it('nadie puede tomar una necesidad que ya esta en atencion', async () => {
     const { necesidad } = await backend.registrar(NUEVA);
-    await backend.iniciarSesion({ celular: '3001112222', alias: 'A' });
+    await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'A' });
     await backend.tomar(necesidad.id);
-    await backend.iniciarSesion({ celular: '3003334444', alias: 'B' });
+    await backend.iniciarSesion({ celular: '3003334444', clave: '5793', alias: 'B' });
     await expect(backend.tomar(necesidad.id)).rejects.toThrow();
     await expect(backend.contacto(necesidad.id)).rejects.toThrow();
   });
 
   it('libera la toma vencida y cierra la entrega sin reclamo a las 48 horas', async () => {
     const { necesidad } = await backend.registrar(NUEVA);
-    await backend.iniciarSesion({ celular: '3001112222', alias: 'A' });
+    await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'A' });
     await backend.tomar(necesidad.id);
     backend.aplicarVencimientos(new Date(Date.now() + (HORAS_PARA_ENTREGAR + 1) * 3_600_000));
     expect(backend.obtener(necesidad.id)?.estado).toBe(EstadoNecesidad.Registrada);
