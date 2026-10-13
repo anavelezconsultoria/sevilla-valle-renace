@@ -5,9 +5,10 @@ import { LARGO_CLAVE, motivoClaveInvalida, soloDigitos } from '../../core/domain
 const LARGO_TELEFONO = 10;
 
 /**
- * Herramienta de la coordinacion: asignar una clave nueva a quien la olvido.
- * Regla: ANTES de usarla, llamar al celular registrado y confirmar que contesta
- * la persona que pidio la ayuda (eso prueba que el celular es suyo).
+ * Herramienta de la coordinacion: asignar una clave nueva a un celular que la olvido.
+ * Sirve igual para quien pidio ayuda y para quien ayuda (una sola clave por celular).
+ * Regla: ANTES de usarla, llamar al celular y confirmar que contesta la persona
+ * (eso prueba que el celular es suyo).
  */
 @Component({
   selector: 'sr-restablecer-clave',
@@ -16,10 +17,10 @@ const LARGO_TELEFONO = 10;
     <section class="card herramienta">
       <p class="eyebrow">Coordinación</p>
       <h2>Asignar una clave nueva</h2>
-      <p class="muted">Para quien olvidó su clave. <strong>Antes, llama a ese celular</strong> y confirma que contesta la persona que pidió la ayuda. Luego dile la clave nueva por teléfono.</p>
+      <p class="muted">Para quien olvidó su clave, haya pedido ayuda o ayude. <strong>Antes, llama a ese celular</strong> y confirma que contesta la persona. Luego dile la clave nueva por teléfono.</p>
       <form (submit)="asignar($event)">
         <label class="field">
-          <span class="field-label">Celular de quien pidió la ayuda</span>
+          <span class="field-label">Celular de la persona</span>
           <input class="input" [value]="telefono()" (input)="alEscribirTelefono($event)" type="tel" inputmode="numeric" placeholder="3001234567" />
         </label>
         <label class="field">
@@ -78,8 +79,8 @@ export class RestablecerClave {
     this.mensaje.set(null);
     this.error.set(null);
     try {
-      const cambiadas = await this.coordinacion.restablecerClave({ telefono: this.telefono(), clave: this.clave() });
-      this.mensaje.set(`Listo: ${cambiadas} ${cambiadas === 1 ? 'solicitud quedó' : 'solicitudes quedaron'} con la clave nueva. Díctasela por teléfono.`);
+      await this.coordinacion.restablecerClave({ telefono: this.telefono(), clave: this.clave() });
+      this.mensaje.set('Listo: ese celular ya tiene la clave nueva, para pedir ayuda y para ayudar. Díctasela por teléfono.');
       this.clave.set('');
     } catch (e) {
       this.error.set(e instanceof Error ? e.message : 'No se pudo asignar la clave.');

@@ -381,6 +381,31 @@ do $$ begin
 end $$;
 reset role;
 
+-- La coordinacion tambien asigna clave nueva a quien SOLO ayuda (sin solicitudes).
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a"}', true);
+do $$ begin
+  -- 3186660001 (Marta) solo ayuda: no tiene solicitudes.
+  if public.restablecer_clave_solicitante('3186660001', '5274') < 1 then raise exception 'FALLO: no cambio la clave del ayudante'; end if;
+  begin
+    perform public.restablecer_clave_solicitante('3199990009', '5274');
+    raise exception 'FALLO: acepto un celular que no esta registrado';
+  exception when sqlstate 'P0002' then null;
+  end;
+  raise notice 'OK  la coordinacion asigna clave nueva a quien solo ayuda';
+end $$;
+
+reset role;
+insert into auth.users (id, email, aud, role) values ('00000000-0000-0000-0000-000000000010', 'g@prueba.local', 'authenticated', 'authenticated');
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-000000000010"}', true);
+do $$ begin
+  if public.asegurar_perfil('', '3186660001', '4826') is not null then raise exception 'FALLO: la clave vieja del ayudante sigue sirviendo'; end if;
+  if public.asegurar_perfil('', '3186660001', '5274') is null then raise exception 'FALLO: la clave nueva no abre el perfil del ayudante'; end if;
+  raise notice 'OK  el ayudante entra con la clave nueva y la vieja ya no sirve';
+end $$;
+reset role;
+
 -- Adjuntos: solo a una necesidad recien registrada, con limite; el video es privado.
 do $$ declare r record; begin
   select * into r from public.registrar_necesidad('techo', 'Tejas para el techo', 'Se cayo el techo del cuarto', 'alta', 3, 'Sector', 4.26, -75.93, 'Rita', '3155550004', '5793');

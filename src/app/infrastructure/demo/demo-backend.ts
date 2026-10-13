@@ -239,7 +239,7 @@ export class DemoBackend
   async restablecerClave({ telefono, clave }: RestablecerClavePayload): Promise<number> {
     if (!this.ayudante()?.esCoordinador) throw new Error('Solo la coordinación puede asignar claves.');
     const delCelular = this.registros().filter((r) => soloDigitos(r.contacto.telefono) === soloDigitos(telefono));
-    if (!delCelular.length) throw new Error('No hay solicitudes registradas con ese celular.');
+    if (!delCelular.length) throw new Error('Ese celular no está registrado: ni pidió ayuda ni entró a ayudar.');
     this.guardar(this.registros().map((r) => (delCelular.includes(r) ? { ...r, clave } : r)));
     return delCelular.length;
   }
