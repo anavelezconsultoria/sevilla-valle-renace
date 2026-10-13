@@ -19,9 +19,17 @@ import { NAVEGACION } from './navegacion';
         </nav>
         <div class="acciones">
           <a routerLink="/seguimiento" class="btn btn-ghost seguir">Mis solicitudes</a>
+          <a routerLink="/seguimiento" class="seguir-movil">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h10M9 12h10M9 19h10M4 5h.01M4 12h.01M4 19h.01" /></svg>
+            Mis solicitudes
+          </a>
           <a routerLink="/pedir-ayuda" class="btn btn-accion">Necesito ayuda</a>
           <a routerLink="/mis-atenciones" class="avatar" [attr.aria-label]="ayudante() ? 'Mi panel de ' + ayudante()!.alias : 'Quiero ayudar: identificarme'">
-            {{ ayudante()?.alias?.charAt(0) ?? '+' }}
+            @if (ayudante(); as a) {
+              {{ a.alias.charAt(0) }}
+            } @else {
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" /></svg>
+            }
           </a>
         </div>
       </div>
@@ -39,10 +47,15 @@ import { NAVEGACION } from './navegacion';
     .nav a.activo { color: var(--color-primario); background: var(--color-primario-suave); }
     .acciones { margin-left: auto; display: flex; align-items: center; gap: var(--space-2); }
     .avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--color-primario); color: #fff; transition: transform var(--dur-corta) var(--ease-salida); font-weight: 700; text-decoration: none; text-transform: uppercase; }
+    .avatar svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+    .seguir-movil { display: none; }
     @media (max-width: 1080px) { .seguir { display: none; } }
+    /* Celular: Mi panel y Pedir ayuda ya estan abajo; arriba solo "Mis solicitudes", que no esta en la barra. */
     @media (max-width: 860px) {
-      .nav, .acciones .btn { display: none; }
+      .nav, .acciones .btn, .avatar { display: none; }
       .barra { height: 60px; }
+      .seguir-movil { margin-left: auto; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: var(--radius-pill); background: var(--color-primario-suave); color: var(--color-primario); font-size: var(--text-sm); font-weight: 650; text-decoration: none; }
+      .seguir-movil svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
     }
   `,
 })

@@ -630,3 +630,45 @@
     display: none;
   }
 }
+
+/*
+ * Celular: el mapa es protagonista. "Necesito ayuda" y "Quiero ayudar" ya estan
+ * en la barra de abajo, asi que arriba solo queda una fila: buscar + filtrar.
+ */
+@media (max-width: 860px) {
+  .panel-izquierdo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .panel-izquierdo .bienvenida {
+    display: none;
+  }
+
+  .panel-izquierdo .buscador {
+    min-height: 48px;
+  }
+
+  .panel-izquierdo .filtro-movil {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .panel-izquierdo .filtro-movil span,
+  .panel-izquierdo .filtro-movil .flecha {
+    display: none;
+  }
+
+  .panel-izquierdo .filtro-movil.con-filtro {
+    background: var(--color-primario);
+    color: #fff;
+  }
+
+  .panel-izquierdo .chips.abierto {
+    grid-column: 1 / -1;
+  }
+}

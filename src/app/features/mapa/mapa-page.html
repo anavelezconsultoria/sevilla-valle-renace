@@ -50,6 +50,8 @@
       class="filtro-movil card entrada"
       style="--i: 2"
       [class.abierto]="categoriasAbiertas()"
+      [class.con-filtro]="categoria() !== null"
+      [attr.aria-label]="etiquetaCategoria()"
       [attr.aria-expanded]="categoriasAbiertas()"
       (click)="categoriasAbiertas.set(!categoriasAbiertas())"
     >
