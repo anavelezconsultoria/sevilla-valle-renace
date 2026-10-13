@@ -30,6 +30,7 @@ export type AccionSolicitante = 'confirmar' | 'no_recibida' | 'cancelar';
 
 const ACCIONES_SOLICITANTE: Record<EstadoNecesidad, readonly AccionSolicitante[]> = {
   [EstadoNecesidad.Registrada]: ['cancelar'],
+  [EstadoNecesidad.EnRevision]: ['cancelar'],
   [EstadoNecesidad.EnAtencion]: [],
   [EstadoNecesidad.Entregada]: ['confirmar', 'no_recibida'],
   [EstadoNecesidad.Atendida]: [],

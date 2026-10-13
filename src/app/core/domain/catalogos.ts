@@ -37,6 +37,7 @@ export interface EstadoInfo {
 
 export const ESTADOS: Record<EstadoNecesidad, EstadoInfo> = {
   [EstadoNecesidad.Registrada]: { etiqueta: 'Esperando ayuda', descripcion: 'Nadie la ha tomado todavía', tono: 'pendiente' },
+  [EstadoNecesidad.EnRevision]: { etiqueta: 'En revisión', descripcion: 'La coordinación la revisa antes de publicarla', tono: 'neutro' },
   [EstadoNecesidad.EnAtencion]: { etiqueta: 'En atención', descripcion: 'Alguien va en camino', tono: 'progreso' },
   [EstadoNecesidad.Entregada]: { etiqueta: 'Entregada', descripcion: 'Falta la confirmación de quien la recibió', tono: 'entregada' },
   [EstadoNecesidad.Atendida]: { etiqueta: 'Atendida', descripcion: 'La ayuda llegó', tono: 'exito' },
@@ -60,6 +61,9 @@ export const EVENTOS: Record<TipoEvento, string> = {
   [TipoEvento.Confirmada]: 'Quien la recibió confirmó la entrega',
   [TipoEvento.CerradaAutomaticamente]: 'Cerrada como atendida: pasaron 48 horas sin reclamo',
   [TipoEvento.Cancelada]: 'Cancelada por quien la pidió',
+  [TipoEvento.EnRevision]: 'En revisión: este hogar recibió ayuda hace poco',
+  [TipoEvento.RevisionAprobada]: 'La coordinación la aprobó y quedó publicada',
+  [TipoEvento.RevisionRechazada]: 'La coordinación no la aprobó',
 };
 
 /** Frases rapidas por categoria: con un toque llenan el titulo y bajan la barrera de escribir. */
@@ -92,6 +96,7 @@ export const OPCIONES_URGENCIA: readonly UrgenciaInfo[] = [
 /** Color de cada estado en el mapa y en las etiquetas: un semaforo facil de leer. */
 export const COLOR_ESTADO: Record<EstadoNecesidad, string> = {
   [EstadoNecesidad.Registrada]: '#e4572e',
+  [EstadoNecesidad.EnRevision]: '#8b8aa0',
   [EstadoNecesidad.EnAtencion]: '#e09a10',
   [EstadoNecesidad.Entregada]: '#7c5cf0',
   [EstadoNecesidad.Atendida]: '#1b8a5e',

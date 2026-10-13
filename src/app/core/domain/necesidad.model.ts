@@ -5,6 +5,8 @@
 
 export enum EstadoNecesidad {
   Registrada = 'registrada',
+  /** Pedida otra vez por un hogar que recibio ayuda hace poco: espera a la coordinacion. */
+  EnRevision = 'en_revision',
   EnAtencion = 'en_atencion',
   Entregada = 'entregada',
   Atendida = 'atendida',
@@ -48,6 +50,9 @@ export enum TipoEvento {
   Confirmada = 'confirmada',
   CerradaAutomaticamente = 'cerrada_automaticamente',
   Cancelada = 'cancelada',
+  EnRevision = 'en_revision',
+  RevisionAprobada = 'revision_aprobada',
+  RevisionRechazada = 'revision_rechazada',
 }
 
 export interface Coordenada {
@@ -81,6 +86,10 @@ export interface Necesidad {
   readonly personasHogar: number;
   /** Prioridad 0: en el hogar hay bebes o adultos mayores. Se atiende primero. */
   readonly prioridadCero: boolean;
+  /** Senal publica neutra: es la primera vez que este hogar pide ayuda. */
+  readonly primeraSolicitud: boolean;
+  /** Senal publica neutra: ayuda que el hogar recibio en los ultimos 7 dias, si hubo. */
+  readonly ayudaRecienteCategoria?: Categoria;
   readonly sector: string;
   readonly ubicacionAproximada: Coordenada;
   readonly estado: EstadoNecesidad;

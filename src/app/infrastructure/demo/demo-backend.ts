@@ -19,6 +19,7 @@ import {
   puedeExtenderPlazo,
   sumarHoras,
 } from '../../core/domain/ciclo-de-vida';
+import { ayudaReciente, motivoRevision } from '../../core/domain/revision-hogar';
 import { desplazarCoordenada, generarCodigoSeguimiento } from '../../core/domain/privacidad';
 import { soloDigitos } from '../../core/domain/clave-solicitante';
 import {
@@ -30,7 +31,12 @@ import {
   EntregaPayload,
   ErrorAccesoSolicitante,
   ErrorClaveDistinta,
+  HistorialCelular,
+  ReconocimientoLectura,
   RestablecerClavePayload,
+  RevisarPayload,
+  SolicitudEnRevision,
+  VecinoQueAyuda,
   InicioSesionPayload,
   ModoDatos,
   NecesidadesLectura,
@@ -42,7 +48,7 @@ import { filtrarNecesidades } from '../../core/application/filtrar-necesidades';
 import { calcularCifras } from '../../core/application/calcular-cifras';
 import { crearSemillaDemo, RegistroDemo } from './demo-semilla';
 
-const CLAVE_ALMACEN = 'sevilla-renace-demo-v5';
+const CLAVE_ALMACEN = 'sevilla-renace-demo-v6';
 const CLAVE_SESION = 'sevilla-renace-demo-sesion';
 const INTERVALO_VENCIMIENTOS_MS = 60_000;
 
@@ -70,11 +76,20 @@ interface Transicion {
  */
 @Injectable({ providedIn: 'root' })
 export class DemoBackend
-  implements NecesidadesLectura, SolicitanteGateway, AyudanteGateway, CoordinacionGateway, SesionGateway, ModoDatos
+  implements
+    NecesidadesLectura,
+    SolicitanteGateway,
+    AyudanteGateway,
+    CoordinacionGateway,
+    ReconocimientoLectura,
+    SesionGateway,
+    ModoDatos
 {
   readonly esDemo = true;
   private readonly registros = signal<RegistroDemo[]>(this.cargar());
-  readonly todas = computed(() => this.registros().map((r) => r.necesidad));
+  private readonly todasConRevision = computed(() => this.registros().map((r) => r.necesidad));
+  /** Lo publico: las solicitudes en revision solo las ve quien las pidio y la coordinacion. */
+  readonly todas = computed(() => this.todasConRevision().filter((n) => n.estado !== EstadoNecesidad.EnRevision));
   readonly cargando = signal(false).asReadonly();
   readonly ayudante = signal<Ayudante | null>(this.cargarSesion());
 
@@ -91,7 +106,7 @@ export class DemoBackend
   }
 
   obtener(id: string): Necesidad | undefined {
-    return this.todas().find((n) => n.id === id);
+    return this.todasConRevision().find((n) => n.id === id);
   }
 
   cifras(): CifrasPublicas {
@@ -106,6 +121,10 @@ export class DemoBackend
     const ahora = new Date().toISOString();
     const id = crypto.randomUUID();
     const codigo = generarCodigoSeguimiento();
+    const delHogar = delCelular.map((r) => r.necesidad);
+    const motivo = motivoRevision({ categoria: nueva.categoria, delHogar, ahora: new Date(ahora) });
+    const eventos: EventoNecesidad[] = [{ id: `${id}-e0`, tipo: TipoEvento.Registrada, ocurridoEn: ahora, actor: 'Solicitante', evidencias: [] }];
+    if (motivo) eventos.push({ id: `${id}-e1`, tipo: TipoEvento.EnRevision, ocurridoEn: ahora, actor: 'Sevilla Renace', evidencias: [] });
     const necesidad: Necesidad = {
       id,
       categoria: nueva.categoria,
@@ -114,17 +133,19 @@ export class DemoBackend
       urgencia: nueva.urgencia,
       personasHogar: nueva.personasHogar,
       prioridadCero: nueva.prioridadCero,
+      primeraSolicitud: !delHogar.some((n) => n.estado !== EstadoNecesidad.Cancelada),
+      ayudaRecienteCategoria: ayudaReciente(delHogar, new Date(ahora)),
       sector: nueva.sector.trim(),
       ubicacionAproximada: desplazarCoordenada(nueva.ubicacion),
-      estado: EstadoNecesidad.Registrada,
+      estado: motivo ? EstadoNecesidad.EnRevision : EstadoNecesidad.Registrada,
       registradaEn: ahora,
       actualizadaEn: ahora,
-      eventos: [{ id: `${id}-e0`, tipo: TipoEvento.Registrada, ocurridoEn: ahora, actor: 'Solicitante', evidencias: [] }],
+      eventos,
       fotos: [],
     };
     const { clave, ...datosContacto } = nueva.contacto;
     const contacto: ContactoPrivado = { ...datosContacto, ubicacionExacta: nueva.ubicacion };
-    this.guardar([{ necesidad, contacto, codigo, clave }, ...this.registros()]);
+    this.guardar([{ necesidad, contacto, codigo, clave, motivoRevision: motivo }, ...this.registros()]);
     return { necesidad, codigoDispositivo: codigo };
   }
 
@@ -135,7 +156,7 @@ export class DemoBackend
   }
 
   async confirmarRecibida(accion: AccionSolicitante): Promise<Necesidad> {
-    const registro = this.exigirSolicitante(accion, EstadoNecesidad.Entregada);
+    const registro = this.exigirSolicitante(accion, [EstadoNecesidad.Entregada]);
     return this.transicionar({
       registro,
       estado: EstadoNecesidad.Atendida,
@@ -145,7 +166,7 @@ export class DemoBackend
   }
 
   async reportarNoRecibida({ nota, ...accion }: NoRecibidaPayload): Promise<Necesidad> {
-    const registro = this.exigirSolicitante(accion, EstadoNecesidad.Entregada);
+    const registro = this.exigirSolicitante(accion, [EstadoNecesidad.Entregada]);
     return this.transicionar({
       registro,
       estado: EstadoNecesidad.EnAtencion,
@@ -155,7 +176,7 @@ export class DemoBackend
   }
 
   async cancelar(accion: AccionSolicitante): Promise<Necesidad> {
-    const registro = this.exigirSolicitante(accion, EstadoNecesidad.Registrada);
+    const registro = this.exigirSolicitante(accion, [EstadoNecesidad.Registrada, EstadoNecesidad.EnRevision]);
     return this.transicionar({
       registro,
       estado: EstadoNecesidad.Cancelada,
@@ -244,6 +265,73 @@ export class DemoBackend
     return delCelular.length;
   }
 
+  async solicitudesEnRevision(): Promise<readonly SolicitudEnRevision[]> {
+    this.exigirCoordinacion();
+    return this.registros()
+      .filter((r) => r.necesidad.estado === EstadoNecesidad.EnRevision)
+      .map((r) => ({
+        necesidadId: r.necesidad.id,
+        titulo: r.necesidad.titulo,
+        categoria: r.necesidad.categoria,
+        sector: r.necesidad.sector,
+        registradaEn: r.necesidad.registradaEn,
+        nombre: r.contacto.nombre,
+        telefono: r.contacto.telefono,
+        motivo: r.motivoRevision ?? '',
+      }))
+      .reverse();
+  }
+
+  async revisar({ necesidadId, aprobar }: RevisarPayload): Promise<void> {
+    const coordinacion = this.exigirCoordinacion();
+    const registro = this.registros().find((r) => r.necesidad.id === necesidadId);
+    if (!registro || registro.necesidad.estado !== EstadoNecesidad.EnRevision) throw new Error('Esta solicitud ya no está en revisión.');
+    this.transicionar({
+      registro,
+      estado: aprobar ? EstadoNecesidad.Registrada : EstadoNecesidad.Cancelada,
+      evento: { tipo: aprobar ? TipoEvento.RevisionAprobada : TipoEvento.RevisionRechazada, actor: coordinacion.alias, evidencias: [] },
+    });
+  }
+
+  async historial(telefono: string): Promise<HistorialCelular> {
+    this.exigirCoordinacion();
+    const digitos = soloDigitos(telefono);
+    const propios = this.registros().filter((r) => soloDigitos(r.contacto.telefono) === digitos);
+    return {
+      solicitudes: propios.map((r) => ({
+        id: r.necesidad.id,
+        titulo: r.necesidad.titulo,
+        categoria: r.necesidad.categoria,
+        estado: r.necesidad.estado,
+        nombre: r.contacto.nombre,
+        sector: r.necesidad.sector,
+        registradaEn: r.necesidad.registradaEn,
+        entregadaEn: r.necesidad.eventos.find((e) => e.tipo === TipoEvento.Entregada)?.ocurridoEn,
+        ayudante: r.necesidad.ayudanteAlias,
+        motivoRevision: r.motivoRevision,
+      })),
+      parecidas: [],
+    };
+  }
+
+  // ---- Reconocimiento publico ----
+
+  async vecinosQueAyudan(): Promise<readonly VecinoQueAyuda[]> {
+    const porAlias = new Map<string, VecinoQueAyuda>();
+    for (const n of this.todas()) {
+      if (n.estado !== EstadoNecesidad.Entregada && n.estado !== EstadoNecesidad.Atendida) continue;
+      const entrega = n.eventos.find((e) => e.tipo === TipoEvento.Entregada);
+      if (!entrega) continue;
+      const previo = porAlias.get(entrega.actor);
+      porAlias.set(entrega.actor, {
+        alias: entrega.actor,
+        entregas: (previo?.entregas ?? 0) + 1,
+        ultimaEntrega: previo && previo.ultimaEntrega > entrega.ocurridoEn ? previo.ultimaEntrega : entrega.ocurridoEn,
+      });
+    }
+    return [...porAlias.values()].sort((a, b) => b.entregas - a.entregas || b.ultimaEntrega.localeCompare(a.ultimaEntrega));
+  }
+
   misAtenciones(): readonly Necesidad[] {
     const id = this.ayudante()?.id;
     return id ? this.registros().filter((r) => r.ayudanteId === id).map((r) => r.necesidad) : [];
@@ -321,10 +409,10 @@ export class DemoBackend
     return valida ? registro : undefined;
   }
 
-  private exigirSolicitante(accion: AccionSolicitante, estado: EstadoNecesidad): RegistroDemo {
+  private exigirSolicitante(accion: AccionSolicitante, estados: readonly EstadoNecesidad[]): RegistroDemo {
     const registro = this.porCredencial(accion);
     if (!registro) throw new ErrorAccesoSolicitante();
-    if (registro.necesidad.estado !== estado) throw new Error('Esta acción ya no está disponible para esta necesidad.');
+    if (!estados.includes(registro.necesidad.estado)) throw new Error('Esta acción ya no está disponible para esta necesidad.');
     return registro;
   }
 
@@ -339,6 +427,12 @@ export class DemoBackend
     const registro = this.exigirEstado(id, EstadoNecesidad.EnAtencion);
     if (registro.ayudanteId !== ayudante.id) throw new Error('Esta necesidad la está atendiendo otra persona.');
     return registro;
+  }
+
+  private exigirCoordinacion(): Ayudante {
+    const ayudante = this.ayudante();
+    if (!ayudante?.esCoordinador) throw new Error('Solo la coordinación puede ver esto.');
+    return ayudante;
   }
 
   private exigirSesion(): Ayudante {

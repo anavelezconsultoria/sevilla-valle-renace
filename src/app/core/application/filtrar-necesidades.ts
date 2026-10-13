@@ -27,6 +27,8 @@ export function filtrarNecesidades(todas: readonly Necesidad[], filtro: FiltroNe
     .sort(
       (a, b) =>
         Number(b.prioridadCero) - Number(a.prioridadCero) ||
+        // Despues, quienes no han recibido ayuda en los ultimos 7 dias: se reparte mejor.
+        Number(a.ayudaRecienteCategoria !== undefined) - Number(b.ayudaRecienteCategoria !== undefined) ||
         PESO_URGENCIA[a.urgencia] - PESO_URGENCIA[b.urgencia] ||
         new Date(a.registradaEn).getTime() - new Date(b.registradaEn).getTime(),
     );

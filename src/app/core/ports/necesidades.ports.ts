@@ -1,9 +1,11 @@
 import { Signal } from '@angular/core';
 import {
   AccesoSolicitante,
+  Categoria,
   CifrasPublicas,
   ContactoPrivado,
   CredencialSolicitante,
+  EstadoNecesidad,
   FiltroNecesidades,
   Necesidad,
   NuevaNecesidad,
@@ -102,10 +104,80 @@ export interface RestablecerClavePayload {
   readonly clave: string;
 }
 
+/** Solicitud que un hogar pidio otra vez poco despues de recibir ayuda. */
+export interface SolicitudEnRevision {
+  readonly necesidadId: string;
+  readonly titulo: string;
+  readonly categoria: Categoria;
+  readonly sector: string;
+  readonly registradaEn: string;
+  readonly nombre: string;
+  readonly telefono: string;
+  /** Por que entro a revision, en lenguaje simple (ej.: "Recibió alimentos hace 3 días."). */
+  readonly motivo: string;
+}
+
+export interface RevisarPayload {
+  readonly necesidadId: string;
+  /** true la publica; false la cancela. */
+  readonly aprobar: boolean;
+}
+
+export interface SolicitudDelHistorial {
+  readonly id: string;
+  readonly titulo: string;
+  readonly categoria: Categoria;
+  readonly estado: EstadoNecesidad;
+  readonly nombre: string;
+  readonly sector: string;
+  readonly registradaEn: string;
+  readonly entregadaEn?: string;
+  readonly ayudante?: string;
+  readonly motivoRevision?: string;
+}
+
+/** Otro celular con el mismo nombre en el mismo sector: puede ser el mismo hogar. */
+export interface HogarParecido {
+  readonly telefono: string;
+  readonly nombre: string;
+  readonly sector: string;
+  readonly solicitudes: number;
+}
+
+export interface ActividadAyudante {
+  readonly alias: string;
+  readonly tomadas: number;
+  readonly entregas: number;
+  readonly liberadas: number;
+  /** Tomadas que se vencieron sin entrega (48 horas). */
+  readonly vencidas: number;
+}
+
+export interface HistorialCelular {
+  readonly solicitudes: readonly SolicitudDelHistorial[];
+  readonly parecidas: readonly HogarParecido[];
+  /** Si ese celular tambien ayuda. */
+  readonly ayudante?: ActividadAyudante;
+}
+
 /** Herramientas de la coordinacion (solo perfiles con rol coordinacion). */
 export abstract class CoordinacionGateway {
   /** Devuelve cuantas solicitudes de ese celular quedaron con la clave nueva. */
   abstract restablecerClave(payload: RestablecerClavePayload): Promise<number>;
+  abstract solicitudesEnRevision(): Promise<readonly SolicitudEnRevision[]>;
+  abstract revisar(payload: RevisarPayload): Promise<void>;
+  abstract historial(telefono: string): Promise<HistorialCelular>;
+}
+
+/** Reconocimiento publico: alias de quienes ayudan y cuantas entregas llevan. */
+export interface VecinoQueAyuda {
+  readonly alias: string;
+  readonly entregas: number;
+  readonly ultimaEntrega: string;
+}
+
+export abstract class ReconocimientoLectura {
+  abstract vecinosQueAyudan(): Promise<readonly VecinoQueAyuda[]>;
 }
 
 export interface InicioSesionPayload {

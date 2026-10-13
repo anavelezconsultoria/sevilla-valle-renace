@@ -38,6 +38,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/entregadas/entregadas-page').then((m) => m.EntregadasPage),
   },
   {
+    path: 'vecinos-que-ayudan',
+    title: 'Vecinos que han ayudado | Sevilla Renace',
+    loadComponent: () => import('./features/entregadas/vecinos-page').then((m) => m.VecinosPage),
+  },
+  {
     path: 'como-funciona',
     title: 'Cómo funciona | Sevilla Renace',
     loadComponent: () => import('./features/como-funciona/como-funciona-page').then((m) => m.ComoFuncionaPage),

@@ -24,6 +24,8 @@ export interface RegistroDemo {
   /** Clave de 4 numeros del solicitante. */
   clave: string;
   ayudanteId?: string;
+  /** Por que quedo en revision (privado, solo coordinacion). */
+  motivoRevision?: string;
 }
 
 /** Acceso de la demo: todas las solicitudes de ejemplo son de este celular ficticio. */
@@ -80,6 +82,7 @@ function base(s: SemillaBase, estado: EstadoNecesidad, eventos: EventoNecesidad[
       urgencia: s.urgencia,
       personasHogar: s.personasHogar,
       prioridadCero: s.prioridadCero ?? false,
+      primeraSolicitud: true,
       sector: s.sector,
       ubicacionAproximada: cerca(s.dLat + 0.0012, s.dLng - 0.0009),
       estado,

@@ -233,3 +233,77 @@ describe('Flujo completo en modo demostracion', () => {
     expect(JSON.stringify(lista)).not.toContain('3000000000');
   });
 });
+
+describe('Repartir mejor la ayuda', () => {
+  let backend: DemoBackend;
+
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({});
+    backend = TestBed.inject(DemoBackend);
+  });
+
+  async function recibirAyuda(): Promise<string> {
+    const { necesidad, codigoDispositivo } = await backend.registrar(NUEVA);
+    await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'Nana' });
+    await backend.tomar(necesidad.id);
+    await backend.entregar({ necesidadId: necesidad.id, nota: 'Listo', fotos: [] });
+    await backend.confirmarRecibida({ necesidadId: necesidad.id, credencial: { tipo: 'dispositivo', codigo: codigoDispositivo } });
+    return necesidad.id;
+  }
+
+  it('la primera solicitud se publica y se marca como primera', async () => {
+    const { necesidad } = await backend.registrar(NUEVA);
+    expect(necesidad.estado).toBe(EstadoNecesidad.Registrada);
+    expect(necesidad.primeraSolicitud).toBe(true);
+  });
+
+  it('la misma categoria despues de recibirla queda en revision y no es publica', async () => {
+    await recibirAyuda();
+    const { necesidad } = await backend.registrar({ ...NUEVA, titulo: 'Agua otra vez', descripcion: 'Se nos acabó el agua de nuevo' });
+    expect(necesidad.estado).toBe(EstadoNecesidad.EnRevision);
+    expect(backend.todas().some((n) => n.id === necesidad.id)).toBe(false);
+    expect(backend.obtener(necesidad.id)?.estado).toBe(EstadoNecesidad.EnRevision);
+    await expect(backend.tomar(necesidad.id)).rejects.toThrow();
+  });
+
+  it('otra categoria se publica con la senal de ayuda reciente', async () => {
+    await recibirAyuda();
+    const { necesidad } = await backend.registrar({ ...NUEVA, categoria: Categoria.Ropa, titulo: 'Cobijas', descripcion: 'Necesitamos cobijas para la noche' });
+    expect(necesidad.estado).toBe(EstadoNecesidad.Registrada);
+    expect(necesidad.primeraSolicitud).toBe(false);
+    expect(necesidad.ayudaRecienteCategoria).toBe(Categoria.Agua);
+  });
+
+  it('la coordinacion la ve en revision y al aprobarla se publica', async () => {
+    await recibirAyuda();
+    const { necesidad } = await backend.registrar({ ...NUEVA, titulo: 'Agua otra vez', descripcion: 'Se nos acabó el agua de nuevo' });
+    await backend.iniciarSesion({ celular: '3000000001', clave: '5793', alias: 'Coordinacion' });
+    const pendientes = await backend.solicitudesEnRevision();
+    expect(pendientes.map((p) => p.necesidadId)).toContain(necesidad.id);
+    expect(pendientes[0]?.motivo).toContain('Recibió agua');
+    await backend.revisar({ necesidadId: necesidad.id, aprobar: true });
+    expect(backend.todas().find((n) => n.id === necesidad.id)?.estado).toBe(EstadoNecesidad.Registrada);
+    const historial = await backend.historial(NUEVA.contacto.telefono);
+    expect(historial.solicitudes.length).toBe(2);
+  });
+
+  it('un ayudante comun no ve las solicitudes en revision', async () => {
+    await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'Nana' });
+    await expect(backend.solicitudesEnRevision()).rejects.toThrow();
+  });
+
+  it('quien espera sin ayuda reciente va antes en la lista', async () => {
+    await recibirAyuda();
+    const conAyuda = (await backend.registrar({ ...NUEVA, categoria: Categoria.Ropa, titulo: 'Cobijas', descripcion: 'Necesitamos cobijas para la noche' })).necesidad;
+    const sinAyuda = (await backend.registrar({ ...NUEVA, categoria: Categoria.Ropa, titulo: 'Ropa', descripcion: 'Necesitamos ropa para los niños', contacto: { ...NUEVA.contacto, telefono: '3158880000' } })).necesidad;
+    const orden = filtrarNecesidades(backend.todas(), { estados: [EstadoNecesidad.Registrada] }).map((n) => n.id);
+    expect(orden.indexOf(sinAyuda.id)).toBeLessThan(orden.indexOf(conAyuda.id));
+  });
+
+  it('reconoce a quien entrego', async () => {
+    await recibirAyuda();
+    const vecinos = await backend.vecinosQueAyudan();
+    expect(vecinos.find((v) => v.alias === 'Nana')?.entregas).toBe(1);
+  });
+});

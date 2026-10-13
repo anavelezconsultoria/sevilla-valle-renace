@@ -42,6 +42,7 @@ function aAyudaEntregada(n: Necesidad): AyudaEntregada {
         <p class="eyebrow">Ayudas entregadas</p>
         <h1>Lo que Sevilla ha logrado junta</h1>
         <p class="muted">Cada ayuda queda registrada con quién la llevó, cuándo y, si la hay, una foto sin rostros de lo que se entregó.</p>
+        <a routerLink="/vecinos-que-ayudan" class="enlace-vecinos">Ver los vecinos que han ayudado →</a>
       </div>
     </header>
     <div class="container pagina">
@@ -92,6 +93,7 @@ function aAyudaEntregada(n: Necesidad): AyudaEntregada {
     .pagina { padding-block: var(--space-6); display: grid; gap: var(--space-5); }
     .encabezado { display: grid; gap: var(--space-2); }
     .encabezado p.muted { max-width: 640px; }
+    .enlace-vecinos { display: inline-block; margin-top: var(--space-2); font-weight: 650; color: var(--color-primario); }
     .encabezado h1 { font-size: var(--text-2xl); }
     .cifras { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin: 0; }
     .cifras div { padding: var(--space-4); }

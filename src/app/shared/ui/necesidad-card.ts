@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Necesidad, Urgencia } from '../../core/domain/necesidad.model';
+import { EstadoNecesidad, Necesidad, Urgencia } from '../../core/domain/necesidad.model';
 import { esGestionExterna, infoCategoria, URGENCIAS } from '../../core/domain/catalogos';
 import { tiempoRelativo } from '../lib/tiempo';
 import { CategoriaIcono } from './categoria-icono';
@@ -20,13 +20,16 @@ import { EstadoBadge } from './estado-badge';
           <p class="meta">{{ categoria().etiqueta }} · {{ n.sector }}</p>
         </div>
       </div>
-      @if (n.prioridadCero || gestionExterna()) {
+      @if (n.prioridadCero || gestionExterna() || senalHogar()) {
         <div class="marcas">
           @if (n.prioridadCero) {
             <span class="marca prioridad" title="En el hogar hay bebés o adultos mayores">Prioridad 0 · bebés o adultos mayores</span>
           }
           @if (gestionExterna()) {
             <span class="marca externa" title="Se gestiona con entidades externas: tarda un poco más">Gestión externa · puede tardar más</span>
+          }
+          @if (senalHogar(); as senal) {
+            <span class="marca" [class.primera]="senal.primera" [class.reciente]="!senal.primera" [title]="senal.titulo">{{ senal.texto }}</span>
           }
         </div>
       }
@@ -58,6 +61,8 @@ import { EstadoBadge } from './estado-badge';
     .marca { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: var(--radius-pill); font-size: var(--text-xs); font-weight: 650; }
     .prioridad { color: #fff; background: #c8431f; }
     .externa { color: #5a4a3a; background: #efe7dd; }
+    .primera { color: var(--color-montana); background: var(--color-montana-suave); }
+    .reciente { color: var(--color-tenue); background: var(--color-arena); }
     .hace { margin-left: auto; }
   `,
 })
@@ -71,4 +76,23 @@ export class NecesidadCard {
   protected readonly esUrgente = computed(() => this.necesidad().urgencia === Urgencia.Alta);
   protected readonly urgencia = computed(() => URGENCIAS[this.necesidad().urgencia]);
   protected readonly hace = computed(() => tiempoRelativo(this.necesidad().registradaEn));
+  /**
+   * Senal neutra para repartir mejor, sin nombres: solo mientras espera ayuda.
+   * Ayuda a que quien ayuda elija primero a quien todavia no ha recibido nada.
+   */
+  protected readonly senalHogar = computed<SenalHogar | null>(() => {
+    const n = this.necesidad();
+    if (n.estado !== EstadoNecesidad.Registrada) return null;
+    if (n.ayudaRecienteCategoria) {
+      const recibida = infoCategoria(n.ayudaRecienteCategoria).etiqueta.toLowerCase();
+      return { primera: false, texto: `Ya recibió ${recibida} esta semana`, titulo: 'Este hogar recibió ayuda en los últimos 7 días' };
+    }
+    return n.primeraSolicitud ? { primera: true, texto: 'Primera solicitud', titulo: 'Es la primera vez que este hogar pide ayuda' } : null;
+  });
+}
+
+interface SenalHogar {
+  readonly primera: boolean;
+  readonly texto: string;
+  readonly titulo: string;
 }

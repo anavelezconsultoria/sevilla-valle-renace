@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { RegistroResultado } from '../../core/domain/necesidad.model';
+import { EstadoNecesidad, RegistroResultado } from '../../core/domain/necesidad.model';
 
 /**
  * Pantalla final del registro. No hay codigo que guardar: este celular ya
@@ -17,7 +17,14 @@ import { RegistroResultado } from '../../core/domain/necesidad.model';
           <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" /></svg>
         </div>
         <h1>Tu necesidad quedó registrada</h1>
-        <p class="muted">Ya aparece en el mapa para que alguien de Sevilla la tome.</p>
+        @if (enRevision()) {
+          <p class="revision" role="status">
+            Como hace poco recibiste una ayuda, la coordinación la revisa antes de publicarla, para repartir mejor entre todas las familias.
+            Si necesitamos saber algo más, te llamamos al <strong>{{ telefono() }}</strong>.
+          </p>
+        } @else {
+          <p class="muted">Ya aparece en el mapa para que alguien de Sevilla la tome.</p>
+        }
 
         <ol class="como-sigo">
           <li style="--i: 0">
@@ -43,6 +50,7 @@ import { RegistroResultado } from '../../core/domain/necesidad.model';
   `,
   styles: `
     .pagina { max-width: 620px; padding-block: var(--space-7); }
+    .revision { font-size: var(--text-sm); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); background: var(--color-acento-suave); color: var(--color-texto); text-align: left; }
     .exito { display: grid; justify-items: center; gap: var(--space-4); padding: var(--space-6) var(--space-5); text-align: center; }
     .check { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--estado-exito-bg); }
     .check { animation: latir 600ms var(--ease-salida) 200ms both; }
@@ -62,4 +70,5 @@ export class RegistroExitoso {
   /** Celular enmascarado, para que la persona recuerde cual uso. */
   readonly telefono = input.required<string>();
   readonly otra = output<void>();
+  protected readonly enRevision = computed(() => this.resultado().necesidad.estado === EstadoNecesidad.EnRevision);
 }

@@ -489,6 +489,81 @@ do $$ begin
 exception when sqlstate 'P0001' then raise notice 'OK  nadie mas puede extender el plazo de una necesidad ajena';
 end $$;
 
+-- Revision de solicitudes repetidas y senal publica (0016).
+do $$ declare r record; begin
+  select * into r from public.registrar_necesidad('alimentos', 'Mercado', 'Necesitamos mercado para la semana', 'media', 4, 'La Ceiba', 4.26, -75.93, 'Gloria', '3201112233', '5793');
+  if (select estado::text from public.necesidades where id = r.necesidad_id) <> 'registrada' then raise exception 'FALLO: la primera solicitud no se publico'; end if;
+  if not (select primera_solicitud from public.necesidades where id = r.necesidad_id) then raise exception 'FALLO: no quedo como primera solicitud'; end if;
+  -- Simula que ya se la entregaron y la confirmo.
+  update public.necesidades set estado = 'atendida', cierre = 'confirmada' where id = r.necesidad_id;
+  insert into public.eventos_necesidad (necesidad_id, tipo, actor_id, actor_alias)
+  values (r.necesidad_id, 'entregada', '00000000-0000-0000-0000-00000000000a', 'Coordinacion');
+end $$;
+
+do $$ declare r record; begin
+  select * into r from public.registrar_necesidad('alimentos', 'Mas mercado', 'Se nos acabo el mercado otra vez', 'alta', 4, 'La Ceiba', 4.26, -75.93, 'Gloria', '3201112233', '5793');
+  if (select estado::text from public.necesidades where id = r.necesidad_id) <> 'en_revision' then raise exception 'FALLO: la misma categoria repetida no quedo en revision'; end if;
+  if (select motivo_revision from public.necesidades_privado where necesidad_id = r.necesidad_id) not like 'Recibió alimentos hace%' then
+    raise exception 'FALLO: motivo inesperado';
+  end if;
+  if exists (select 1 from public.eventos_necesidad where necesidad_id = r.necesidad_id and nota is not null) then
+    raise exception 'FALLO: el motivo quedo en un evento publico';
+  end if;
+  perform set_config('prueba.revision', r.necesidad_id::text, true);
+
+  select * into r from public.registrar_necesidad('ropa', 'Cobijas', 'Necesitamos cobijas para los ninos', 'media', 4, 'La Ceiba', 4.26, -75.93, 'Gloria', '3201112233', '5793');
+  if (select estado::text from public.necesidades where id = r.necesidad_id) <> 'registrada' then raise exception 'FALLO: otra categoria no debia ir a revision'; end if;
+  if (select primera_solicitud from public.necesidades where id = r.necesidad_id) then raise exception 'FALLO: ya no es la primera solicitud'; end if;
+  if (select ayuda_reciente_categoria::text from public.necesidades where id = r.necesidad_id) is distinct from 'alimentos' then
+    raise exception 'FALLO: no marco la ayuda reciente';
+  end if;
+  raise notice 'OK  la misma categoria repetida queda en revision; la senal publica no lleva el motivo';
+end $$;
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000b"}', true);
+do $$ begin
+  perform public.tomar_necesidad(current_setting('prueba.revision')::uuid);
+  raise exception 'FALLO: se tomo una solicitud en revision';
+exception when sqlstate 'P0001' then
+  if sqlerrm like 'FALLO%' then raise; end if;
+  raise notice 'OK  nadie puede tomar una solicitud en revision';
+end $$;
+
+do $$ begin
+  perform public.solicitudes_en_revision();
+  raise exception 'FALLO: un ayudante comun vio las solicitudes en revision';
+exception when insufficient_privilege then raise notice 'OK  solo la coordinacion ve las solicitudes en revision';
+end $$;
+
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a"}', true);
+do $$ declare h jsonb; begin
+  if not exists (select 1 from public.solicitudes_en_revision() s where s.necesidad_id = current_setting('prueba.revision')::uuid) then
+    raise exception 'FALLO: no aparece en revision';
+  end if;
+  h := public.historial_celular('320 111 2233');
+  if jsonb_array_length(h -> 'solicitudes') <> 3 then raise exception 'FALLO: el historial no tiene las 3 solicitudes (%)', h; end if;
+  perform public.revisar_necesidad(current_setting('prueba.revision')::uuid, true);
+  if (select estado::text from public.necesidades where id = current_setting('prueba.revision')::uuid) <> 'registrada' then
+    raise exception 'FALLO: aprobar no la publico';
+  end if;
+  begin
+    perform public.revisar_necesidad(current_setting('prueba.revision')::uuid, false);
+    raise exception 'FALLO: se reviso dos veces';
+  exception when sqlstate 'P0001' then
+    if sqlerrm like 'FALLO%' then raise; end if;
+  end;
+  raise notice 'OK  la coordinacion ve el historial y aprueba la revision una sola vez';
+end $$;
+
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$ begin
+  if not exists (select 1 from public.vecinos_que_ayudan()) then raise exception 'FALLO: el reconocimiento publico esta vacio'; end if;
+  raise notice 'OK  cualquiera ve quienes han ayudado (solo alias y conteos)';
+end $$;
+reset role;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.

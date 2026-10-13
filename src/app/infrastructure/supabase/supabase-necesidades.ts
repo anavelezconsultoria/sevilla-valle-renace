@@ -4,6 +4,7 @@ import {
   CifrasPublicas,
   ContactoPrivado,
   CredencialSolicitante,
+  EstadoNecesidad,
   FiltroNecesidades,
   Necesidad,
   NuevaNecesidad,
@@ -17,7 +18,12 @@ import {
   CoordinacionGateway,
   ErrorAccesoSolicitante,
   ErrorClaveDistinta,
+  HistorialCelular,
+  ReconocimientoLectura,
   RestablecerClavePayload,
+  RevisarPayload,
+  SolicitudEnRevision,
+  VecinoQueAyuda,
   ModoDatos,
   NecesidadesLectura,
   NoRecibidaPayload,
@@ -28,7 +34,20 @@ import { filtrarNecesidades } from '../../core/application/filtrar-necesidades';
 import { calcularCifras } from '../../core/application/calcular-cifras';
 import { exigir, SUPABASE_CLIENTE } from './supabase-cliente';
 import { SUPABASE_CONFIG } from './supabase.config';
-import { aContacto, aNecesidad, FilaContacto, FilaNecesidad, FilaRegistro, SELECT_NECESIDADES } from './supabase-filas';
+import {
+  aContacto,
+  aHistorial,
+  aNecesidad,
+  aSolicitudEnRevision,
+  aVecino,
+  FilaContacto,
+  FilaHistorial,
+  FilaNecesidad,
+  FilaRegistro,
+  FilaRevision,
+  FilaVecino,
+  SELECT_NECESIDADES,
+} from './supabase-filas';
 
 const LIMITE_NECESIDADES = 1000;
 const ESPERA_RECARGA_MS = 400;
@@ -63,7 +82,9 @@ interface EjecucionSolicitante {
  * Todas las escrituras van por funciones RPC: la base aplica las reglas.
  */
 @Injectable({ providedIn: 'root' })
-export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGateway, AyudanteGateway, CoordinacionGateway, ModoDatos {
+export class SupabaseNecesidades
+  implements NecesidadesLectura, SolicitanteGateway, AyudanteGateway, CoordinacionGateway, ReconocimientoLectura, ModoDatos
+{
   private readonly cliente = inject(SUPABASE_CLIENTE);
   private readonly config = inject(SUPABASE_CONFIG);
   private readonly sesion = inject(SesionGateway);
@@ -71,7 +92,8 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
   readonly esDemo = false;
   private readonly lista = signal<readonly Necesidad[]>([]);
   private readonly cargandoInterno = signal(true);
-  readonly todas = this.lista.asReadonly();
+  /** Lo publico: las solicitudes en revision solo las ve quien las pidio y la coordinacion. */
+  readonly todas = computed(() => this.lista().filter((n) => n.estado !== EstadoNecesidad.EnRevision));
   readonly cargando = this.cargandoInterno.asReadonly();
   private readonly mias = computed(() => {
     const id = this.sesion.ayudante()?.id;
@@ -97,7 +119,7 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
   // ---- Lectura publica ----
 
   filtrar(filtro: FiltroNecesidades): readonly Necesidad[] {
-    return filtrarNecesidades(this.lista(), filtro);
+    return filtrarNecesidades(this.todas(), filtro);
   }
 
   obtener(id: string): Necesidad | undefined {
@@ -105,7 +127,7 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
   }
 
   cifras(): CifrasPublicas {
-    return calcularCifras(this.lista());
+    return calcularCifras(this.todas());
   }
 
   // ---- Solicitante ----
@@ -206,6 +228,25 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
 
   async restablecerClave({ telefono, clave }: RestablecerClavePayload): Promise<number> {
     return exigir<number>(await this.cliente.rpc('restablecer_clave_solicitante', { p_telefono: telefono, p_clave: clave }));
+  }
+
+  async solicitudesEnRevision(): Promise<readonly SolicitudEnRevision[]> {
+    return exigir<readonly FilaRevision[]>(await this.cliente.rpc('solicitudes_en_revision')).map(aSolicitudEnRevision);
+  }
+
+  async revisar({ necesidadId, aprobar }: RevisarPayload): Promise<void> {
+    exigir<string>(await this.cliente.rpc('revisar_necesidad', { p_necesidad: necesidadId, p_aprobar: aprobar }));
+    await this.recargar();
+  }
+
+  async historial(telefono: string): Promise<HistorialCelular> {
+    return aHistorial(exigir<FilaHistorial>(await this.cliente.rpc('historial_celular', { p_telefono: telefono })));
+  }
+
+  // ---- Reconocimiento publico ----
+
+  async vecinosQueAyudan(): Promise<readonly VecinoQueAyuda[]> {
+    return exigir<readonly FilaVecino[]>(await this.cliente.rpc('vecinos_que_ayudan')).map(aVecino);
   }
 
   // ---- Internos ----

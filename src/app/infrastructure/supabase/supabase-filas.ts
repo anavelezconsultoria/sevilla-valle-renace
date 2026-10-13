@@ -8,7 +8,12 @@ import {
   TipoEvento,
   Urgencia,
 } from '../../core/domain/necesidad.model';
-import { Ayudante } from '../../core/ports/necesidades.ports';
+import {
+  Ayudante,
+  HistorialCelular,
+  SolicitudEnRevision,
+  VecinoQueAyuda,
+} from '../../core/ports/necesidades.ports';
 
 /** Forma de las filas que devuelve la API de Supabase (snake_case, tal cual la base). */
 
@@ -34,6 +39,8 @@ export interface FilaNecesidad {
   readonly urgencia: Urgencia;
   readonly personas_hogar: number;
   readonly prioridad_cero: boolean;
+  readonly primera_solicitud: boolean;
+  readonly ayuda_reciente_categoria: Categoria | null;
   readonly sector: string;
   readonly lat_aprox: number;
   readonly lng_aprox: number;
@@ -75,7 +82,7 @@ export function aAyudante(fila: FilaPerfil): Ayudante {
 
 /** Columnas y relaciones que se piden: solo datos publicos. */
 export const SELECT_NECESIDADES = [
-  'id, categoria, titulo, descripcion, urgencia, personas_hogar, prioridad_cero, sector, lat_aprox, lng_aprox',
+  'id, categoria, titulo, descripcion, urgencia, personas_hogar, prioridad_cero, primera_solicitud, ayuda_reciente_categoria, sector, lat_aprox, lng_aprox',
   'estado, cierre, ayudante_id, registrada_en, actualizada_en, vence_en',
   'ayudante:perfiles(alias)',
   'eventos:eventos_necesidad(id, tipo, ocurrido_en, actor_alias, nota, evidencias(id, ruta))',
@@ -104,6 +111,8 @@ export function aNecesidad(fila: FilaNecesidad, urlPublica: UrlPublica, urlFoto:
     urgencia: fila.urgencia,
     personasHogar: fila.personas_hogar,
     prioridadCero: fila.prioridad_cero,
+    primeraSolicitud: fila.primera_solicitud,
+    ayudaRecienteCategoria: fila.ayuda_reciente_categoria ?? undefined,
     sector: fila.sector,
     ubicacionAproximada: { lat: fila.lat_aprox, lng: fila.lng_aprox },
     estado: fila.estado,
@@ -127,4 +136,81 @@ export function aContacto(fila: FilaContacto): ContactoPrivado {
     referencias: fila.referencias,
     ubicacionExacta: { lat: fila.lat, lng: fila.lng },
   };
+}
+
+export interface FilaRevision {
+  readonly necesidad_id: string;
+  readonly titulo: string;
+  readonly categoria: Categoria;
+  readonly sector: string;
+  readonly registrada_en: string;
+  readonly nombre: string;
+  readonly telefono: string;
+  readonly motivo: string;
+}
+
+export function aSolicitudEnRevision(fila: FilaRevision): SolicitudEnRevision {
+  return {
+    necesidadId: fila.necesidad_id,
+    titulo: fila.titulo,
+    categoria: fila.categoria,
+    sector: fila.sector,
+    registradaEn: fila.registrada_en,
+    nombre: fila.nombre,
+    telefono: fila.telefono,
+    motivo: fila.motivo,
+  };
+}
+
+/** JSON que devuelve historial_celular (snake_case, tal cual la base). */
+export interface FilaHistorial {
+  readonly solicitudes: readonly {
+    readonly id: string;
+    readonly titulo: string;
+    readonly categoria: Categoria;
+    readonly estado: EstadoNecesidad;
+    readonly nombre: string;
+    readonly sector: string;
+    readonly registrada_en: string;
+    readonly entregada_en: string | null;
+    readonly ayudante: string | null;
+    readonly motivo_revision: string | null;
+  }[];
+  readonly parecidas: readonly { readonly telefono: string; readonly nombre: string; readonly sector: string; readonly solicitudes: number }[];
+  readonly ayudante: {
+    readonly alias: string;
+    readonly tomadas: number;
+    readonly entregas: number;
+    readonly liberadas: number;
+    readonly vencidas: number;
+  } | null;
+}
+
+export function aHistorial(fila: FilaHistorial): HistorialCelular {
+  return {
+    solicitudes: fila.solicitudes.map((s) => ({
+      id: s.id,
+      titulo: s.titulo,
+      categoria: s.categoria,
+      estado: s.estado,
+      nombre: s.nombre,
+      sector: s.sector,
+      registradaEn: s.registrada_en,
+      entregadaEn: s.entregada_en ?? undefined,
+      ayudante: s.ayudante ?? undefined,
+      motivoRevision: s.motivo_revision ?? undefined,
+    })),
+    parecidas: fila.parecidas.map((p) => ({ ...p })),
+    ayudante: fila.ayudante ?? undefined,
+  };
+}
+
+export interface FilaVecino {
+  readonly alias: string;
+  readonly entregas: number;
+  readonly ultima_entrega: string;
+}
+
+export function aVecino(fila: FilaVecino): VecinoQueAyuda {
+  return { alias: fila.alias, entregas: Number(fila.entregas), ultimaEntrega: fila.ultima_entrega };
 }

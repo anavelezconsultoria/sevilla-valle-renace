@@ -129,6 +129,7 @@ export class TableroPage {
     const contar = (e: EstadoNecesidad) => todas.filter((n) => n.estado === e).length;
     return {
       [EstadoNecesidad.Registrada]: contar(EstadoNecesidad.Registrada),
+      [EstadoNecesidad.EnRevision]: 0,
       [EstadoNecesidad.EnAtencion]: contar(EstadoNecesidad.EnAtencion),
       [EstadoNecesidad.Entregada]: contar(EstadoNecesidad.Entregada),
       [EstadoNecesidad.Atendida]: contar(EstadoNecesidad.Atendida),

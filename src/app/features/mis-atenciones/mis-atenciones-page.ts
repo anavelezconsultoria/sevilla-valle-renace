@@ -5,6 +5,8 @@ import { EstadoNecesidad, Necesidad } from '../../core/domain/necesidad.model';
 import { NecesidadCard } from '../../shared/ui/necesidad-card';
 import { IdentificarseForm } from '../sesion/identificarse-form';
 import { RestablecerClave } from './restablecer-clave';
+import { RevisionSolicitudes } from './revision-solicitudes';
+import { HistorialCelularHerramienta } from './historial-celular';
 import { AvisoVencimientos } from './aviso-vencimientos';
 import { ClaveAyudante } from './clave-ayudante';
 
@@ -17,7 +19,16 @@ interface Columna {
 /** Tablero de seguimiento de quien ayuda: lo que tengo en curso, lo que espera confirmacion y lo resuelto. */
 @Component({
   selector: 'sr-mis-atenciones-page',
-  imports: [RouterLink, NecesidadCard, IdentificarseForm, RestablecerClave, AvisoVencimientos, ClaveAyudante],
+  imports: [
+    RouterLink,
+    NecesidadCard,
+    IdentificarseForm,
+    RestablecerClave,
+    RevisionSolicitudes,
+    HistorialCelularHerramienta,
+    AvisoVencimientos,
+    ClaveAyudante,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="container pagina">
@@ -57,6 +68,8 @@ interface Columna {
         </div>
 
         @if (a.esCoordinador) {
+          <sr-revision-solicitudes />
+          <sr-historial-celular />
           <sr-restablecer-clave />
         }
       } @else {
