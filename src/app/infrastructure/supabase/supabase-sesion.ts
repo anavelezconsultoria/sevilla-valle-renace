@@ -5,6 +5,8 @@ import { exigir, SUPABASE_CLIENTE } from './supabase-cliente';
 import { aAyudante, FilaPerfil } from './supabase-filas';
 
 const SEGUNDOS_ESPERA_LIMITE = 60;
+/** Violacion de llave foranea: el usuario de la sesion fue borrado. */
+const CODIGO_USUARIO_INEXISTENTE = '23503';
 
 /**
  * Sesion de quien ayuda SIN correo: Supabase Anonymous Sign-ins crea un usuario
@@ -25,9 +27,15 @@ export class SupabaseSesion implements SesionGateway {
 
   async iniciarSesion({ alias, celular, clave }: InicioSesionPayload): Promise<void> {
     await this.asegurarSesion();
-    const perfil = exigir<FilaPerfil | null>(
-      await this.cliente.rpc('asegurar_perfil', { p_alias: alias.trim(), p_celular: celular.replace(/\D/g, ''), p_clave: clave }),
-    );
+    const argumentos = { p_alias: alias.trim(), p_celular: celular.replace(/\D/g, ''), p_clave: clave };
+    let respuesta = await this.cliente.rpc('asegurar_perfil', argumentos);
+    // La sesion guardada es de un usuario que ya no existe (perfiles unidos): se empieza una nueva.
+    if (respuesta.error?.code === CODIGO_USUARIO_INEXISTENTE) {
+      await this.cliente.auth.signOut({ scope: 'local' });
+      await this.asegurarSesion();
+      respuesta = await this.cliente.rpc('asegurar_perfil', argumentos);
+    }
+    const perfil = exigir<FilaPerfil | null>(respuesta);
     if (!perfil?.id) throw new ErrorClaveAyudante();
     this.ayudante.set(aAyudante(perfil));
   }
