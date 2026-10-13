@@ -1,0 +1,9 @@
+# Navegadores para los que se compila. Incluye iPhone con iOS 15: muchas
+# familias de Sevilla tienen celulares viejos sin actualizar.
+last 2 Chrome versions
+last 2 Edge versions
+last 2 Firefox versions
+Firefox ESR
+Safari >= 15
+iOS >= 15
+Android >= 10

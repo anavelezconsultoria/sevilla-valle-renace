@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { NecesidadesLectura } from '../../core/ports/necesidades.ports';
 import { CierreAtencion, EstadoNecesidad, Evidencia, Necesidad, TipoEvento } from '../../core/domain/necesidad.model';
 import { infoCategoria } from '../../core/domain/catalogos';
+import { ultimo } from '../../core/domain/listas';
 import { CategoriaIcono } from '../../shared/ui/categoria-icono';
 import { fechaCorta } from '../../shared/lib/tiempo';
 import { Contador } from '../../shared/ui/contador';
@@ -17,7 +18,7 @@ interface AyudaEntregada {
 }
 
 function aAyudaEntregada(n: Necesidad): AyudaEntregada {
-  const entrega = n.eventos.findLast((e) => e.tipo === TipoEvento.Entregada);
+  const entrega = ultimo(n.eventos, (e) => e.tipo === TipoEvento.Entregada);
   return {
     necesidad: n,
     categoria: infoCategoria(n.categoria).etiqueta,
@@ -127,7 +128,7 @@ export class EntregadasPage {
     this.lectura
       .filtrar({ estados: [EstadoNecesidad.Atendida] })
       .map(aAyudaEntregada)
-      .toSorted((a, b) => new Date(b.entregadaEn).getTime() - new Date(a.entregadaEn).getTime()),
+      .sort((a, b) => new Date(b.entregadaEn).getTime() - new Date(a.entregadaEn).getTime()),
   );
   protected readonly personas = computed(() => this.ayudas().reduce((t, a) => t + a.necesidad.personasHogar, 0));
   protected readonly confirmadas = computed(() => this.ayudas().filter((a) => a.necesidad.cierre === CierreAtencion.Confirmada).length);

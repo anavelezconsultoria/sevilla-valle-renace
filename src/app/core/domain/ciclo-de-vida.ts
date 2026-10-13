@@ -1,4 +1,5 @@
 import { EstadoNecesidad, Necesidad, TipoEvento } from './necesidad.model';
+import { ultimoIndice } from './listas';
 
 /**
  * Reglas del ciclo de vida. El backend las aplica de verdad (funciones de la
@@ -20,7 +21,7 @@ export function horasRestantes(venceEn: string | undefined, ahora: Date = new Da
 /** Solo se puede pedir mas tiempo una vez desde la ultima vez que se tomo. */
 export function puedeExtenderPlazo(n: Necesidad): boolean {
   if (n.estado !== EstadoNecesidad.EnAtencion) return false;
-  const ultimaToma = n.eventos.findLastIndex((e) => e.tipo === TipoEvento.Tomada);
+  const ultimaToma = ultimoIndice(n.eventos, (e) => e.tipo === TipoEvento.Tomada);
   return !n.eventos.slice(ultimaToma + 1).some((e) => e.tipo === TipoEvento.PlazoExtendido);
 }
 

@@ -116,7 +116,7 @@ export function aNecesidad(fila: FilaNecesidad, urlPublica: UrlPublica, urlFoto:
     fotos: (fila.adjuntos ?? []).map((a) => urlFoto(a.ruta)),
     eventos: fila.eventos
       .map((e) => aEvento(e, urlPublica))
-      .toSorted((a, b) => new Date(a.ocurridoEn).getTime() - new Date(b.ocurridoEn).getTime()),
+      .sort((a, b) => new Date(a.ocurridoEn).getTime() - new Date(b.ocurridoEn).getTime()),
   };
 }
 

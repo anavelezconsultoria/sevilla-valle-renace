@@ -24,7 +24,7 @@ export function filtrarNecesidades(todas: readonly Necesidad[], filtro: FiltroNe
     .filter((n) => !filtro.categoria || n.categoria === filtro.categoria)
     .filter((n) => !filtro.urgencia || n.urgencia === filtro.urgencia)
     .filter((n) => coincideTexto(n, filtro.texto ?? ''))
-    .toSorted(
+    .sort(
       (a, b) =>
         Number(b.prioridadCero) - Number(a.prioridadCero) ||
         PESO_URGENCIA[a.urgencia] - PESO_URGENCIA[b.urgencia] ||

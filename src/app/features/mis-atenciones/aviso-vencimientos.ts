@@ -52,6 +52,6 @@ export class AvisoVencimientos {
       .map((n) => ({ necesidad: n, horas: horasRestantes(n.venceEn) ?? Infinity }))
       .filter((p) => p.horas <= HORAS_AVISO_VENCIMIENTO)
       .map((p) => ({ ...p, horas: Math.max(0, Math.floor(p.horas)) }))
-      .toSorted((a, b) => a.horas - b.horas),
+      .sort((a, b) => a.horas - b.horas),
   );
 }
