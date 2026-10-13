@@ -74,6 +74,11 @@ export class MapaPage {
     };
   };
 
+  /** Vista previa al pasar el mouse: solo en pantallas con mouse (en celular tapaba la lista). */
+  protected alPasarMouse(id: string): void {
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) this.seleccionadaId.set(id);
+  }
+
   protected alternarCategoria(valor: Categoria): void {
     this.categoria.update((actual) => (actual === valor ? null : valor));
     this.categoriasAbiertas.set(false);

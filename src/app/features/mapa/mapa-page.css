@@ -365,7 +365,11 @@
     right: 0;
     bottom: 0;
     width: auto;
-    height: 58%;
+    height: 82%;
+    /* Toda la hoja se desliza como una sola: antes la lista tenia su propio scroll y no cabia. */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     transform: translateY(calc(100% - 56px));
     transition: transform 0.25s ease;
@@ -605,5 +609,24 @@
 
   .paneles-ocultos .alternar-paneles {
     bottom: var(--space-4);
+  }
+}
+/* Celular: la lista ya no se desplaza aparte; la barra de arriba queda fija al deslizar. */
+@media (max-width: 860px) {
+  .panel-derecho .lista {
+    flex: none;
+    overflow: visible;
+    padding-bottom: 96px;
+  }
+
+  .panel-derecho .asa {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--color-superficie);
+  }
+
+  .panel-derecho .leyenda {
+    display: none;
   }
 }

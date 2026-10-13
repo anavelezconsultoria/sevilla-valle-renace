@@ -111,7 +111,7 @@
         }
       } @else {
         @for (n of lista(); track n.id; let i = $index) {
-          <div class="entrada" [style.--i]="i" (mouseenter)="seleccionadaId.set(n.id)">
+          <div class="entrada" [style.--i]="i" (mouseenter)="alPasarMouse(n.id)">
             <sr-necesidad-card [necesidad]="n" [compacta]="true" />
           </div>
         } @empty {
