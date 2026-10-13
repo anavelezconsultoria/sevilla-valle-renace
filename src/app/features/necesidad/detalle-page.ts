@@ -39,6 +39,13 @@ import { EstadoNecesidad } from '../../core/domain/necesidad.model';
                 <span class="chip">Registrada {{ hace() }}</span>
               </div>
               <p class="descripcion">{{ n.descripcion }}</p>
+              @if (n.fotos.length) {
+                <div class="galeria">
+                  @for (f of n.fotos; track f; let i = $index) {
+                    <a [href]="f" target="_blank" rel="noopener"><img [src]="f" alt="Foto {{ i + 1 }} de la necesidad" loading="lazy" /></a>
+                  }
+                </div>
+              }
               @if (n.prioridadCero) {
                 <p class="aviso prioridad"><strong>{{ avisos.prioridadTitulo }}:</strong> en este hogar hay bebés o adultos mayores. Se atiende primero.</p>
               }
@@ -91,6 +98,8 @@ import { EstadoNecesidad } from '../../core/domain/necesidad.model';
     .chip { font-size: var(--text-xs); font-weight: 550; padding: 3px 10px; border-radius: var(--radius-pill); background: var(--color-arena); color: var(--color-texto); }
     .chip.urgente { background: var(--estado-pendiente-bg); color: var(--urgencia-alta); }
     .descripcion { font-size: var(--text-md); line-height: 1.65; }
+    .galeria { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-2); }
+    .galeria img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-md); }
     .aviso { font-size: var(--text-sm); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); }
     .aviso.prioridad { background: var(--estado-pendiente-bg); }
     .aviso.externa { background: #f4eee6; }

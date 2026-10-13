@@ -45,6 +45,8 @@ export interface FilaNecesidad {
   readonly vence_en: string | null;
   readonly ayudante: { readonly alias: string } | null;
   readonly eventos: readonly FilaEvento[];
+  /** RLS solo devuelve las fotos (los videos son privados). */
+  readonly adjuntos: readonly { readonly ruta: string }[];
 }
 
 export interface FilaContacto {
@@ -77,6 +79,7 @@ export const SELECT_NECESIDADES = [
   'estado, cierre, ayudante_id, registrada_en, actualizada_en, vence_en',
   'ayudante:perfiles(alias)',
   'eventos:eventos_necesidad(id, tipo, ocurrido_en, actor_alias, nota, evidencias(id, ruta))',
+  'adjuntos:adjuntos_solicitud(ruta)',
 ].join(', ');
 
 export type UrlPublica = (ruta: string) => string;
@@ -92,7 +95,7 @@ function aEvento(fila: FilaEvento, urlPublica: UrlPublica): EventoNecesidad {
   };
 }
 
-export function aNecesidad(fila: FilaNecesidad, urlPublica: UrlPublica): Necesidad {
+export function aNecesidad(fila: FilaNecesidad, urlPublica: UrlPublica, urlFoto: UrlPublica): Necesidad {
   return {
     id: fila.id,
     categoria: fila.categoria,
@@ -110,6 +113,7 @@ export function aNecesidad(fila: FilaNecesidad, urlPublica: UrlPublica): Necesid
     registradaEn: fila.registrada_en,
     actualizadaEn: fila.actualizada_en,
     venceEn: fila.vence_en ?? undefined,
+    fotos: (fila.adjuntos ?? []).map((a) => urlFoto(a.ruta)),
     eventos: fila.eventos
       .map((e) => aEvento(e, urlPublica))
       .toSorted((a, b) => new Date(a.ocurridoEn).getTime() - new Date(b.ocurridoEn).getTime()),

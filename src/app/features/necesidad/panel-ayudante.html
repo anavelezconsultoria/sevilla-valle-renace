@@ -43,6 +43,12 @@
           <div><dt>Cómo llegar</dt><dd>{{ c.referencias }}</dd></div>
         }
       </dl>
+      @if (video(); as v) {
+        <div class="video">
+          <p class="etiqueta-video">Video que envió la familia (solo lo ves tú)</p>
+          <video [src]="v" controls playsinline preload="metadata"></video>
+        </div>
+      }
       <div class="atajos">
         <a class="btn btn-secondary" [href]="enlaceWhatsapp()" target="_blank" rel="noopener">Escribir por WhatsApp</a>
         <a class="btn btn-secondary" [href]="enlaceMapa()" target="_blank" rel="noopener">Cómo llegar</a>

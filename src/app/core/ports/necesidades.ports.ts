@@ -50,8 +50,20 @@ export class ErrorClaveDistinta extends Error {
   }
 }
 
+export interface AdjuntosPayload {
+  readonly necesidadId: string;
+  /** Llave interna del celular que registro: prueba que la necesidad es suya. */
+  readonly codigo: string;
+  /** Fotos ya procesadas en el cliente: sin metadatos y reducidas. */
+  readonly fotos: readonly Blob[];
+  /** Video corto; es privado (solo quien atiende y coordinacion). */
+  readonly video: File | null;
+}
+
 export abstract class SolicitanteGateway {
   abstract registrar(nueva: NuevaNecesidad): Promise<RegistroResultado>;
+  /** Sube fotos y video de una necesidad recien registrada. */
+  abstract adjuntar(payload: AdjuntosPayload): Promise<void>;
   /** Solicitudes de ese celular. Lanza ErrorAccesoSolicitante si el celular o la clave no coinciden. */
   abstract misNecesidades(acceso: AccesoSolicitante): Promise<readonly Necesidad[]>;
   abstract confirmarRecibida(accion: AccionSolicitante): Promise<Necesidad>;
@@ -73,6 +85,8 @@ export abstract class AyudanteGateway {
   abstract extenderPlazo(necesidadId: string): Promise<Necesidad>;
   abstract entregar(payload: EntregaPayload): Promise<Necesidad>;
   abstract contacto(necesidadId: string): Promise<ContactoPrivado>;
+  /** Direccion temporal del video de la solicitud, solo para quien la atiende; null si no hay. */
+  abstract videoSolicitud(necesidadId: string): Promise<string | null>;
   abstract misAtenciones(): readonly Necesidad[];
 }
 

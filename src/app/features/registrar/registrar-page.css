@@ -866,3 +866,6 @@
   background: color-mix(in srgb, var(--color-montana) 8%, var(--color-superficie));
 }
 .clave-recordada .puntos { font-size: 2rem; letter-spacing: .2em; color: var(--color-montana); }
+
+.saltar { margin-top: var(--space-2); }
+.aviso-adjuntos { margin-top: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); background: var(--estado-pendiente-bg); font-size: var(--text-sm); }

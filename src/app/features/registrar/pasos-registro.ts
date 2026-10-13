@@ -1,6 +1,6 @@
 /** Pasos del asistente para pedir ayuda: una pregunta por pantalla. */
 
-export type PasoRegistro = 'categoria' | 'urgencia' | 'detalle' | 'ubicacion' | 'contacto' | 'clave' | 'revision';
+export type PasoRegistro = 'categoria' | 'urgencia' | 'detalle' | 'fotos' | 'ubicacion' | 'contacto' | 'clave' | 'revision';
 
 export interface DefinicionPaso {
   readonly id: PasoRegistro;
@@ -12,6 +12,7 @@ export const PASOS: readonly DefinicionPaso[] = [
   { id: 'categoria', titulo: '¿Qué necesitas?', corto: 'Qué' },
   { id: 'urgencia', titulo: '¿Qué tan urgente es?', corto: 'Urgencia' },
   { id: 'detalle', titulo: 'Cuéntanos un poco más', corto: 'Detalle' },
+  { id: 'fotos', titulo: '¿Quieres mostrar el daño?', corto: 'Fotos' },
   { id: 'ubicacion', titulo: '¿Dónde estás?', corto: 'Dónde' },
   { id: 'contacto', titulo: '¿Cómo te contactamos?', corto: 'Contacto' },
   { id: 'clave', titulo: 'Crea tu clave de 4 números', corto: 'Clave' },

@@ -1,5 +1,8 @@
 @if (resultado(); as r) {
   <sr-celebracion />
+  @if (avisoAdjuntos(); as a) {
+    <p class="container aviso-adjuntos" role="alert">{{ a }}</p>
+  }
   <sr-registro-exitoso [resultado]="r" [telefono]="telefonoVisible()" (otra)="nuevaSolicitud()" />
 } @else {
   <section class="asistente" (keydown)="alPresionarTecla($event)" aria-labelledby="titulo-paso">
@@ -149,6 +152,17 @@
               </div>
               <sr-errores-campo [estado]="estado(formulario.descripcion)" />
             </div>
+          </div>
+        }
+
+        @case ('fotos') {
+          <div class="paso" [class.atras]="direccion() === 'atras'">
+            <h1 id="titulo-paso">{{ paso().titulo }}</h1>
+            <p class="ayuda">Opcional. Una foto ayuda a que alguien se anime a ayudarte. Si no tienes, sigue sin fotos.</p>
+            <sr-adjuntos-paso [(fotos)]="fotos" [(video)]="video" />
+            @if (!fotos().length && !video()) {
+              <button type="button" class="btn btn-ghost btn-block saltar" (click)="continuar()">Saltar este paso</button>
+            }
           </div>
         }
 

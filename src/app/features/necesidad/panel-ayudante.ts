@@ -74,11 +74,27 @@ export class PanelAyudante {
     );
   });
 
+  /** Video de la solicitud: privado, solo para quien la atiende. */
+  protected readonly video = signal<string | null>(null);
+
   constructor() {
     effect(() => {
-      if (this.soyQuienAtiende()) void this.cargarContacto();
-      else this.contacto.set(null);
+      if (this.soyQuienAtiende()) {
+        void this.cargarContacto();
+        void this.cargarVideo();
+      } else {
+        this.contacto.set(null);
+        this.video.set(null);
+      }
     });
+  }
+
+  private async cargarVideo(): Promise<void> {
+    try {
+      this.video.set(await this.ayudanteGw.videoSolicitud(this.necesidad().id));
+    } catch {
+      this.video.set(null);
+    }
   }
 
   protected async atender(): Promise<void> {

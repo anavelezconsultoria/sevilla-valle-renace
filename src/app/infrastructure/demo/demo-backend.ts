@@ -23,6 +23,7 @@ import { desplazarCoordenada, generarCodigoSeguimiento } from '../../core/domain
 import { soloDigitos } from '../../core/domain/clave-solicitante';
 import {
   AccionSolicitante,
+  AdjuntosPayload,
   Ayudante,
   AyudanteGateway,
   CoordinacionGateway,
@@ -41,7 +42,7 @@ import { filtrarNecesidades } from '../../core/application/filtrar-necesidades';
 import { calcularCifras } from '../../core/application/calcular-cifras';
 import { crearSemillaDemo, RegistroDemo } from './demo-semilla';
 
-const CLAVE_ALMACEN = 'sevilla-renace-demo-v4';
+const CLAVE_ALMACEN = 'sevilla-renace-demo-v5';
 const CLAVE_SESION = 'sevilla-renace-demo-sesion';
 const INTERVALO_VENCIMIENTOS_MS = 60_000;
 
@@ -119,6 +120,7 @@ export class DemoBackend
       registradaEn: ahora,
       actualizadaEn: ahora,
       eventos: [{ id: `${id}-e0`, tipo: TipoEvento.Registrada, ocurridoEn: ahora, actor: 'Solicitante', evidencias: [] }],
+      fotos: [],
     };
     const { clave, ...datosContacto } = nueva.contacto;
     const contacto: ContactoPrivado = { ...datosContacto, ubicacionExacta: nueva.ubicacion };
@@ -212,6 +214,19 @@ export class DemoBackend
       evento: { tipo: TipoEvento.Entregada, actor: ayudante.alias, nota, evidencias },
       cambios: { venceEn: sumarHoras(new Date().toISOString(), HORAS_PARA_CONFIRMAR) },
     });
+  }
+
+  /** En demo las fotos se guardan como data URL; el video no se guarda (solo se valida el flujo). */
+  async adjuntar({ necesidadId, codigo, fotos }: AdjuntosPayload): Promise<void> {
+    const registro = this.registros().find((r) => r.necesidad.id === necesidadId && r.codigo === codigo);
+    if (!registro) throw new Error('No se encontró la necesidad.');
+    const urls = await Promise.all(fotos.map(blobADataUrl));
+    const necesidad = { ...registro.necesidad, fotos: [...registro.necesidad.fotos, ...urls] };
+    this.guardar(this.registros().map((r) => (r === registro ? { ...r, necesidad } : r)));
+  }
+
+  async videoSolicitud(): Promise<string | null> {
+    return null;
   }
 
   async contacto(necesidadId: string): Promise<ContactoPrivado> {

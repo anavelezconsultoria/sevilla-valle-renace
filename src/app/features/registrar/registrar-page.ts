@@ -11,6 +11,7 @@ import { ErroresCampo, EstadoCampo } from '../../shared/ui/errores-campo';
 import { Celebracion } from '../../shared/ui/celebracion';
 import { enmascararTelefono, LARGO_CLAVE, motivoClaveInvalida, soloDigitos } from '../../core/domain/clave-solicitante';
 import { RegistroExitoso } from './registro-exitoso';
+import { AdjuntosPaso, FotoSolicitud, VideoSolicitud } from './adjuntos-paso';
 import { MAX_PERSONAS_DIBUJADAS, PASOS, PasoRegistro } from './pasos-registro';
 
 interface FormularioNecesidad {
@@ -63,7 +64,7 @@ type CampoConEstado = () => {
  */
 @Component({
   selector: 'sr-registrar-page',
-  imports: [FormField, SelectorPunto, CategoriaIcono, ErroresCampo, RegistroExitoso, Celebracion],
+  imports: [FormField, SelectorPunto, CategoriaIcono, ErroresCampo, RegistroExitoso, Celebracion, AdjuntosPaso],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './registrar-page.html',
   styleUrl: './registrar-page.css',
@@ -82,6 +83,10 @@ export class RegistrarPage {
   /** Error de clave que llega del servidor (el celular ya tiene otra clave). */
   protected readonly errorClave = signal<string | null>(null);
   protected readonly punto = signal<Coordenada | null>(null);
+  protected readonly fotos = signal<readonly FotoSolicitud[]>([]);
+  protected readonly video = signal<VideoSolicitud | null>(null);
+  /** Si el registro salio bien pero las fotos no subieron, se avisa sin perder la solicitud. */
+  protected readonly avisoAdjuntos = signal<string | null>(null);
   protected readonly indice = signal(0);
   protected readonly direccion = signal<'adelante' | 'atras'>('adelante');
   protected readonly mostrarErrores = signal(false);
@@ -145,6 +150,7 @@ export class RegistrarPage {
     categoria: () => [this.formulario.categoria],
     urgencia: () => [this.formulario.urgencia, this.formulario.personasHogar],
     detalle: () => [this.formulario.titulo, this.formulario.descripcion],
+    fotos: () => [],
     ubicacion: () => [this.formulario.sector, this.formulario.referencias],
     contacto: () => [this.formulario.nombre, this.formulario.telefono, this.formulario.autorizaDatos],
     clave: () => [this.formulario.clave, this.formulario.confirmacionClave],
@@ -279,6 +285,7 @@ export class RegistrarPage {
         registradaEn: resultado.necesidad.registradaEn,
       });
       this.solicitudesLocales.guardarPerfil({ nombre: m.nombre.trim(), telefono: soloDigitos(m.telefono), clave: m.clave });
+      await this.subirAdjuntos(resultado);
       this.resultado.set(resultado);
       window.scrollTo({ top: 0 });
     } catch (error) {
@@ -296,10 +303,26 @@ export class RegistrarPage {
 
   protected nuevaSolicitud(): void {
     this.modelo.set(this.modeloInicial());
+    this.fotos.set([]);
+    this.video.set(null);
+    this.avisoAdjuntos.set(null);
     this.punto.set(null);
     this.indice.set(0);
     this.mostrarErrores.set(false);
     this.resultado.set(null);
+  }
+
+  /** Sube fotos y video despues de registrar; si falla, la necesidad ya quedo registrada. */
+  private async subirAdjuntos(resultado: RegistroResultado): Promise<void> {
+    const fotos = this.fotos().map((f) => f.blob);
+    const video = this.video()?.archivo ?? null;
+    if (!fotos.length && !video) return;
+    this.avisoAdjuntos.set(null);
+    try {
+      await this.solicitante.adjuntar({ necesidadId: resultado.necesidad.id, codigo: resultado.codigoDispositivo, fotos, video });
+    } catch {
+      this.avisoAdjuntos.set('Tu necesidad quedó registrada, pero no pudimos subir las fotos o el video. Revisa tu conexión.');
+    }
   }
 
   /** Si este celular ya pidio ayuda antes, nombre, celular y clave llegan llenos. */

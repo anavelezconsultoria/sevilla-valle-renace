@@ -24,11 +24,11 @@ type ModoIdentificacion = 'antes' | 'nuevo';
   template: `
     <form class="form" (submit)="enviar($event)" novalidate>
       <div class="modos" role="tablist" aria-label="¿Ya ayudaste antes?">
-        <button type="button" role="tab" [attr.aria-selected]="modo() === 'antes'" (click)="elegirModo('antes')">Ya ayudé antes</button>
+        <button type="button" role="tab" [attr.aria-selected]="modo() === 'antes'" (click)="elegirModo('antes')">Ya ingresé antes</button>
         <button type="button" role="tab" [attr.aria-selected]="modo() === 'nuevo'" (click)="elegirModo('nuevo')">Es mi primera vez</button>
       </div>
       @if (modo() === 'antes') {
-        <p class="ayuda">Entra con el celular y la clave que usaste antes: verás todo lo tuyo.</p>
+        <p class="ayuda">Usa el celular y la clave con que entraste antes, para ayudar o para pedir ayuda: es la misma.</p>
       }
       @if (modo() === 'nuevo') {
       <label class="field">
@@ -51,7 +51,7 @@ type ModoIdentificacion = 'antes' | 'nuevo';
       <label class="field">
         <span class="field-label">{{ modo() === 'antes' ? 'Tu clave' : 'Crea una clave de 4 números' }}</span>
         <input class="input clave" type="password" inputmode="numeric" maxlength="4" [value]="modelo().clave" (input)="alEscribirClave($event)" autocomplete="off" placeholder="••••" />
-        <span class="field-hint">{{ modo() === 'antes' ? 'La misma que usaste antes. Si la olvidaste, escríbele a la coordinación.' : 'Con tu celular y esta clave entras desde cualquier celular. No uses 1234 ni el final de tu número.' }}</span>
+        <span class="field-hint">{{ modo() === 'antes' ? 'La misma de antes, también si fue cuando pediste ayuda. Si la olvidaste, escríbele a la coordinación.' : 'Con tu celular y esta clave entras desde cualquier celular. Si ya pediste ayuda con este número, usa esa misma clave.' }}</span>
         @if (intento() && motivoClave(); as m) {
           <span class="field-error">{{ m }}</span>
         }

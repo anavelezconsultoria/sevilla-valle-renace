@@ -63,7 +63,7 @@ interface Columna {
         <section class="card acceso">
           <p class="eyebrow">Quiero ayudar</p>
           <h1>Identifícate para atender necesidades</h1>
-          <p class="muted">Si ya ayudaste, entra con tu celular y tu clave. Si es tu primera vez, solo te pedimos un nombre público, tu celular (privado) y una clave.</p>
+          <p class="muted">Si ya ingresaste antes, para ayudar o para pedir ayuda, entra con tu celular y tu clave. Si es tu primera vez, te pedimos un nombre público, tu celular (privado) y una clave.</p>
           <sr-identificarse-form />
         </section>
       }

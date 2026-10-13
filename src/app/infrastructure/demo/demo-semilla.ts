@@ -86,6 +86,7 @@ function base(s: SemillaBase, estado: EstadoNecesidad, eventos: EventoNecesidad[
       registradaEn: haceHoras(s.registradaHace),
       actualizadaEn: eventos[eventos.length - 1]?.ocurridoEn ?? haceHoras(s.registradaHace),
       eventos,
+      fotos: [],
       ...extra,
     },
   };

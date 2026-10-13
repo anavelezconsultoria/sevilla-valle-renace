@@ -93,6 +93,8 @@ export interface Necesidad {
   /** Vencimiento de la etapa actual (toma o confirmacion), si aplica. */
   readonly venceEn?: string;
   readonly eventos: readonly EventoNecesidad[];
+  /** Fotos que subio quien pidio la ayuda (publicas, sin ubicacion). */
+  readonly fotos: readonly string[];
 }
 
 /** Datos privados: solo para el ayudante asignado y coordinacion. */

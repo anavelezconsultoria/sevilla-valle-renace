@@ -5,6 +5,8 @@ export interface SupabaseConfig {
   /** Llave publica (anon/publishable). Es publica por diseno: la seguridad la dan las politicas RLS. */
   readonly anonKey: string;
   readonly bucketEvidencias: string;
+  readonly bucketFotosSolicitud: string;
+  readonly bucketVideoSolicitud: string;
 }
 
 export const SUPABASE_CONFIG = new InjectionToken<SupabaseConfig>('SUPABASE_CONFIG');
@@ -13,6 +15,8 @@ export const CONFIG_SUPABASE: SupabaseConfig = {
   url: 'https://wabslvejumtvdpjxgsgx.supabase.co',
   anonKey: 'sb_publishable_hwp8JZSSwFtfp9XplZPLAA_KwExGKrV',
   bucketEvidencias: 'evidencias',
+  bucketFotosSolicitud: 'solicitudes',
+  bucketVideoSolicitud: 'solicitudes-video',
 };
 
 /** Sin llave configurada, la app arranca en modo demostracion. */

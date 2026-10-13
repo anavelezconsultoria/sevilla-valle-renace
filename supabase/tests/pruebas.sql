@@ -363,6 +363,66 @@ end $$;
 
 reset role;
 
+-- Una clave por celular: quien pidio ayuda entra a ayudar con la misma clave.
+reset role;
+insert into auth.users (id, email, aud, role) values ('00000000-0000-0000-0000-00000000000f', 'f@prueba.local', 'authenticated', 'authenticated');
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000f"}', true);
+do $$ begin
+  -- 3157001122 pidio ayuda; su clave de solicitudes es 7319 (cambiada por coordinacion arriba).
+  if public.asegurar_perfil('Luz', '3157001122', '8642') is not null then raise exception 'FALLO: entro a ayudar con otra clave'; end if;
+  begin
+    perform public.asegurar_perfil('', '3157001122', '7319');
+    raise exception 'FALLO: entro sin nombre siendo su primera vez ayudando';
+  exception when sqlstate 'P0001' then null;
+  end;
+  if public.asegurar_perfil('Luz', '3157001122', '7319') is null then raise exception 'FALLO: no entro con la clave de sus solicitudes'; end if;
+  raise notice 'OK  quien pidio ayuda entra a ayudar con la misma clave (y no con otra)';
+end $$;
+reset role;
+
+-- Adjuntos: solo a una necesidad recien registrada, con limite; el video es privado.
+do $$ declare r record; begin
+  select * into r from public.registrar_necesidad('techo', 'Tejas para el techo', 'Se cayo el techo del cuarto', 'alta', 3, 'Sector', 4.26, -75.93, 'Rita', '3155550004', '5793');
+  perform set_config('prueba.id5', r.necesidad_id::text, true);
+  perform set_config('prueba.codigo5', r.codigo, true);
+  if not public._puede_adjuntar('solicitudes', r.necesidad_id || '/a.jpg') then raise exception 'FALLO: no deja subir a una necesidad nueva'; end if;
+  if public._puede_adjuntar('solicitudes', '00000000-0000-0000-0000-000000000000/a.jpg') then raise exception 'FALLO: deja subir a una necesidad que no existe'; end if;
+  if public._puede_adjuntar('solicitudes', r.necesidad_id || '/x/../a.jpg') then raise exception 'FALLO: acepta rutas raras'; end if;
+  raise notice 'OK  se sube a una necesidad recien registrada y no a carpetas inventadas';
+end $$;
+
+reset role;
+insert into storage.objects (bucket_id, name) values
+  ('solicitudes', current_setting('prueba.id5') || '/1.jpg'),
+  ('solicitudes', current_setting('prueba.id5') || '/2.jpg'),
+  ('solicitudes', current_setting('prueba.id5') || '/3.jpg'),
+  ('solicitudes-video', current_setting('prueba.id5') || '/v.mp4');
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$ begin
+  if public._puede_adjuntar('solicitudes', current_setting('prueba.id5') || '/4.jpg') then raise exception 'FALLO: deja subir una cuarta foto'; end if;
+  if public.registrar_adjuntos(current_setting('prueba.codigo5'),
+       array[current_setting('prueba.id5') || '/1.jpg', current_setting('prueba.id5') || '/2.jpg', current_setting('prueba.id5') || '/no-existe.jpg'],
+       current_setting('prueba.id5') || '/v.mp4') <> 3 then
+    raise exception 'FALLO: no registro 2 fotos y el video';
+  end if;
+  if (select count(*) from public.adjuntos_solicitud where necesidad_id = current_setting('prueba.id5')::uuid) <> 2 then
+    raise exception 'FALLO: el publico ve algo distinto a las 2 fotos';
+  end if;
+  raise notice 'OK  maximo 3 fotos; el publico ve las fotos pero no el video';
+end $$;
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000b"}', true);
+do $$ begin
+  if public.video_solicitud(current_setting('prueba.id5')::uuid) is not null then raise exception 'FALLO: un ayudante que no la atiende ve el video'; end if;
+  perform public.tomar_necesidad(current_setting('prueba.id5')::uuid);
+  if public.video_solicitud(current_setting('prueba.id5')::uuid) is null then raise exception 'FALLO: quien la atiende no ve el video'; end if;
+  raise notice 'OK  el video solo lo ve quien atiende la necesidad';
+end $$;
+reset role;
+
 -- Toques repetidos: la misma solicitud en minutos no se duplica.
 do $$ begin
   perform public.registrar_necesidad('aseo', 'Pañales talla 3', 'Bebe de 8 meses necesita pañales', 'media', 3, 'Sector', 4.26, -75.93, 'Eva', '3175550002', '5793');

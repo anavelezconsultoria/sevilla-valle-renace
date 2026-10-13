@@ -11,6 +11,7 @@ import {
 } from '../../core/domain/necesidad.model';
 import {
   AccionSolicitante,
+  AdjuntosPayload,
   AyudanteGateway,
   EntregaPayload,
   CoordinacionGateway,
@@ -32,6 +33,14 @@ import { aContacto, aNecesidad, FilaContacto, FilaNecesidad, FilaRegistro, SELEC
 const LIMITE_NECESIDADES = 1000;
 const ESPERA_RECARGA_MS = 400;
 const RECARGA_PERIODICA_MS = 120_000;
+/** El enlace del video privado dura una hora. */
+const SEGUNDOS_URL_VIDEO = 3600;
+
+function extensionVideo(video: File): string {
+  if (video.type === 'video/quicktime') return 'mov';
+  if (video.type === 'video/webm') return 'webm';
+  return 'mp4';
+}
 
 type TipoCredencial = CredencialSolicitante['tipo'];
 
@@ -126,6 +135,17 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
     return { necesidad, codigoDispositivo: registro.codigo };
   }
 
+  async adjuntar({ necesidadId, codigo, fotos, video }: AdjuntosPayload): Promise<void> {
+    const rutasFotos = await Promise.all(
+      fotos.map((foto) => this.subir(this.config.bucketFotosSolicitud, `${necesidadId}/${crypto.randomUUID()}.jpg`, foto, 'image/jpeg')),
+    );
+    const rutaVideo = video
+      ? await this.subir(this.config.bucketVideoSolicitud, `${necesidadId}/${crypto.randomUUID()}.${extensionVideo(video)}`, video, video.type)
+      : null;
+    exigir<number>(await this.cliente.rpc('registrar_adjuntos', { p_codigo: codigo, p_fotos: rutasFotos, p_video: rutaVideo }));
+    await this.recargar();
+  }
+
   async misNecesidades({ telefono, clave }: AccesoSolicitante): Promise<readonly Necesidad[]> {
     const ids = exigir<readonly string[]>(await this.cliente.rpc('mis_necesidades', { p_telefono: telefono, p_clave: clave }));
     if (!ids.length) throw new ErrorAccesoSolicitante();
@@ -171,6 +191,13 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
     return aContacto(fila);
   }
 
+  async videoSolicitud(necesidadId: string): Promise<string | null> {
+    const ruta = exigir<string | null>(await this.cliente.rpc('video_solicitud', { p_necesidad: necesidadId }));
+    if (!ruta) return null;
+    const { data, error } = await this.cliente.storage.from(this.config.bucketVideoSolicitud).createSignedUrl(ruta, SEGUNDOS_URL_VIDEO);
+    return error ? null : data.signedUrl;
+  }
+
   misAtenciones(): readonly Necesidad[] {
     return this.mias();
   }
@@ -183,6 +210,12 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
 
   // ---- Internos ----
 
+  private async subir(bucket: string, ruta: string, archivo: Blob, tipo: string): Promise<string> {
+    const { error } = await this.cliente.storage.from(bucket).upload(ruta, archivo, { contentType: tipo, upsert: false });
+    if (error) throw new Error('No se pudo subir una de las fotos o el video. Revisa tu conexión.');
+    return ruta;
+  }
+
   /** Las fotos van a la carpeta del ayudante: la politica de Storage y la funcion lo exigen. */
   private async subirEvidencia(necesidadId: string, foto: Blob): Promise<string> {
     const ayudanteId = this.sesion.ayudante()?.id;
@@ -194,6 +227,9 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
     if (error) throw new Error('No se pudo subir una de las fotos. Revisa tu conexión e inténtalo de nuevo.');
     return ruta;
   }
+
+  private urlFoto = (ruta: string): string =>
+    this.cliente.storage.from(this.config.bucketFotosSolicitud).getPublicUrl(ruta).data.publicUrl;
 
   private urlPublica = (ruta: string): string =>
     this.cliente.storage.from(this.config.bucketEvidencias).getPublicUrl(ruta).data.publicUrl;
@@ -236,7 +272,7 @@ export class SupabaseNecesidades implements NecesidadesLectura, SolicitanteGatew
           .order('registrada_en', { ascending: false })
           .limit(LIMITE_NECESIDADES),
       );
-      this.lista.set(filas.map((f) => aNecesidad(f, this.urlPublica)));
+      this.lista.set(filas.map((f) => aNecesidad(f, this.urlPublica, this.urlFoto)));
     } finally {
       this.cargandoInterno.set(false);
     }
