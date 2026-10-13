@@ -3,7 +3,6 @@ import { RouterLink } from '@angular/router';
 import { NecesidadesLectura } from '../../core/ports/necesidades.ports';
 import { Categoria, EstadoNecesidad, Urgencia } from '../../core/domain/necesidad.model';
 import { CATEGORIAS, ESTADOS, URGENCIAS } from '../../core/domain/catalogos';
-import { ESTADOS_ACTIVOS } from '../../core/domain/ciclo-de-vida';
 import { NecesidadCard } from '../../shared/ui/necesidad-card';
 import { MapaNecesidades } from '../../shared/mapa/mapa-necesidades';
 import { Revelar } from '../../shared/ui/revelar';
@@ -24,14 +23,19 @@ type Vista = 'lista' | 'mapa';
       <a routerLink="/pedir-ayuda" class="btn btn-accion">Registrar una necesidad</a>
     </div></header>
 
-    <section class="container filtros" aria-label="Filtros" style="margin-top: var(--space-5)">
-      <div class="segmento" role="tablist" aria-label="Estado">
+    <section class="container" style="margin-top: var(--space-5)">
+      <div class="pestanas" role="tablist" aria-label="Estado">
         @for (opcion of opcionesEstado; track opcion.valor) {
-          <button type="button" role="tab" [attr.aria-selected]="estado() === opcion.valor" (click)="estado.set(opcion.valor)">
-            {{ opcion.etiqueta }}
+          <button type="button" role="tab" class="pestana" [attr.data-estado]="opcion.valor" [attr.aria-selected]="estado() === opcion.valor" (click)="estado.set(opcion.valor)">
+            <span>{{ opcion.etiqueta }}</span><span class="num">{{ conteos()[opcion.valor] }}</span>
           </button>
         }
       </div>
+    </section>
+
+    <details class="container mas-filtros" [open]="filtrosAbiertos">
+      <summary>Filtrar por categoría, urgencia o sector</summary>
+    <section class="filtros" aria-label="Filtros">
       <select class="input" aria-label="Categoría" (change)="alCambiarCategoria($event)">
         <option value="">Todas las categorías</option>
         @for (c of categorias; track c.valor) {
@@ -50,6 +54,7 @@ type Vista = 'lista' | 'mapa';
         <button type="button" [class.activo]="vista() === 'mapa'" (click)="vista.set('mapa')">Mapa</button>
       </div>
     </section>
+    </details>
 
     <section class="container">
       <p class="conteo muted">{{ resultados().length }} {{ resultados().length === 1 ? 'necesidad' : 'necesidades' }}</p>
@@ -72,6 +77,17 @@ type Vista = 'lista' | 'mapa';
     .cabecera { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-4); }
     .cabecera h1 { font-size: var(--text-2xl); margin-block: 6px; }
     .cabecera p.muted { max-width: 620px; }
+    .pestanas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); margin-bottom: var(--space-3); }
+    .pestana { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 52px; padding: 10px 16px; border: 1.5px solid var(--color-linea-fuerte); border-radius: var(--radius-md); background: var(--color-superficie); font: inherit; font-size: var(--text-sm); font-weight: 650; color: var(--color-tenue); text-align: left; cursor: pointer; }
+    .pestana .num { min-width: 30px; height: 30px; padding-inline: 8px; display: grid; place-items: center; border-radius: 999px; background: var(--color-arena); color: var(--color-tinta); font-weight: 800; }
+    .pestana[aria-selected='true'] { color: #fff; }
+    .pestana[aria-selected='true'] .num { background: rgba(255,255,255,.9); }
+    .pestana[data-estado='registrada'][aria-selected='true'] { background: var(--estado-pendiente); border-color: var(--estado-pendiente); }
+    .pestana[data-estado='en_atencion'][aria-selected='true'] { background: #b67a00; border-color: #b67a00; }
+    .pestana[data-estado='entregada'][aria-selected='true'] { background: var(--estado-entregada); border-color: var(--estado-entregada); }
+    .pestana[data-estado='atendida'][aria-selected='true'] { background: var(--estado-exito); border-color: var(--estado-exito); }
+    .mas-filtros { margin-bottom: var(--space-3); }
+    .mas-filtros summary { display: none; }
     .filtros { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-bottom: var(--space-4); }
     .filtros select, .filtros input { width: auto; min-width: 180px; flex: 1; min-height: 42px; }
     .segmento, .vista { display: inline-flex; padding: 3px; gap: 2px; background: var(--color-superficie); border: 1px solid var(--color-linea-fuerte); border-radius: var(--radius-pill); }
@@ -81,7 +97,15 @@ type Vista = 'lista' | 'mapa';
     .mapa { display: block; height: 420px; overflow: hidden; margin-bottom: var(--space-4); }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: var(--space-3); }
     .vacio { padding: var(--space-6); text-align: center; grid-column: 1 / -1; }
-    @media (max-width: 640px) { .filtros select, .filtros input { min-width: 0; flex-basis: 100%; } .segmento { width: 100%; overflow-x: auto; } }
+    @media (max-width: 640px) {
+      .cabecera p.muted { display: none; }
+      .cabecera .btn { width: 100%; }
+      .pestanas { grid-template-columns: 1fr 1fr; }
+      .mas-filtros summary { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 1.5px solid var(--color-linea-fuerte); border-radius: var(--radius-md); background: var(--color-superficie); font-weight: 650; color: var(--color-primario); cursor: pointer; list-style: none; }
+      .mas-filtros summary::-webkit-details-marker { display: none; }
+      .mas-filtros[open] summary { margin-bottom: var(--space-2); }
+      .filtros select, .filtros input { min-width: 0; flex-basis: 100%; }
+    }
   `,
 })
 export class TableroPage {
@@ -89,14 +113,28 @@ export class TableroPage {
 
   protected readonly categorias = CATEGORIAS;
   protected readonly urgencias = Object.entries(URGENCIAS) as [Urgencia, string][];
-  protected readonly opcionesEstado: readonly { valor: EstadoNecesidad | 'activas'; etiqueta: string }[] = [
-    { valor: 'activas', etiqueta: 'Activas' },
+  /** Por defecto se ve lo que espera ayuda: es lo que hay que atender. */
+  protected readonly opcionesEstado: readonly { valor: EstadoNecesidad; etiqueta: string }[] = [
     { valor: EstadoNecesidad.Registrada, etiqueta: ESTADOS[EstadoNecesidad.Registrada].etiqueta },
     { valor: EstadoNecesidad.EnAtencion, etiqueta: ESTADOS[EstadoNecesidad.EnAtencion].etiqueta },
-    { valor: EstadoNecesidad.Atendida, etiqueta: ESTADOS[EstadoNecesidad.Atendida].etiqueta },
+    { valor: EstadoNecesidad.Entregada, etiqueta: 'Entregadas' },
+    { valor: EstadoNecesidad.Atendida, etiqueta: 'Atendidas' },
   ];
+  /** En escritorio los filtros se ven siempre; en celular van plegados (CSS). */
+  protected readonly filtrosAbiertos = typeof window !== 'undefined' && window.matchMedia('(min-width: 641px)').matches;
 
-  protected readonly estado = signal<EstadoNecesidad | 'activas'>('activas');
+  protected readonly estado = signal<EstadoNecesidad>(EstadoNecesidad.Registrada);
+  protected readonly conteos = computed(() => {
+    const todas = this.lectura.todas();
+    const contar = (e: EstadoNecesidad) => todas.filter((n) => n.estado === e).length;
+    return {
+      [EstadoNecesidad.Registrada]: contar(EstadoNecesidad.Registrada),
+      [EstadoNecesidad.EnAtencion]: contar(EstadoNecesidad.EnAtencion),
+      [EstadoNecesidad.Entregada]: contar(EstadoNecesidad.Entregada),
+      [EstadoNecesidad.Atendida]: contar(EstadoNecesidad.Atendida),
+      [EstadoNecesidad.Cancelada]: contar(EstadoNecesidad.Cancelada),
+    } satisfies Record<EstadoNecesidad, number>;
+  });
   protected readonly categoria = signal<Categoria | undefined>(undefined);
   protected readonly urgencia = signal<Urgencia | undefined>(undefined);
   protected readonly texto = signal('');
@@ -105,7 +143,7 @@ export class TableroPage {
 
   protected readonly resultados = computed(() =>
     this.lectura.filtrar({
-      estados: this.estado() === 'activas' ? ESTADOS_ACTIVOS : [this.estado() as EstadoNecesidad],
+      estados: [this.estado()],
       categoria: this.categoria(),
       urgencia: this.urgencia(),
       texto: this.texto(),

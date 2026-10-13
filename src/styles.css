@@ -497,3 +497,13 @@ textarea.input {
 .btn-whatsapp:hover {
   background: #17924a;
 }
+
+/* Celular: letra un poco mas grande en toda la app; en pantalla chica 12 px no se lee bien. */
+@media (max-width: 640px) {
+  :root {
+    --text-xs: 0.8125rem;
+    --text-sm: 0.9375rem;
+    --text-md: 1.0625rem;
+    --text-lg: 1.1875rem;
+  }
+}
