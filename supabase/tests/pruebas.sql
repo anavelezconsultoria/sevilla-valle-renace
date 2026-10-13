@@ -346,6 +346,22 @@ do $$ begin
 end $$;
 
 reset role;
+insert into auth.users (id, email, aud, role) values ('00000000-0000-0000-0000-00000000000e', 'e@prueba.local', 'authenticated', 'authenticated');
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000e"}', true);
+do $$ declare v public.perfiles; begin
+  v := public.asegurar_perfil('', '3186660001', '4826');
+  if v.alias <> 'Marta celular nuevo' then raise exception 'FALLO: no conservo el nombre (%)', v.alias; end if;
+  raise notice 'OK  "Ya ayude antes": solo celular y clave, conserva el nombre';
+end $$;
+
+do $$ begin
+  perform public.asegurar_perfil('', '3199990009', '4826');
+  raise exception 'FALLO: entro sin nombre un celular nuevo';
+exception when sqlstate 'P0001' then raise notice 'OK  un celular sin perfil necesita "Es mi primera vez"';
+end $$;
+
+reset role;
 
 -- Toques repetidos: la misma solicitud en minutos no se duplica.
 do $$ begin

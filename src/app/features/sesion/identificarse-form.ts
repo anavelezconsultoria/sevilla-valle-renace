@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, output, signal } from '@angular/core';
 import { LARGO_CLAVE, motivoClaveInvalida, soloDigitos } from '../../core/domain/clave-solicitante';
-import { form, FormField, maxLength, minLength, required, submit, validate } from '@angular/forms/signals';
+import { form, FormField, submit, validate } from '@angular/forms/signals';
 import { ErrorLimiteEnvios, SesionGateway } from '../../core/ports/necesidades.ports';
 
 interface DatosIdentificacion {
@@ -10,6 +10,8 @@ interface DatosIdentificacion {
 }
 
 const CELULAR_CO = /^3\d{9}$/;
+
+type ModoIdentificacion = 'antes' | 'nuevo';
 
 /**
  * Identificacion de quien ayuda, sin correo: un alias publico y un celular
@@ -21,6 +23,14 @@ const CELULAR_CO = /^3\d{9}$/;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <form class="form" (submit)="enviar($event)" novalidate>
+      <div class="modos" role="tablist" aria-label="¿Ya ayudaste antes?">
+        <button type="button" role="tab" [attr.aria-selected]="modo() === 'antes'" (click)="elegirModo('antes')">Ya ayudé antes</button>
+        <button type="button" role="tab" [attr.aria-selected]="modo() === 'nuevo'" (click)="elegirModo('nuevo')">Es mi primera vez</button>
+      </div>
+      @if (modo() === 'antes') {
+        <p class="ayuda">Entra con el celular y la clave que usaste antes: verás todo lo tuyo.</p>
+      }
+      @if (modo() === 'nuevo') {
       <label class="field">
         <span class="field-label">¿Cómo quieres aparecer?</span>
         <input class="input" [formField]="formulario.alias" autocomplete="nickname" placeholder="Ej.: Marta, Parroquia San Luis, Bomberos" />
@@ -29,6 +39,7 @@ const CELULAR_CO = /^3\d{9}$/;
           <span class="field-error">{{ formulario.alias().errors()[0]?.message }}</span>
         }
       </label>
+      }
       <label class="field">
         <span class="field-label">Tu celular</span>
         <input class="input" type="tel" inputmode="numeric" [formField]="formulario.celular" autocomplete="tel" placeholder="3001234567" />
@@ -38,9 +49,9 @@ const CELULAR_CO = /^3\d{9}$/;
         }
       </label>
       <label class="field">
-        <span class="field-label">Clave de 4 números</span>
+        <span class="field-label">{{ modo() === 'antes' ? 'Tu clave' : 'Crea una clave de 4 números' }}</span>
         <input class="input clave" type="password" inputmode="numeric" maxlength="4" [value]="modelo().clave" (input)="alEscribirClave($event)" autocomplete="off" placeholder="••••" />
-        <span class="field-hint">Si es tu primera vez, créala. Si ya ayudaste antes, usa la misma: así ves todo lo tuyo desde cualquier celular.</span>
+        <span class="field-hint">{{ modo() === 'antes' ? 'La misma que usaste antes. Si la olvidaste, escríbele a la coordinación.' : 'Con tu celular y esta clave entras desde cualquier celular. No uses 1234 ni el final de tu número.' }}</span>
         @if (intento() && motivoClave(); as m) {
           <span class="field-error">{{ m }}</span>
         }
@@ -62,6 +73,10 @@ const CELULAR_CO = /^3\d{9}$/;
   styles: `
     .form { display: grid; gap: var(--space-3); }
     .clave { font-family: var(--font-marca); letter-spacing: .4em; max-width: 200px; }
+    .modos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px; border-radius: var(--radius-pill); background: var(--color-arena); }
+    .modos button { min-height: 44px; border: 0; border-radius: var(--radius-pill); background: none; font: inherit; font-size: var(--text-sm); font-weight: 650; color: var(--color-tenue); cursor: pointer; }
+    .modos button[aria-selected='true'] { background: var(--color-primario); color: #fff; }
+    .ayuda { font-size: var(--text-sm); color: var(--color-tenue); }
     .error { font-size: var(--text-sm); padding: var(--space-3); border-radius: var(--radius-sm); background: var(--estado-pendiente-bg); color: var(--estado-pendiente); animation: aparecer var(--dur-media) var(--ease-salida); }
   `,
 })
@@ -69,6 +84,8 @@ export class IdentificarseForm {
   private readonly sesion = inject(SesionGateway);
   readonly identificado = output<void>();
 
+  /** La mayoria de quienes vuelven ya tienen perfil: se abre en "Ya ayude antes". */
+  protected readonly modo = signal<ModoIdentificacion>('antes');
   protected readonly modelo = signal<DatosIdentificacion>({ alias: '', celular: '', clave: '' });
   protected readonly motivoClave = computed(() =>
     motivoClaveInvalida({ clave: this.modelo().clave, telefono: soloDigitos(this.modelo().celular) }),
@@ -85,13 +102,22 @@ export class IdentificarseForm {
   }
 
   protected readonly formulario = form(this.modelo, (p) => {
-    required(p.alias, { message: 'Escribe cómo quieres aparecer.' });
-    minLength(p.alias, 2, { message: 'Mínimo 2 caracteres.' });
-    maxLength(p.alias, 40, { message: 'Máximo 40 caracteres.' });
+    validate(p.alias, ({ value }) => {
+      if (this.modo() === 'antes') return null;
+      const largo = value().trim().length;
+      if (largo < 2) return { kind: 'alias', message: 'Escribe cómo quieres aparecer (mínimo 2 letras).' };
+      return largo > 40 ? { kind: 'alias', message: 'Máximo 40 caracteres.' } : null;
+    });
     validate(p.celular, ({ value }) =>
       CELULAR_CO.test(value().replace(/\D/g, '')) ? null : { kind: 'celular', message: 'Escribe un celular de 10 dígitos que empiece por 3.' },
     );
   });
+
+  protected elegirModo(modo: ModoIdentificacion): void {
+    this.modo.set(modo);
+    this.error.set(null);
+    this.intento.set(false);
+  }
 
   protected alEscribirClave(evento: Event): void {
     const entrada = evento.target as HTMLInputElement;
@@ -112,7 +138,8 @@ export class IdentificarseForm {
       this.enviando.set(true);
       this.error.set(null);
       try {
-        await this.sesion.iniciarSesion(this.modelo());
+        const m = this.modelo();
+        await this.sesion.iniciarSesion({ ...m, alias: this.modo() === 'antes' ? '' : m.alias });
         this.identificado.emit();
       } catch (e) {
         this.mostrarFallo(e);
