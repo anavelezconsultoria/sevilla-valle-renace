@@ -160,6 +160,16 @@ export interface HistorialCelular {
   readonly ayudante?: ActividadAyudante;
 }
 
+/** Hogar (por celular) que ya recibio ayuda. Privado: solo coordinacion. */
+export interface HogarAtendido {
+  readonly telefono: string;
+  readonly nombre: string;
+  readonly sector: string;
+  readonly ayudas: number;
+  readonly ultimaAyuda: string;
+  readonly categorias: readonly Categoria[];
+}
+
 /** Herramientas de la coordinacion (solo perfiles con rol coordinacion). */
 export abstract class CoordinacionGateway {
   /** Devuelve cuantas solicitudes de ese celular quedaron con la clave nueva. */
@@ -167,6 +177,8 @@ export abstract class CoordinacionGateway {
   abstract solicitudesEnRevision(): Promise<readonly SolicitudEnRevision[]>;
   abstract revisar(payload: RevisarPayload): Promise<void>;
   abstract historial(telefono: string): Promise<HistorialCelular>;
+  /** Hogares que ya recibieron ayuda, el mas reciente primero. */
+  abstract hogaresQueRecibieron(): Promise<readonly HogarAtendido[]>;
 }
 
 /** Reconocimiento publico: alias de quienes ayudan y cuantas entregas llevan. */

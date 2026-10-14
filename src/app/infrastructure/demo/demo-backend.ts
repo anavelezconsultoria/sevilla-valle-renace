@@ -32,6 +32,7 @@ import {
   ErrorAccesoSolicitante,
   ErrorClaveDistinta,
   HistorialCelular,
+  HogarAtendido,
   ReconocimientoLectura,
   RestablecerClavePayload,
   RevisarPayload,
@@ -312,6 +313,26 @@ export class DemoBackend
       })),
       parecidas: [],
     };
+  }
+
+  async hogaresQueRecibieron(): Promise<readonly HogarAtendido[]> {
+    this.exigirCoordinacion();
+    const porCelular = new Map<string, HogarAtendido>();
+    for (const r of this.registros()) {
+      const entrega = r.necesidad.eventos.find((e) => e.tipo === TipoEvento.Entregada);
+      if (!entrega || (r.necesidad.estado !== EstadoNecesidad.Entregada && r.necesidad.estado !== EstadoNecesidad.Atendida)) continue;
+      const telefono = soloDigitos(r.contacto.telefono);
+      const previo = porCelular.get(telefono);
+      porCelular.set(telefono, {
+        telefono,
+        nombre: r.contacto.nombre,
+        sector: r.necesidad.sector,
+        ayudas: (previo?.ayudas ?? 0) + 1,
+        ultimaAyuda: previo && previo.ultimaAyuda > entrega.ocurridoEn ? previo.ultimaAyuda : entrega.ocurridoEn,
+        categorias: [...new Set([...(previo?.categorias ?? []), r.necesidad.categoria])],
+      });
+    }
+    return [...porCelular.values()].sort((a, b) => b.ultimaAyuda.localeCompare(a.ultimaAyuda));
   }
 
   // ---- Reconocimiento publico ----

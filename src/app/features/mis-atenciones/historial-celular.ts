@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, signal } from '@angular/core';
 import { CoordinacionGateway, HistorialCelular, SolicitudDelHistorial } from '../../core/ports/necesidades.ports';
 import { ESTADOS, infoCategoria } from '../../core/domain/catalogos';
 import { DIAS_AYUDA_RECIENTE } from '../../core/domain/revision-hogar';
@@ -91,6 +91,10 @@ const MS_POR_DIA = 86_400_000;
 })
 export class HistorialCelularHerramienta {
   private readonly coordinacion = inject(CoordinacionGateway);
+  private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /** Celular elegido desde otra herramienta (por ejemplo, la lista de hogares). */
+  readonly celularElegido = input<string | null>(null);
 
   protected readonly largo = LARGO_TELEFONO;
   protected readonly dias = DIAS_AYUDA_RECIENTE;
@@ -104,6 +108,16 @@ export class HistorialCelularHerramienta {
     return (this.historial()?.solicitudes ?? []).filter((s) => s.entregadaEn && new Date(s.entregadaEn).getTime() > limite).length;
   });
 
+  constructor() {
+    effect(() => {
+      const celular = this.celularElegido();
+      if (!celular) return;
+      this.telefono.set(celular);
+      this.elemento.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      void this.consultar();
+    });
+  }
+
   protected alEscribir(evento: Event): void {
     const campo = evento.target as HTMLInputElement;
     const limpio = soloDigitos(campo.value).slice(0, LARGO_TELEFONO);
@@ -113,6 +127,10 @@ export class HistorialCelularHerramienta {
 
   protected async buscar(evento: Event): Promise<void> {
     evento.preventDefault();
+    await this.consultar();
+  }
+
+  private async consultar(): Promise<void> {
     this.buscando.set(true);
     this.error.set(null);
     try {

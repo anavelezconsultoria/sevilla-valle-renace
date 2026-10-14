@@ -19,6 +19,7 @@ import {
   ErrorAccesoSolicitante,
   ErrorClaveDistinta,
   HistorialCelular,
+  HogarAtendido,
   ReconocimientoLectura,
   RestablecerClavePayload,
   RevisarPayload,
@@ -37,11 +38,13 @@ import { SUPABASE_CONFIG } from './supabase.config';
 import {
   aContacto,
   aHistorial,
+  aHogarAtendido,
   aNecesidad,
   aSolicitudEnRevision,
   aVecino,
   FilaContacto,
   FilaHistorial,
+  FilaHogarAtendido,
   FilaNecesidad,
   FilaRegistro,
   FilaRevision,
@@ -241,6 +244,10 @@ export class SupabaseNecesidades
 
   async historial(telefono: string): Promise<HistorialCelular> {
     return aHistorial(exigir<FilaHistorial>(await this.cliente.rpc('historial_celular', { p_telefono: telefono })));
+  }
+
+  async hogaresQueRecibieron(): Promise<readonly HogarAtendido[]> {
+    return exigir<readonly FilaHogarAtendido[]>(await this.cliente.rpc('hogares_que_recibieron')).map(aHogarAtendido);
   }
 
   // ---- Reconocimiento publico ----

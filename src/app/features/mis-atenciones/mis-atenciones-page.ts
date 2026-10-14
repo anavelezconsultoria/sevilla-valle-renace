@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AyudanteGateway, SesionGateway } from '../../core/ports/necesidades.ports';
 import { EstadoNecesidad, Necesidad } from '../../core/domain/necesidad.model';
@@ -7,6 +7,7 @@ import { IdentificarseForm } from '../sesion/identificarse-form';
 import { RestablecerClave } from './restablecer-clave';
 import { RevisionSolicitudes } from './revision-solicitudes';
 import { HistorialCelularHerramienta } from './historial-celular';
+import { HogaresAtendidos } from './hogares-atendidos';
 import { AvisoVencimientos } from './aviso-vencimientos';
 import { ClaveAyudante } from './clave-ayudante';
 
@@ -26,6 +27,7 @@ interface Columna {
     RestablecerClave,
     RevisionSolicitudes,
     HistorialCelularHerramienta,
+    HogaresAtendidos,
     AvisoVencimientos,
     ClaveAyudante,
   ],
@@ -69,7 +71,8 @@ interface Columna {
 
         @if (a.esCoordinador) {
           <sr-revision-solicitudes />
-          <sr-historial-celular />
+          <sr-hogares-atendidos (elegir)="celularElegido.set($event)" />
+          <sr-historial-celular [celularElegido]="celularElegido()" />
           <sr-restablecer-clave />
         }
       } @else {
@@ -101,6 +104,8 @@ interface Columna {
   `,
 })
 export class MisAtencionesPage {
+  /** Celular elegido en la lista de hogares: abre su historial. */
+  protected readonly celularElegido = signal<string | null>(null);
   private readonly sesion = inject(SesionGateway);
   private readonly ayudanteGw = inject(AyudanteGateway);
   protected readonly ayudante = this.sesion.ayudante;

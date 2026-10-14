@@ -542,6 +542,9 @@ do $$ declare h jsonb; begin
     raise exception 'FALLO: no aparece en revision';
   end if;
   h := public.historial_celular('320 111 2233');
+  if not exists (select 1 from public.hogares_que_recibieron() x where x.telefono = '3201112233') then
+    raise exception 'FALLO: el hogar que recibio ayuda no aparece en la lista de coordinacion';
+  end if;
   if jsonb_array_length(h -> 'solicitudes') <> 3 then raise exception 'FALLO: el historial no tiene las 3 solicitudes (%)', h; end if;
   perform public.revisar_necesidad(current_setting('prueba.revision')::uuid, true);
   if (select estado::text from public.necesidades where id = current_setting('prueba.revision')::uuid) <> 'registrada' then

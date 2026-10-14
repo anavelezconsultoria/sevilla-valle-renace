@@ -53,7 +53,8 @@ import { tiempoRelativo } from '../../shared/lib/tiempo';
     .encabezado { display: grid; gap: var(--space-2); }
     .encabezado h1 { font-size: var(--text-2xl); }
     .encabezado p.muted { max-width: 640px; }
-    .pagina { max-width: 720px; padding-block: var(--space-6); display: grid; gap: var(--space-5); }
+    .pagina { padding-block: var(--space-6); display: grid; gap: var(--space-5); }
+    .lista, .cierre, .vacio { max-width: 720px; }
     .lista { display: grid; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
     .vecino { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); }
     .inicial { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--color-accion-suave); color: var(--color-primario); font-family: var(--font-marca); font-size: var(--text-md); }

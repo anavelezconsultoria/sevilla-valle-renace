@@ -34,7 +34,7 @@ interface FotoPreparada {
           }
           @if (fotos().length < maxFotos) {
             <label class="agregar">
-              <input type="file" accept="image/*" capture="environment" (change)="alElegir($event)" class="visually-hidden" />
+              <input type="file" accept="image/*" (change)="alElegir($event)" class="visually-hidden" />
               <span>{{ procesando() ? 'Procesando...' : '+ Agregar foto' }}</span>
             </label>
           }

@@ -11,6 +11,7 @@ import {
 import {
   Ayudante,
   HistorialCelular,
+  HogarAtendido,
   SolicitudEnRevision,
   VecinoQueAyuda,
 } from '../../core/ports/necesidades.ports';
@@ -213,4 +214,24 @@ export interface FilaVecino {
 
 export function aVecino(fila: FilaVecino): VecinoQueAyuda {
   return { alias: fila.alias, entregas: Number(fila.entregas), ultimaEntrega: fila.ultima_entrega };
+}
+
+export interface FilaHogarAtendido {
+  readonly telefono: string;
+  readonly nombre: string;
+  readonly sector: string;
+  readonly ayudas: number;
+  readonly ultima_ayuda: string;
+  readonly categorias: readonly Categoria[];
+}
+
+export function aHogarAtendido(fila: FilaHogarAtendido): HogarAtendido {
+  return {
+    telefono: fila.telefono,
+    nombre: fila.nombre,
+    sector: fila.sector,
+    ayudas: Number(fila.ayudas),
+    ultimaAyuda: fila.ultima_ayuda,
+    categorias: fila.categorias,
+  };
 }
