@@ -572,6 +572,41 @@ do $$ begin
 end $$;
 reset role;
 
+-- Registro de errores de la pagina (0019).
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$ begin
+  perform public.registrar_error_cliente('x.toSorted is not a function', 'at main.js:1', '/seguimiento?telefono=3001234567', 'iPhone OS 15_7', 'main-ABC');
+  perform public.registrar_error_cliente('x.toSorted is not a function', 'at main.js:1', '/seguimiento', 'iPhone OS 15_7', 'main-ABC');
+  begin
+    perform 1 from public.errores_cliente;
+    raise exception 'FALLO: alguien anonimo puede leer los errores';
+  exception when insufficient_privilege then null;
+  end;
+  raise notice 'OK  la pagina anota errores sin poder leerlos';
+end $$;
+
+reset role;
+do $$ begin
+  if (select veces from public.errores_cliente where mensaje = 'x.toSorted is not a function') <> 2 then
+    raise exception 'FALLO: el mismo error no se agrupo';
+  end if;
+  if exists (select 1 from public.errores_cliente where ruta like '%3001234567%') then
+    raise exception 'FALLO: quedo un dato de la URL en la ruta';
+  end if;
+  raise notice 'OK  el mismo error se cuenta una vez y la ruta va sin parametros';
+end $$;
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a"}', true);
+do $$ begin
+  if not exists (select 1 from public.errores_recientes() where mensaje = 'x.toSorted is not a function') then
+    raise exception 'FALLO: la coordinacion no ve los errores';
+  end if;
+  raise notice 'OK  la coordinacion ve los errores recientes';
+end $$;
+reset role;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.
