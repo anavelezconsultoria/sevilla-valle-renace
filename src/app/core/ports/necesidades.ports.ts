@@ -184,6 +184,17 @@ export interface AtencionEnCurso {
   readonly ayudanteCelular?: string;
 }
 
+/** Error de la pagina ya registrado (lo ve la coordinacion). */
+export interface ErrorRegistrado {
+  readonly mensaje: string;
+  readonly ruta: string;
+  readonly navegador: string;
+  readonly version: string;
+  readonly veces: number;
+  readonly primeraVez: string;
+  readonly ultimaVez: string;
+}
+
 /** Herramientas de la coordinacion (solo perfiles con rol coordinacion). */
 export abstract class CoordinacionGateway {
   /** Devuelve cuantas solicitudes de ese celular quedaron con la clave nueva. */
@@ -195,6 +206,8 @@ export abstract class CoordinacionGateway {
   abstract hogaresQueRecibieron(): Promise<readonly HogarAtendido[]>;
   /** Ayudas en curso con el contacto de quien las lleva, la mas cerca de vencerse primero. */
   abstract atencionesEnCurso(): Promise<readonly AtencionEnCurso[]>;
+  /** Errores de la pagina en el celular de la gente, el mas reciente primero. */
+  abstract erroresRecientes(): Promise<readonly ErrorRegistrado[]>;
 }
 
 /** Reconocimiento publico: alias de quienes ayudan y cuantas entregas llevan. */
@@ -245,4 +258,18 @@ export abstract class SesionGateway {
 /** Indica a la UI si los datos son de demostracion, para decirlo siempre con claridad. */
 export abstract class ModoDatos {
   abstract readonly esDemo: boolean;
+}
+
+/** Error tecnico de la pagina. Sin datos personales: la ruta va sin parametros. */
+export interface ErrorCliente {
+  readonly mensaje: string;
+  readonly pila?: string;
+  readonly ruta: string;
+  readonly navegador: string;
+  readonly version: string;
+}
+
+/** Donde se anotan los errores de la pagina. Nunca debe lanzar: si falla, se calla. */
+export abstract class ReporteErrores {
+  abstract reportar(error: ErrorCliente): Promise<void>;
 }

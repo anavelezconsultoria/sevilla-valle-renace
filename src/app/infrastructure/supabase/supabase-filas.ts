@@ -10,6 +10,7 @@ import {
 } from '../../core/domain/necesidad.model';
 import {
   AtencionEnCurso,
+  ErrorRegistrado,
   Ayudante,
   HistorialCelular,
   HogarAtendido,
@@ -260,5 +261,27 @@ export function aAtencionEnCurso(fila: FilaAtencionEnCurso): AtencionEnCurso {
     venceEn: fila.vence_en ?? undefined,
     ayudanteAlias: fila.ayudante_alias,
     ayudanteCelular: fila.ayudante_celular ?? undefined,
+  };
+}
+
+export interface FilaErrorRegistrado {
+  readonly mensaje: string;
+  readonly ruta: string;
+  readonly navegador: string;
+  readonly version: string;
+  readonly veces: number;
+  readonly primera_vez: string;
+  readonly ultima_vez: string;
+}
+
+export function aErrorRegistrado(fila: FilaErrorRegistrado): ErrorRegistrado {
+  return {
+    mensaje: fila.mensaje,
+    ruta: fila.ruta,
+    navegador: fila.navegador,
+    version: fila.version,
+    veces: fila.veces,
+    primeraVez: fila.primera_vez,
+    ultimaVez: fila.ultima_vez,
   };
 }

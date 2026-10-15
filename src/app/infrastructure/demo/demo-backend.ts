@@ -33,6 +33,7 @@ import {
   EntregaPayload,
   ErrorAccesoSolicitante,
   ErrorClaveDistinta,
+  ErrorRegistrado,
   HistorialCelular,
   HogarAtendido,
   ReconocimientoLectura,
@@ -354,6 +355,11 @@ export class DemoBackend
         ayudanteCelular: r.ayudanteId?.replace('demo-', '') || '3000000000',
       }))
       .sort((a, b) => (a.venceEn ?? '9').localeCompare(b.venceEn ?? '9'));
+  }
+
+  async erroresRecientes(): Promise<readonly ErrorRegistrado[]> {
+    this.exigirCoordinacion();
+    return [];
   }
 
   // ---- Reconocimiento publico ----

@@ -1,5 +1,11 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { AtencionEnCurso, CoordinacionGateway, RevisarPayload, SolicitudEnRevision } from '../../core/ports/necesidades.ports';
+import {
+  AtencionEnCurso,
+  CoordinacionGateway,
+  ErrorRegistrado,
+  RevisarPayload,
+  SolicitudEnRevision,
+} from '../../core/ports/necesidades.ports';
 
 function mensajeDe(error: unknown, porDefecto: string): string {
   return error instanceof Error ? error.message : porDefecto;
@@ -19,10 +25,12 @@ export class CoordinacionEstado {
   readonly cargando = signal(false);
   readonly errorRevision = signal<string | null>(null);
   readonly errorEnCurso = signal<string | null>(null);
+  readonly errores = signal<readonly ErrorRegistrado[]>([]);
+  readonly errorErrores = signal<string | null>(null);
 
   async cargar(): Promise<void> {
     this.cargando.set(true);
-    await Promise.all([this.cargarRevision(), this.cargarEnCurso()]);
+    await Promise.all([this.cargarRevision(), this.cargarEnCurso(), this.cargarErrores()]);
     this.cargando.set(false);
   }
 
@@ -37,6 +45,15 @@ export class CoordinacionEstado {
       this.errorRevision.set(null);
     } catch (e) {
       this.errorRevision.set(mensajeDe(e, 'No se pudieron cargar las solicitudes en revisión.'));
+    }
+  }
+
+  private async cargarErrores(): Promise<void> {
+    try {
+      this.errores.set(await this.coordinacion.erroresRecientes());
+      this.errorErrores.set(null);
+    } catch (e) {
+      this.errorErrores.set(mensajeDe(e, 'No se pudieron cargar los errores.'));
     }
   }
 

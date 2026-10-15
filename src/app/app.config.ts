@@ -1,10 +1,11 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, Provider } from '@angular/core';
+import { ApplicationConfig, ErrorHandler, provideBrowserGlobalErrorListeners, Provider } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling, withViewTransitions } from '@angular/router';
 import { routes } from './app.routes';
 import {
   AyudanteGateway,
   CoordinacionGateway,
   ReconocimientoLectura,
+  ReporteErrores,
   ModoDatos,
   NecesidadesLectura,
   SesionGateway,
@@ -14,6 +15,9 @@ import { DemoBackend } from './infrastructure/demo/demo-backend';
 import { CONFIG_SUPABASE, SUPABASE_CONFIG, supabaseConfigurado } from './infrastructure/supabase/supabase.config';
 import { SupabaseNecesidades } from './infrastructure/supabase/supabase-necesidades';
 import { SupabaseSesion } from './infrastructure/supabase/supabase-sesion';
+import { SupabaseReporteErrores } from './infrastructure/supabase/supabase-reporte-errores';
+import { ConsolaReporteErrores } from './infrastructure/demo/consola-reporte-errores';
+import { ManejadorErrores } from './infrastructure/errores/manejador-errores';
 
 /**
  * Composicion de dependencias: el unico lugar que sabe que backend se usa.
@@ -27,6 +31,7 @@ const PUERTOS_DEMO: Provider[] = [
   { provide: ReconocimientoLectura, useExisting: DemoBackend },
   { provide: SesionGateway, useExisting: DemoBackend },
   { provide: ModoDatos, useExisting: DemoBackend },
+  { provide: ReporteErrores, useExisting: ConsolaReporteErrores },
 ];
 
 const PUERTOS_SUPABASE: Provider[] = [
@@ -38,6 +43,7 @@ const PUERTOS_SUPABASE: Provider[] = [
   { provide: CoordinacionGateway, useExisting: SupabaseNecesidades },
   { provide: ReconocimientoLectura, useExisting: SupabaseNecesidades },
   { provide: ModoDatos, useExisting: SupabaseNecesidades },
+  { provide: ReporteErrores, useExisting: SupabaseReporteErrores },
 ];
 
 /**
@@ -55,6 +61,7 @@ const usarSupabase = supabaseConfigurado(CONFIG_SUPABASE) && !demoLocalForzado()
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    { provide: ErrorHandler, useClass: ManejadorErrores },
     provideRouter(
       routes,
       withComponentInputBinding(),

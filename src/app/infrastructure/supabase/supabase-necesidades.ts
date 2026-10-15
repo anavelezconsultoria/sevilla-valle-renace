@@ -19,6 +19,7 @@ import {
   CoordinacionGateway,
   ErrorAccesoSolicitante,
   ErrorClaveDistinta,
+  ErrorRegistrado,
   HistorialCelular,
   HogarAtendido,
   ReconocimientoLectura,
@@ -39,6 +40,7 @@ import { SUPABASE_CONFIG } from './supabase.config';
 import {
   aAtencionEnCurso,
   aContacto,
+  aErrorRegistrado,
   aHistorial,
   aHogarAtendido,
   aNecesidad,
@@ -46,6 +48,7 @@ import {
   aVecino,
   FilaAtencionEnCurso,
   FilaContacto,
+  FilaErrorRegistrado,
   FilaHistorial,
   FilaHogarAtendido,
   FilaNecesidad,
@@ -255,6 +258,10 @@ export class SupabaseNecesidades
 
   async atencionesEnCurso(): Promise<readonly AtencionEnCurso[]> {
     return exigir<readonly FilaAtencionEnCurso[]>(await this.cliente.rpc('atenciones_en_curso')).map(aAtencionEnCurso);
+  }
+
+  async erroresRecientes(): Promise<readonly ErrorRegistrado[]> {
+    return exigir<readonly FilaErrorRegistrado[]>(await this.cliente.rpc('errores_recientes')).map(aErrorRegistrado);
   }
 
   // ---- Reconocimiento publico ----

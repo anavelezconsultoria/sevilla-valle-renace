@@ -3,7 +3,8 @@ import { DemoBackend } from './infrastructure/demo/demo-backend';
 import { Categoria, CierreAtencion, EstadoNecesidad, NuevaNecesidad, TipoEvento, Urgencia } from './core/domain/necesidad.model';
 import { desplazarCoordenada, DESPLAZAMIENTO_MAX_M, DESPLAZAMIENTO_MIN_M, generarCodigoSeguimiento } from './core/domain/privacidad';
 import { enmascararTelefono, motivoClaveInvalida } from './core/domain/clave-solicitante';
-import { ErrorAccesoSolicitante, ErrorClaveDistinta } from './core/ports/necesidades.ports';
+import { ErrorAccesoSolicitante, ErrorClaveDistinta, ErrorCliente, ReporteErrores } from './core/ports/necesidades.ports';
+import { ManejadorErrores } from './infrastructure/errores/manejador-errores';
 import { accionesDelAyudante, accionesDelSolicitante, HORAS_PARA_CONFIRMAR, HORAS_PARA_ENTREGAR, puedeExtenderPlazo } from './core/domain/ciclo-de-vida';
 import { filtrarNecesidades } from './core/application/filtrar-necesidades';
 import { calcularDimensiones } from './shared/lib/imagen';
@@ -305,5 +306,36 @@ describe('Repartir mejor la ayuda', () => {
     await recibirAyuda();
     const vecinos = await backend.vecinosQueAyudan();
     expect(vecinos.find((v) => v.alias === 'Nana')?.entregas).toBe(1);
+  });
+});
+
+describe('Registro de errores de la pagina', () => {
+  it('reporta cada error distinto una vez y nunca rompe la pagina', async () => {
+    const reportados: ErrorCliente[] = [];
+    TestBed.configureTestingModule({
+      providers: [
+        ManejadorErrores,
+        {
+          provide: ReporteErrores,
+          useValue: {
+            reportar: async (e: ErrorCliente) => {
+              reportados.push(e);
+              throw new Error('sin conexion');
+            },
+          },
+        },
+      ],
+    });
+    const manejador = TestBed.inject(ManejadorErrores);
+    const consola = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    expect(() => {
+      manejador.handleError(new TypeError('x.toSorted is not a function'));
+      manejador.handleError(new TypeError('x.toSorted is not a function'));
+      manejador.handleError('otro error');
+    }).not.toThrow();
+    await Promise.resolve();
+    consola.mockRestore();
+    expect(reportados.map((r) => r.mensaje)).toEqual(['x.toSorted is not a function', 'otro error']);
+    expect(reportados[0]?.ruta).not.toContain('?');
   });
 });
