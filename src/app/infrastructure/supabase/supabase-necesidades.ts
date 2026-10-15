@@ -13,6 +13,7 @@ import {
 import {
   AccionSolicitante,
   AdjuntosPayload,
+  AtencionEnCurso,
   AyudanteGateway,
   EntregaPayload,
   CoordinacionGateway,
@@ -36,12 +37,14 @@ import { calcularCifras } from '../../core/application/calcular-cifras';
 import { exigir, SUPABASE_CLIENTE } from './supabase-cliente';
 import { SUPABASE_CONFIG } from './supabase.config';
 import {
+  aAtencionEnCurso,
   aContacto,
   aHistorial,
   aHogarAtendido,
   aNecesidad,
   aSolicitudEnRevision,
   aVecino,
+  FilaAtencionEnCurso,
   FilaContacto,
   FilaHistorial,
   FilaHogarAtendido,
@@ -248,6 +251,10 @@ export class SupabaseNecesidades
 
   async hogaresQueRecibieron(): Promise<readonly HogarAtendido[]> {
     return exigir<readonly FilaHogarAtendido[]>(await this.cliente.rpc('hogares_que_recibieron')).map(aHogarAtendido);
+  }
+
+  async atencionesEnCurso(): Promise<readonly AtencionEnCurso[]> {
+    return exigir<readonly FilaAtencionEnCurso[]>(await this.cliente.rpc('atenciones_en_curso')).map(aAtencionEnCurso);
   }
 
   // ---- Reconocimiento publico ----

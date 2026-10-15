@@ -170,6 +170,20 @@ export interface HogarAtendido {
   readonly categorias: readonly Categoria[];
 }
 
+/** Ayuda que alguien esta llevando ahora: la coordinacion le da soporte. */
+export interface AtencionEnCurso {
+  readonly necesidadId: string;
+  readonly titulo: string;
+  readonly categoria: Categoria;
+  readonly sector: string;
+  readonly prioridadCero: boolean;
+  readonly tomadaEn?: string;
+  readonly venceEn?: string;
+  readonly ayudanteAlias: string;
+  /** Privado: solo coordinacion. Puede faltar en perfiles muy antiguos. */
+  readonly ayudanteCelular?: string;
+}
+
 /** Herramientas de la coordinacion (solo perfiles con rol coordinacion). */
 export abstract class CoordinacionGateway {
   /** Devuelve cuantas solicitudes de ese celular quedaron con la clave nueva. */
@@ -179,6 +193,8 @@ export abstract class CoordinacionGateway {
   abstract historial(telefono: string): Promise<HistorialCelular>;
   /** Hogares que ya recibieron ayuda, el mas reciente primero. */
   abstract hogaresQueRecibieron(): Promise<readonly HogarAtendido[]>;
+  /** Ayudas en curso con el contacto de quien las lleva, la mas cerca de vencerse primero. */
+  abstract atencionesEnCurso(): Promise<readonly AtencionEnCurso[]>;
 }
 
 /** Reconocimiento publico: alias de quienes ayudan y cuantas entregas llevan. */

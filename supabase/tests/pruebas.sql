@@ -546,6 +546,10 @@ do $$ declare h jsonb; begin
     raise exception 'FALLO: el hogar que recibio ayuda no aparece en la lista de coordinacion';
   end if;
   if jsonb_array_length(h -> 'solicitudes') <> 3 then raise exception 'FALLO: el historial no tiene las 3 solicitudes (%)', h; end if;
+  -- La coordinacion ve quien atiende y su celular para darle soporte.
+  if not exists (select 1 from public.atenciones_en_curso() x where x.ayudante_celular is not null) then
+    raise exception 'FALLO: la coordinacion no ve las atenciones en curso con el celular de quien ayuda';
+  end if;
   perform public.revisar_necesidad(current_setting('prueba.revision')::uuid, true);
   if (select estado::text from public.necesidades where id = current_setting('prueba.revision')::uuid) <> 'registrada' then
     raise exception 'FALLO: aprobar no la publico';

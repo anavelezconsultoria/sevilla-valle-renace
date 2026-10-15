@@ -20,11 +20,13 @@ import {
   sumarHoras,
 } from '../../core/domain/ciclo-de-vida';
 import { ayudaReciente, motivoRevision } from '../../core/domain/revision-hogar';
+import { ultimo } from '../../core/domain/listas';
 import { desplazarCoordenada, generarCodigoSeguimiento } from '../../core/domain/privacidad';
 import { soloDigitos } from '../../core/domain/clave-solicitante';
 import {
   AccionSolicitante,
   AdjuntosPayload,
+  AtencionEnCurso,
   Ayudante,
   AyudanteGateway,
   CoordinacionGateway,
@@ -333,6 +335,25 @@ export class DemoBackend
       });
     }
     return [...porCelular.values()].sort((a, b) => b.ultimaAyuda.localeCompare(a.ultimaAyuda));
+  }
+
+  async atencionesEnCurso(): Promise<readonly AtencionEnCurso[]> {
+    this.exigirCoordinacion();
+    return this.registros()
+      .filter((r) => r.necesidad.estado === EstadoNecesidad.EnAtencion)
+      .map((r) => ({
+        necesidadId: r.necesidad.id,
+        titulo: r.necesidad.titulo,
+        categoria: r.necesidad.categoria,
+        sector: r.necesidad.sector,
+        prioridadCero: r.necesidad.prioridadCero,
+        tomadaEn: ultimo(r.necesidad.eventos, (e) => e.tipo === TipoEvento.Tomada)?.ocurridoEn,
+        venceEn: r.necesidad.venceEn,
+        ayudanteAlias: r.necesidad.ayudanteAlias ?? 'Voluntario',
+        // En la demo el id del ayudante es 'demo-<celular>'.
+        ayudanteCelular: r.ayudanteId?.replace('demo-', '') || '3000000000',
+      }))
+      .sort((a, b) => (a.venceEn ?? '9').localeCompare(b.venceEn ?? '9'));
   }
 
   // ---- Reconocimiento publico ----

@@ -9,6 +9,7 @@ import {
   Urgencia,
 } from '../../core/domain/necesidad.model';
 import {
+  AtencionEnCurso,
   Ayudante,
   HistorialCelular,
   HogarAtendido,
@@ -233,5 +234,31 @@ export function aHogarAtendido(fila: FilaHogarAtendido): HogarAtendido {
     ayudas: Number(fila.ayudas),
     ultimaAyuda: fila.ultima_ayuda,
     categorias: fila.categorias,
+  };
+}
+
+export interface FilaAtencionEnCurso {
+  readonly necesidad_id: string;
+  readonly titulo: string;
+  readonly categoria: Categoria;
+  readonly sector: string;
+  readonly prioridad_cero: boolean;
+  readonly tomada_en: string | null;
+  readonly vence_en: string | null;
+  readonly ayudante_alias: string;
+  readonly ayudante_celular: string | null;
+}
+
+export function aAtencionEnCurso(fila: FilaAtencionEnCurso): AtencionEnCurso {
+  return {
+    necesidadId: fila.necesidad_id,
+    titulo: fila.titulo,
+    categoria: fila.categoria,
+    sector: fila.sector,
+    prioridadCero: fila.prioridad_cero,
+    tomadaEn: fila.tomada_en ?? undefined,
+    venceEn: fila.vence_en ?? undefined,
+    ayudanteAlias: fila.ayudante_alias,
+    ayudanteCelular: fila.ayudante_celular ?? undefined,
   };
 }
