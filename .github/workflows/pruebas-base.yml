@@ -1,0 +1,26 @@
+name: Pruebas de base de datos
+
+# Corre todas las migraciones y las pruebas en una base desechable. Va ANTES de
+# aplicar una migracion en Supabase: si esto falla, no se aplica.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/pruebas-base.yml'
+  pull_request:
+    paths:
+      - 'supabase/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  base-de-datos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Migraciones y pruebas
+        run: bash supabase/probar-base.sh
