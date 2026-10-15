@@ -607,6 +607,37 @@ do $$ begin
 end $$;
 reset role;
 
+-- Muro de la comunidad y "Gracias" (0020).
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$ declare v_evento uuid; v_total bigint; begin
+  select m.evento_id into v_evento from public.muro_comunidad(5) m where m.tipo = 'entregada' limit 1;
+  if v_evento is null then raise exception 'FALLO: el muro no muestra entregas'; end if;
+  v_total := public.dar_gracias(v_evento, 'dispositivo-prueba-0001');
+  v_total := public.dar_gracias(v_evento, 'dispositivo-prueba-0001');
+  if v_total <> 1 then raise exception 'FALLO: el mismo dispositivo dio gracias dos veces (%)', v_total; end if;
+  if public.dar_gracias(v_evento, 'dispositivo-prueba-0002') <> 2 then raise exception 'FALLO: no sumo las gracias de otro dispositivo'; end if;
+  begin
+    perform public.dar_gracias(v_evento, 'x');
+    raise exception 'FALLO: acepto un dispositivo invalido';
+  exception when check_violation then null;
+  end;
+  begin
+    perform 1 from public.gracias;
+    raise exception 'FALLO: alguien anonimo puede leer la tabla de gracias';
+  exception when insufficient_privilege then null;
+  end;
+  raise notice 'OK  el muro muestra entregas y cada dispositivo da gracias una sola vez';
+end $$;
+
+do $$ begin
+  if exists (select 1 from public.muro_comunidad(50) m where m.tipo not in ('entregada', 'confirmada')) then
+    raise exception 'FALLO: el muro mostro algo distinto a entregas y confirmaciones';
+  end if;
+  raise notice 'OK  el muro solo publica entregas y confirmaciones';
+end $$;
+reset role;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.
