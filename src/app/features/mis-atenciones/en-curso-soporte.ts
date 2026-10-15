@@ -39,11 +39,11 @@ interface TarjetaSoporte {
       } @else if (!tarjetas().length) {
         <div class="vacio">Nadie está llevando una ayuda en este momento.</div>
       } @else {
-        <div class="resumen" role="status">
-          <span class="chip urgente">{{ conteo().urgente }} por vencerse</span>
-          <span class="chip atento">{{ conteo().atento }} a mitad de camino</span>
-          <span class="chip tranquilo">{{ conteo().tranquilo }} con tiempo</span>
-        </div>
+        <dl class="resumen" role="status">
+          <div class="dato" [class.alerta]="conteo().urgente > 0"><dt>Por vencerse</dt><dd>{{ conteo().urgente }}</dd></div>
+          <div class="dato"><dt>A mitad de camino</dt><dd>{{ conteo().atento }}</dd></div>
+          <div class="dato"><dt>Con tiempo</dt><dd>{{ conteo().tranquilo }}</dd></div>
+        </dl>
         <ul class="lista">
           @for (t of tarjetas(); track t.atencion.necesidadId; let i = $index) {
             <li class="card tarjeta entrada" [class]="t.ritmo" [style.--i]="i">
@@ -53,7 +53,10 @@ interface TarjetaSoporte {
                   <strong>{{ t.atencion.ayudanteAlias }}</strong>
                   <span class="muted">la tomó {{ tomada(t.atencion) }}</span>
                 </div>
-                <span class="tiempo">{{ textoTiempo(t) }}</span>
+                <span class="tiempo" [class]="t.ritmo">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" /></svg>
+                  {{ textoTiempo(t) }}
+                </span>
               </div>
 
               <a class="que" [routerLink]="['/necesidades', t.atencion.necesidadId]">
@@ -70,8 +73,12 @@ interface TarjetaSoporte {
 
               <div class="acciones">
                 @if (t.whatsapp) {
-                  <a class="btn btn-whatsapp" [href]="t.whatsapp" target="_blank" rel="noopener">Escribirle</a>
-                  <a class="btn btn-ghost" [href]="'tel:+57' + t.atencion.ayudanteCelular">Llamar</a>
+                  <a class="btn btn-secondary" [href]="t.whatsapp" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5z" /></svg>Escribirle
+                  </a>
+                  <a class="btn btn-secondary" [href]="'tel:+57' + t.atencion.ayudanteCelular">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>Llamar
+                  </a>
                 } @else {
                   <span class="muted sin-celular">Sin celular registrado</span>
                 }
@@ -87,31 +94,40 @@ interface TarjetaSoporte {
   `,
   styles: `
     .soporte { display: grid; gap: var(--space-4); }
-    .resumen { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-    .chip { padding: 6px 14px; border-radius: var(--radius-pill); font-size: var(--text-xs); font-weight: 700; }
-    .chip.urgente { background: #e4e0fb; color: #2a2766; }
-    .chip.atento { background: var(--estado-progreso-bg); color: var(--estado-progreso); }
-    .chip.tranquilo { background: var(--estado-pendiente-bg); color: var(--color-accion-fuerte); }
+    .resumen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); max-width: 560px; margin: 0; }
+    .dato { display: grid; gap: 2px; padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--color-superficie); border: 1px solid var(--color-linea); }
+    .dato dt { font-size: var(--text-xs); color: var(--color-tenue); }
+    .dato dd { margin: 0; font-family: var(--font-marca); font-size: var(--text-xl); color: var(--color-tinta); }
+    .dato.alerta { background: var(--color-tinta); border-color: var(--color-tinta); }
+    .dato.alerta dt { color: #d7d4ee; }
+    .dato.alerta dd { color: #fff; }
     .lista { display: grid; gap: var(--space-3); list-style: none; margin: 0; padding: 0; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-    .tarjeta { --ritmo: var(--color-accion); display: grid; gap: var(--space-3); padding: var(--space-4); border-top: 4px solid var(--ritmo); }
-    .tarjeta.atento { --ritmo: #6a4fe0; }
-    .tarjeta.urgente { --ritmo: #2a2766; }
+    .tarjeta { display: grid; gap: var(--space-3); padding: var(--space-4); }
+    .tarjeta.urgente { border-color: var(--color-tinta); box-shadow: 0 0 0 1px var(--color-tinta), var(--shadow-sm); }
     .cabecera { display: flex; align-items: center; gap: var(--space-3); }
-    .avatar { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--ritmo) 16%, white); color: var(--ritmo); font-family: var(--font-marca); }
+    .avatar { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--color-primario-suave); color: var(--color-primario); font-family: var(--font-marca); }
     .quien { display: grid; min-width: 0; }
+    .quien strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .quien .muted { font-size: var(--text-xs); }
-    .tiempo { margin-left: auto; font-size: var(--text-sm); font-weight: 700; color: var(--ritmo); white-space: nowrap; }
-    .que { display: grid; gap: 2px; padding: var(--space-3); border-radius: var(--radius-sm); background: var(--color-arena); text-decoration: none; color: inherit; }
+    /* Tiempo restante: pildora; solo la urgente se rellena (tinta) para que salte a la vista. */
+    .tiempo { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: var(--radius-pill); font-size: var(--text-xs); font-weight: 700; white-space: nowrap; background: var(--color-arena); color: var(--color-texto); }
+    .tiempo svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+    .tiempo.atento { background: var(--color-primario-suave); color: var(--color-primario-fuerte); }
+    .tiempo.urgente { background: var(--color-tinta); color: #fff; }
+    .que { display: grid; gap: 2px; padding: var(--space-3); border-radius: var(--radius-sm); background: var(--color-arena); text-decoration: none; color: inherit; transition: background-color .15s; }
+    .que:hover { background: var(--color-primario-suave); }
     .que .titulo { font-weight: 650; }
     .que .muted { font-size: var(--text-xs); }
     .prioridad { width: fit-content; margin-top: 4px; padding: 2px 10px; border-radius: var(--radius-pill); background: linear-gradient(135deg, #2b4cf2, #6a4fe0); color: #fff; font-size: var(--text-xs); font-weight: 650; }
-    .barra { height: 8px; border-radius: var(--radius-pill); background: var(--color-linea); overflow: hidden; }
-    .barra span { display: block; height: 100%; border-radius: inherit; background: var(--ritmo); transition: width .6s cubic-bezier(.22, 1, .36, 1); }
-    .acciones { display: flex; gap: var(--space-2); }
-    .acciones .btn { flex: 1; }
+    /* Barra del plazo: un solo color de la marca; se oscurece al final. */
+    .barra { height: 6px; border-radius: var(--radius-pill); background: var(--color-linea); overflow: hidden; }
+    .barra span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--color-accion), var(--color-primario)); transition: width .6s cubic-bezier(.22, 1, .36, 1); }
+    .tarjeta.urgente .barra span { background: var(--color-tinta); }
+    .acciones { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
     .sin-celular { font-size: var(--text-xs); }
     .vacio { padding: var(--space-5); border-radius: var(--radius-lg); background: var(--color-arena); color: var(--color-tenue); font-weight: 600; }
-  `,
+    @media (max-width: 600px) { .dato { padding: var(--space-2) var(--space-3); } .dato dd { font-size: var(--text-lg); } }
+    `,
 })
 export class EnCursoSoporte {
   protected readonly estado = inject(CoordinacionEstado);
