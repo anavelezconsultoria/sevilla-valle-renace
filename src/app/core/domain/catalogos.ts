@@ -95,7 +95,7 @@ export const OPCIONES_URGENCIA: readonly UrgenciaInfo[] = [
 
 /** Color de cada estado en el mapa y en las etiquetas: un semaforo facil de leer. */
 export const COLOR_ESTADO: Record<EstadoNecesidad, string> = {
-  [EstadoNecesidad.Registrada]: '#2b4cf2',
+  [EstadoNecesidad.Registrada]: '#f26b4f',
   [EstadoNecesidad.EnRevision]: '#a9a6c4',
   [EstadoNecesidad.EnAtencion]: '#6a4fe0',
   [EstadoNecesidad.Entregada]: '#a78bfa',

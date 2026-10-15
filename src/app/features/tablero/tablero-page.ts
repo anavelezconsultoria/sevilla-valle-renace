@@ -82,7 +82,7 @@ type Vista = 'lista' | 'mapa';
     .pestana .num { min-width: 30px; height: 30px; padding-inline: 8px; display: grid; place-items: center; border-radius: 999px; background: var(--color-arena); color: var(--color-tinta); font-weight: 800; }
     .pestana[aria-selected='true'] { color: #fff; }
     .pestana[aria-selected='true'] .num { background: rgba(255,255,255,.9); }
-    .pestana[data-estado='registrada'][aria-selected='true'] { background: var(--estado-pendiente); border-color: var(--estado-pendiente); }
+    .pestana[data-estado='registrada'][aria-selected='true'] { background: var(--color-espera); border-color: var(--color-espera); }
     .pestana[data-estado='en_atencion'][aria-selected='true'] { background: var(--estado-progreso); border-color: var(--estado-progreso); }
     .pestana[data-estado='entregada'][aria-selected='true'] { background: var(--estado-entregada); border-color: var(--estado-entregada); }
     .pestana[data-estado='atendida'][aria-selected='true'] { background: var(--estado-exito); border-color: var(--estado-exito); }

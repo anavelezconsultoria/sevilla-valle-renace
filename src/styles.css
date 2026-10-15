@@ -46,6 +46,14 @@
   --estado-neutro: #6b6889;
   --estado-neutro-bg: #f1eff7;
   --urgencia-alta: #1d37cc;
+  /*
+   * UNICO color fuera de la gama: coral = "una familia esta esperando ayuda".
+   * Solo para ese significado (pin, leyenda, contador, etiqueta de estado).
+   * Nunca en botones, avisos ni decoracion.
+   */
+  --color-espera: #f26b4f;
+  --color-espera-texto: #c94a30;
+  --color-espera-suave: #fdeae5;
   /* Borde de avisos (plazos, recordatorios): lavanda de la marca. */
   --color-aviso-borde: #d7bafc;
   --color-error: #b3261e;

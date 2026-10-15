@@ -203,8 +203,8 @@
 
 .pestana.espera.activa {
   color: #fff;
-  border-color: var(--estado-pendiente);
-  background: var(--estado-pendiente);
+  border-color: var(--color-espera);
+  background: var(--color-espera);
 }
 
 .pestana .conteo {
@@ -419,7 +419,7 @@
   }
 
   .asa-texto strong {
-    color: var(--estado-pendiente);
+    color: var(--color-espera-texto);
     font-size: var(--text-md);
   }
 
@@ -427,7 +427,7 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: var(--estado-pendiente);
+    background: var(--color-espera);
     animation: latido-punto 1.6s ease-out infinite;
   }
 

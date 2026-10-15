@@ -9,7 +9,7 @@ import { ESTADOS } from '../../core/domain/catalogos';
   styles: `
     .badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: var(--radius-pill); font-size: var(--text-xs); font-weight: 600; white-space: nowrap; }
     .badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-    [data-tono='pendiente'] { color: var(--estado-pendiente); background: var(--estado-pendiente-bg); }
+    [data-tono='pendiente'] { color: var(--color-espera-texto); background: var(--color-espera-suave); }
     [data-tono='progreso'] { color: var(--estado-progreso); background: var(--estado-progreso-bg); }
     [data-tono='entregada'] { color: var(--estado-entregada); background: var(--estado-entregada-bg); }
     [data-tono='exito'] { color: var(--estado-exito); background: var(--estado-exito-bg); }

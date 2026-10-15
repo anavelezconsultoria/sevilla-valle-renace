@@ -39,7 +39,7 @@ import { Contador } from '../../shared/ui/contador';
     .grid > div::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 3px; background: var(--tono); }
     dt { font-size: var(--text-xs); color: var(--color-tenue); }
     dd { margin: 2px 0 0; font-family: var(--font-titulo); font-weight: 650; font-size: 1.6rem; line-height: 1.1; color: var(--tono); font-variant-numeric: tabular-nums; }
-    [data-tono='pendiente'] { --tono: var(--estado-pendiente); }
+    [data-tono='pendiente'] { --tono: var(--color-espera); }
     [data-tono='progreso'] { --tono: var(--estado-progreso); }
     [data-tono='entregada'] { --tono: var(--estado-entregada); }
     [data-tono='exito'] { --tono: var(--estado-exito); }
