@@ -11,6 +11,7 @@ const ESTADOS_LEYENDA = [EstadoNecesidad.Registrada, EstadoNecesidad.EnAtencion,
 import { MapaNecesidades } from '../../shared/mapa/mapa-necesidades';
 import { NecesidadCard } from '../../shared/ui/necesidad-card';
 import { PanelCifras } from './panel-cifras';
+import { CtaAyudar } from './cta-ayudar';
 import { BotonCompartir } from '../../shared/ui/boton-compartir';
 import { Compartible, tarjetaListaHoy } from '../../shared/lib/tarjeta-compartir';
 
@@ -19,7 +20,7 @@ const MAX_EN_LISTA_HOY = 6;
 
 @Component({
   selector: 'sr-mapa-page',
-  imports: [RouterLink, MapaNecesidades, NecesidadCard, PanelCifras, BotonCompartir],
+  imports: [RouterLink, MapaNecesidades, NecesidadCard, PanelCifras, BotonCompartir, CtaAyudar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './mapa-page.html',
   styleUrl: './mapa-page.css',
@@ -55,6 +56,15 @@ export class MapaPage {
     }),
   );
   protected readonly esperando = computed(() => this.activas().filter((n) => n.estado === EstadoNecesidad.Registrada));
+  /** Nombres de quienes estan llevando una ayuda ahora, sin repetir (para las cabecitas). */
+  protected readonly ayudantesActivos = computed(() => [
+    ...new Set(
+      this.lectura
+        .todas()
+        .filter((n) => n.estado === EstadoNecesidad.EnAtencion && n.ayudanteAlias)
+        .map((n) => n.ayudanteAlias ?? ''),
+    ),
+  ]);
   protected readonly enCurso = computed(() => this.activas().filter((n) => n.estado !== EstadoNecesidad.Registrada));
   protected readonly lista = computed(() => (this.vista() === 'esperando' ? this.esperando() : this.enCurso()));
   protected readonly cifras = computed(() => {

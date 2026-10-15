@@ -672,3 +672,29 @@
     grid-column: 1 / -1;
   }
 }
+
+/* Llamado flotante "Quiero ayudar" con las cabecitas de quienes ayudan. */
+.cta-ayudar {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-5);
+  z-index: 500;
+  transform: translateX(-50%);
+}
+
+@media (max-width: 860px) {
+  .cta-ayudar {
+    left: var(--space-3);
+    bottom: 68px;
+    transform: none;
+  }
+
+  /* Con la lista abierta, el boton no tapa las tarjetas. */
+  .lista-abierta .cta-ayudar {
+    display: none;
+  }
+
+  .paneles-ocultos .cta-ayudar {
+    bottom: var(--space-4);
+  }
+}

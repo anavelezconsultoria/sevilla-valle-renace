@@ -14,6 +14,39 @@
   border: 0;
 }
 
+/* Caja del marcador: el pin rota, la cabecita de quien ayuda no. */
+:host ::ng-deep .sr-pin-caja {
+  position: relative;
+  width: var(--t);
+  height: var(--t);
+}
+
+:host ::ng-deep .sr-pin-avatar {
+  position: absolute;
+  top: -12px;
+  right: -14px;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2.5px solid #fff;
+  background: var(--av);
+  color: #fff;
+  font: 800 12px/1 var(--font-body, sans-serif);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  animation: brotar-avatar 520ms var(--ease-salida, ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 20) * 55ms + 650ms);
+}
+
+@keyframes brotar-avatar {
+  from {
+    opacity: 0;
+    transform: scale(0.3) translateY(8px);
+  }
+}
+
 :host ::ng-deep .sr-pin {
   width: var(--t);
   height: var(--t);

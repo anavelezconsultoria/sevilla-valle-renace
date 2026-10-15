@@ -61,6 +61,7 @@ export class MapaNecesidades {
         animar,
         esperando: n.estado === EstadoNecesidad.Registrada,
         urgente: n.urgencia === Urgencia.Alta && n.estado === EstadoNecesidad.Registrada,
+        ayudante: n.estado === EstadoNecesidad.EnAtencion || n.estado === EstadoNecesidad.Entregada ? n.ayudanteAlias : undefined,
       });
       L.marker([n.ubicacionAproximada.lat, n.ubicacionAproximada.lng], { icon: icono, title: n.titulo, zIndexOffset: n.id === seleccionada ? 1000 : 0 })
         .on('click', () => this.seleccionar.emit(n.id))

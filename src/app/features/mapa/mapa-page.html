@@ -17,6 +17,8 @@
     (seleccionar)="seleccionadaId.set($event)"
   />
 
+  <sr-cta-ayudar class="cta-ayudar" [ayudantes]="ayudantesActivos()" [esperando]="esperando().length" />
+
   <aside class="panel panel-izquierdo" aria-label="Bienvenida, búsqueda y cifras">
     <section class="card bienvenida entrada">
       <svg class="montanas" viewBox="0 0 360 90" preserveAspectRatio="none" aria-hidden="true">
