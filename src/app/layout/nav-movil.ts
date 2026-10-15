@@ -41,5 +41,5 @@ import { NAVEGACION } from './navegacion';
 })
 export class NavMovil {
   protected readonly izquierda = NAVEGACION.slice(0, 2);
-  protected readonly derecha = NAVEGACION.slice(2).map((i) => ({ ...i, corta: i.ruta === '/ayudas-entregadas' ? 'Entregadas' : i.etiqueta }));
+  protected readonly derecha = NAVEGACION.slice(2).map((i) => ({ ...i, corta: i.etiqueta }));
 }

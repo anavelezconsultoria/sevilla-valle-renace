@@ -273,3 +273,34 @@ export interface ErrorCliente {
 export abstract class ReporteErrores {
   abstract reportar(error: ErrorCliente): Promise<void>;
 }
+
+/** Que paso: una entrega de quien ayuda o la confirmacion de la familia. */
+export type TipoPublicacion = 'entrega' | 'confirmacion';
+
+/** Publicacion del muro de la comunidad. Nunca lleva datos de la familia: solo el sector. */
+export interface PublicacionMuro {
+  readonly eventoId: string;
+  readonly tipo: TipoPublicacion;
+  readonly ocurridoEn: string;
+  /** Alias publico de quien ayudo. */
+  readonly ayudante?: string;
+  readonly categoria: Categoria;
+  readonly sector: string;
+  readonly personasHogar: number;
+  /** Foto de la entrega (sin rostros), si la hay. */
+  readonly foto?: string;
+  readonly gracias: number;
+}
+
+export interface PaginaMuro {
+  /** Fecha de la ultima publicacion ya mostrada; sin ella trae las mas nuevas. */
+  readonly antes?: string;
+  readonly limite: number;
+}
+
+/** Red social solidaria: el muro y los "Gracias". */
+export abstract class ComunidadGateway {
+  abstract muro(pagina: PaginaMuro): Promise<readonly PublicacionMuro[]>;
+  /** Devuelve el total de gracias de la publicacion. Una vez por dispositivo. */
+  abstract darGracias(eventoId: string): Promise<number>;
+}

@@ -5,6 +5,7 @@ import { desplazarCoordenada, DESPLAZAMIENTO_MAX_M, DESPLAZAMIENTO_MIN_M, genera
 import { enmascararTelefono, motivoClaveInvalida } from './core/domain/clave-solicitante';
 import { ErrorAccesoSolicitante, ErrorClaveDistinta, ErrorCliente, ReporteErrores } from './core/ports/necesidades.ports';
 import { ManejadorErrores } from './infrastructure/errores/manejador-errores';
+import { DemoComunidad } from './infrastructure/demo/demo-comunidad';
 import { accionesDelAyudante, accionesDelSolicitante, HORAS_PARA_CONFIRMAR, HORAS_PARA_ENTREGAR, puedeExtenderPlazo } from './core/domain/ciclo-de-vida';
 import { filtrarNecesidades } from './core/application/filtrar-necesidades';
 import { calcularDimensiones } from './shared/lib/imagen';
@@ -337,5 +338,19 @@ describe('Registro de errores de la pagina', () => {
     consola.mockRestore();
     expect(reportados.map((r) => r.mensaje)).toEqual(['x.toSorted is not a function', 'otro error']);
     expect(reportados[0]?.ruta).not.toContain('?');
+  });
+});
+
+describe('Muro de la comunidad (demo)', () => {
+  it('publica solo entregas y confirmaciones, sin datos de la familia', async () => {
+    localStorage.clear();
+    TestBed.configureTestingModule({});
+    const comunidad = TestBed.inject(DemoComunidad);
+    const muro = await comunidad.muro({ limite: 50 });
+    expect(muro.length).toBeGreaterThan(0);
+    expect(muro.every((p) => p.tipo === 'entrega' || p.tipo === 'confirmacion')).toBe(true);
+    expect(JSON.stringify(muro)).not.toMatch(/3\d{9}/);
+    const primera = muro[0]!;
+    expect(await comunidad.darGracias(primera.eventoId)).toBe(primera.gracias + 1);
   });
 });

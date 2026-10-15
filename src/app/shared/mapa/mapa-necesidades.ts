@@ -14,6 +14,7 @@ import * as L from 'leaflet';
 import { EstadoNecesidad, Necesidad, Urgencia } from '../../core/domain/necesidad.model';
 import { infoCategoria } from '../../core/domain/catalogos';
 import { crearMapa, iconoNecesidad } from './mapa-base';
+import { escaparHtml } from '../lib/avatar';
 
 /** Mapa publico: pinta las necesidades en su ubicacion APROXIMADA y avisa cual se selecciono. */
 @Component({
@@ -63,9 +64,11 @@ export class MapaNecesidades {
         urgente: n.urgencia === Urgencia.Alta && n.estado === EstadoNecesidad.Registrada,
         ayudante: n.estado === EstadoNecesidad.EnAtencion || n.estado === EstadoNecesidad.Entregada ? n.ayudanteAlias : undefined,
       });
-      L.marker([n.ubicacionAproximada.lat, n.ubicacionAproximada.lng], { icon: icono, title: n.titulo, zIndexOffset: n.id === seleccionada ? 1000 : 0 })
+      const marcador = L.marker([n.ubicacionAproximada.lat, n.ubicacionAproximada.lng], { icon: icono, title: n.titulo, zIndexOffset: n.id === seleccionada ? 1000 : 0 })
         .on('click', () => this.seleccionar.emit(n.id))
         .addTo(this.capa);
+      const globo = globoAyudante(n);
+      if (globo) marcador.bindTooltip(globo, { direction: 'top', offset: [0, -44], className: 'sr-globo-ayudante' });
     }
     if (animar) this.yaPintado = true;
     this.centrarEnSeleccionada();
@@ -75,4 +78,13 @@ export class MapaNecesidades {
     const n = this.necesidades().find((x) => x.id === this.seleccionadaId());
     if (n && this.mapa) this.mapa.panTo([n.ubicacionAproximada.lat, n.ubicacionAproximada.lng], { animate: true });
   }
+}
+
+/** Globito al pasar el mouse: quien esta llevando la ayuda (red solidaria). */
+function globoAyudante(n: Necesidad): string | null {
+  if (!n.ayudanteAlias) return null;
+  const nombre = escaparHtml(n.ayudanteAlias);
+  if (n.estado === EstadoNecesidad.EnAtencion) return `<strong>${nombre}</strong> está ayudando aquí`;
+  if (n.estado === EstadoNecesidad.Entregada) return `<strong>${nombre}</strong> ya la entregó`;
+  return null;
 }
