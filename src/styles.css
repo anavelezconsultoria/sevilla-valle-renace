@@ -20,8 +20,8 @@
   --color-accion-suave: #eaefff;
   --color-acento: #7c5cf0;
   --color-acento-suave: #f3eeff;
-  --color-montana: #1b8a5e;
-  --color-montana-suave: #e5f6ee;
+  --color-montana: #4a3fe0;
+  --color-montana-suave: #eeecfd;
 
   /* Neutros cálidos */
   --color-fondo: #fbfaff;
@@ -34,17 +34,20 @@
   --color-linea-fuerte: #d9d2ef;
 
   /* Estados del ciclo de vida */
-  --estado-pendiente: #c8431f;
-  --estado-pendiente-bg: #fff0e9;
-  --estado-progreso: #9a6400;
-  --estado-progreso-bg: #fff3d6;
-  --estado-entregada: #6a4fe0;
-  --estado-entregada-bg: #f1ecff;
-  --estado-exito: #1b8a5e;
-  --estado-exito-bg: #e5f6ee;
+  /* Estados: escala de la marca Ana Velez (azul -> morado -> lavanda -> tinta), no semaforo. */
+  --estado-pendiente: #2b4cf2;
+  --estado-pendiente-bg: #eaefff;
+  --estado-progreso: #6a4fe0;
+  --estado-progreso-bg: #f1ecff;
+  --estado-entregada: #8b5cf6;
+  --estado-entregada-bg: #f5f0ff;
+  --estado-exito: #2a2766;
+  --estado-exito-bg: #ecebf7;
   --estado-neutro: #6b6889;
   --estado-neutro-bg: #f1eff7;
-  --urgencia-alta: #d9582e;
+  --urgencia-alta: #1d37cc;
+  /* Borde de avisos (plazos, recordatorios): lavanda de la marca. */
+  --color-aviso-borde: #d7bafc;
   --color-error: #b3261e;
 
   /* Tipografía */
@@ -200,8 +203,8 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  min-height: 46px;
-  padding: 10px 20px;
+  min-height: 40px;
+  padding: 8px 18px;
   border: 1px solid transparent;
   border-radius: var(--radius-pill);
   font-size: var(--text-sm);
@@ -271,9 +274,9 @@ textarea {
 }
 
 .btn-success {
-  background: var(--color-montana);
+  background: var(--color-accion);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(27, 138, 94, 0.25);
+  box-shadow: 0 4px 14px rgba(43, 76, 242, 0.25);
 }
 
 .btn-block {
@@ -488,14 +491,15 @@ textarea.input {
   }
 }
 
-/* WhatsApp: verde reconocible, para los avisos que se envian desde el celular de quien ayuda. */
+/* WhatsApp: con su icono, pero en la gama de la marca (contorno azul), no en verde. */
 .btn-whatsapp {
-  background: #1faa53;
-  color: #fff;
+  background: var(--color-superficie);
+  border-color: var(--color-accion);
+  color: var(--color-accion-fuerte);
 }
 
-.btn-whatsapp:hover {
-  background: #17924a;
+.btn-whatsapp:hover:not(:disabled) {
+  background: var(--color-accion-suave);
 }
 
 /* Celular: letra un poco mas grande en toda la app; en pantalla chica 12 px no se lee bien. */

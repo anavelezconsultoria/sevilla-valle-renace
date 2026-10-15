@@ -2,7 +2,7 @@
  * Cabecitas de quienes ayudan: inicial y un color estable por nombre, para que
  * la misma persona se vea igual en el mapa, en el boton y en las listas.
  */
-const COLORES = ['#6a4fe0', '#2b4cf2', '#1b8a5e', '#c2612c', '#b23a87', '#0f7c8c', '#8a5a3b', '#d23c2a'] as const;
+const COLORES = ['#6a4fe0', '#2b4cf2', '#4a3fe0', '#8b5cf6', '#3b3a6b', '#5b6cf0', '#7c5cf0', '#2a2766'] as const;
 
 export interface Avatar {
   readonly inicial: string;

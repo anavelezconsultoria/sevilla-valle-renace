@@ -35,7 +35,7 @@ interface PorVencer {
     }
   `,
   styles: `
-    .aviso { display: grid; gap: var(--space-2); padding: var(--space-4); margin-bottom: var(--space-4); border-radius: var(--radius-lg); border: 1.5px solid #f2c770; background: var(--estado-progreso-bg); }
+    .aviso { display: grid; gap: var(--space-2); padding: var(--space-4); margin-bottom: var(--space-4); border-radius: var(--radius-lg); border: 1.5px solid var(--color-aviso-borde); background: var(--estado-progreso-bg); }
     h2 { font-family: var(--font-body); font-weight: 700; font-size: var(--text-md); color: var(--estado-progreso); }
     ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
     a { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: var(--space-3); border-radius: var(--radius-sm); background: var(--color-superficie); text-decoration: none; color: inherit; font-size: var(--text-sm); }

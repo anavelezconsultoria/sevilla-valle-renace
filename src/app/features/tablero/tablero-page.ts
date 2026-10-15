@@ -20,7 +20,7 @@ type Vista = 'lista' | 'mapa';
         <h1>¿A quién puedes ayudar hoy?</h1>
         <p class="muted">Elige una necesidad, tómala y llévala hasta la entrega. Primero aparece lo más urgente y lo que lleva más tiempo esperando.</p>
       </div>
-      <a routerLink="/pedir-ayuda" class="btn btn-accion">Registrar una necesidad</a>
+      <a routerLink="/pedir-ayuda" class="btn btn-secondary">Necesito ayuda: registrar</a>
     </div></header>
 
     <section class="container" style="margin-top: var(--space-5)">
@@ -83,7 +83,7 @@ type Vista = 'lista' | 'mapa';
     .pestana[aria-selected='true'] { color: #fff; }
     .pestana[aria-selected='true'] .num { background: rgba(255,255,255,.9); }
     .pestana[data-estado='registrada'][aria-selected='true'] { background: var(--estado-pendiente); border-color: var(--estado-pendiente); }
-    .pestana[data-estado='en_atencion'][aria-selected='true'] { background: #b67a00; border-color: #b67a00; }
+    .pestana[data-estado='en_atencion'][aria-selected='true'] { background: var(--estado-progreso); border-color: var(--estado-progreso); }
     .pestana[data-estado='entregada'][aria-selected='true'] { background: var(--estado-entregada); border-color: var(--estado-entregada); }
     .pestana[data-estado='atendida'][aria-selected='true'] { background: var(--estado-exito); border-color: var(--estado-exito); }
     .mas-filtros { margin-bottom: var(--space-3); }
@@ -99,7 +99,7 @@ type Vista = 'lista' | 'mapa';
     .vacio { padding: var(--space-6); text-align: center; grid-column: 1 / -1; }
     @media (max-width: 640px) {
       .cabecera p.muted { display: none; }
-      .cabecera .btn { width: 100%; }
+      .cabecera .btn { align-self: flex-start; }
       .pestanas { grid-template-columns: 1fr 1fr; }
       .mas-filtros summary { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 1.5px solid var(--color-linea-fuerte); border-radius: var(--radius-md); background: var(--color-superficie); font-weight: 650; color: var(--color-primario); cursor: pointer; list-style: none; }
       .mas-filtros summary::-webkit-details-marker { display: none; }

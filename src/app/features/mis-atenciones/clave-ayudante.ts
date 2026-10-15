@@ -40,7 +40,7 @@ import { LARGO_CLAVE, motivoClaveInvalida, soloDigitos } from '../../core/domain
   `,
   styles: `
     .clave { display: grid; gap: var(--space-3); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-4); }
-    .urgente { border: 1.5px solid #f2c770; background: var(--estado-progreso-bg); }
+    .urgente { border: 1.5px solid var(--color-aviso-borde); background: var(--estado-progreso-bg); }
     h2 { font-family: var(--font-body); font-weight: 700; font-size: var(--text-md); }
     summary { cursor: pointer; font-weight: 650; color: var(--color-primario); }
     form { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }

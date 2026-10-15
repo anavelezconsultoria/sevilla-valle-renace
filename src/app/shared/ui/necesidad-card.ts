@@ -59,7 +59,7 @@ import { EstadoBadge } from './estado-badge';
     .urgente { color: var(--urgencia-alta); font-weight: 650; }
     .marcas { display: flex; flex-wrap: wrap; gap: 6px; }
     .marca { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: var(--radius-pill); font-size: var(--text-xs); font-weight: 650; }
-    .prioridad { color: #fff; background: #c8431f; }
+    .prioridad { color: #fff; background: linear-gradient(135deg, #2b4cf2, #6a4fe0); }
     .externa { color: #5a4a3a; background: #efe7dd; }
     .primera { color: var(--color-montana); background: var(--color-montana-suave); }
     .reciente { color: var(--color-tenue); background: var(--color-arena); }

@@ -40,7 +40,7 @@ import { Marca } from '../shared/ui/marca';
     .grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr auto; gap: var(--space-6); align-items: start; }
     .col { display: grid; gap: 2px; align-content: start; }
     .col a { padding-block: 6px; }
-    .emergencia { display: inline-flex; align-items: center; gap: 8px; width: fit-content; margin-top: 4px; padding: 8px 14px !important; border-radius: var(--radius-pill); background: #fde8e4; color: #b3261e !important; font-weight: 650; }
+    .emergencia { display: inline-flex; align-items: center; gap: 8px; width: fit-content; margin-top: 4px; padding: 8px 14px !important; border-radius: var(--radius-pill); background: var(--color-accion-suave); color: var(--color-accion-fuerte) !important; font-weight: 650; }
     .emergencia svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .nota { font-size: var(--text-xs); margin-top: 6px; }
     .col p.muted { max-width: 360px; }

@@ -89,13 +89,13 @@ interface TarjetaSoporte {
     .soporte { display: grid; gap: var(--space-4); }
     .resumen { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .chip { padding: 6px 14px; border-radius: var(--radius-pill); font-size: var(--text-xs); font-weight: 700; }
-    .chip.urgente { background: #fde8e4; color: #b3261e; }
-    .chip.atento { background: #fff3d6; color: #8a5a00; }
-    .chip.tranquilo { background: var(--color-montana-suave); color: var(--color-montana); }
+    .chip.urgente { background: #e4e0fb; color: #2a2766; }
+    .chip.atento { background: var(--estado-progreso-bg); color: var(--estado-progreso); }
+    .chip.tranquilo { background: var(--estado-pendiente-bg); color: var(--color-accion-fuerte); }
     .lista { display: grid; gap: var(--space-3); list-style: none; margin: 0; padding: 0; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-    .tarjeta { --ritmo: var(--color-montana); display: grid; gap: var(--space-3); padding: var(--space-4); border-top: 4px solid var(--ritmo); }
-    .tarjeta.atento { --ritmo: #e09a10; }
-    .tarjeta.urgente { --ritmo: #d23c2a; }
+    .tarjeta { --ritmo: var(--color-accion); display: grid; gap: var(--space-3); padding: var(--space-4); border-top: 4px solid var(--ritmo); }
+    .tarjeta.atento { --ritmo: #6a4fe0; }
+    .tarjeta.urgente { --ritmo: #2a2766; }
     .cabecera { display: flex; align-items: center; gap: var(--space-3); }
     .avatar { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--ritmo) 16%, white); color: var(--ritmo); font-family: var(--font-marca); }
     .quien { display: grid; min-width: 0; }
@@ -104,12 +104,11 @@ interface TarjetaSoporte {
     .que { display: grid; gap: 2px; padding: var(--space-3); border-radius: var(--radius-sm); background: var(--color-arena); text-decoration: none; color: inherit; }
     .que .titulo { font-weight: 650; }
     .que .muted { font-size: var(--text-xs); }
-    .prioridad { width: fit-content; margin-top: 4px; padding: 2px 10px; border-radius: var(--radius-pill); background: #c8431f; color: #fff; font-size: var(--text-xs); font-weight: 650; }
+    .prioridad { width: fit-content; margin-top: 4px; padding: 2px 10px; border-radius: var(--radius-pill); background: linear-gradient(135deg, #2b4cf2, #6a4fe0); color: #fff; font-size: var(--text-xs); font-weight: 650; }
     .barra { height: 8px; border-radius: var(--radius-pill); background: var(--color-linea); overflow: hidden; }
     .barra span { display: block; height: 100%; border-radius: inherit; background: var(--ritmo); transition: width .6s cubic-bezier(.22, 1, .36, 1); }
     .acciones { display: flex; gap: var(--space-2); }
     .acciones .btn { flex: 1; }
-    .btn-whatsapp { background: #1faa53; color: #fff; }
     .sin-celular { font-size: var(--text-xs); }
     .vacio { padding: var(--space-5); border-radius: var(--radius-lg); background: var(--color-arena); color: var(--color-tenue); font-weight: 600; }
   `,

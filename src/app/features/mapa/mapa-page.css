@@ -197,7 +197,7 @@
 
 .pestana.activa {
   color: var(--estado-progreso);
-  border-color: #f2c770;
+  border-color: var(--color-aviso-borde);
   background: var(--estado-progreso-bg);
 }
 

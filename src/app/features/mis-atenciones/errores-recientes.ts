@@ -56,7 +56,7 @@ function dispositivo(navegador: string): string {
     .fila { display: flex; justify-content: space-between; gap: var(--space-2); align-items: flex-start; }
     code { font-size: var(--text-xs); overflow-wrap: anywhere; color: var(--color-texto); }
     .veces { flex: none; font-size: var(--text-xs); font-weight: 700; color: var(--color-tenue); }
-    .veces.muchas { color: #b3261e; }
+    .veces.muchas { color: var(--color-primario-fuerte); }
     .item .muted { font-size: var(--text-xs); }
     .vacio { font-size: var(--text-sm); color: var(--color-montana); font-weight: 600; }
   `,

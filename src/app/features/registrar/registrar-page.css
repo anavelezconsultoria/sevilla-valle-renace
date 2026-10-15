@@ -677,7 +677,7 @@
 .error-general {
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
-  background: #fff0f0;
+  background: var(--color-primario-suave);
   color: var(--color-error);
   font-size: var(--text-sm);
 }
@@ -853,7 +853,7 @@
   font-size: var(--text-sm);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
-  background: #f4eee6;
+  background: var(--color-arena);
 }
 
 .clave-recordada {

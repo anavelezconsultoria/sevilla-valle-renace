@@ -48,7 +48,7 @@ h2 {
   font-size: var(--text-sm);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
-  border: 1.5px solid #f2c770;
+  border: 1.5px solid var(--color-aviso-borde);
   background: var(--estado-progreso-bg);
 }
 

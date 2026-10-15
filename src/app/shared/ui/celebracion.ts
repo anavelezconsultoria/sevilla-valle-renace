@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
-const COLORES = ['#2b4cf2', '#7c5cf0', '#d7bafc', '#1b8a5e', '#9ab0ff'] as const;
+const COLORES = ['#2b4cf2', '#7c5cf0', '#d7bafc', '#4a3fe0', '#9ab0ff'] as const;
 const PIEZAS = 28;
 
 interface Pieza {

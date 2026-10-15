@@ -72,11 +72,11 @@ import { CategoriaIcono } from '../../shared/ui/categoria-icono';
     .foto { width: 100%; aspect-ratio: 16 / 10; max-height: 320px; object-fit: cover; border-radius: var(--radius-md); background: var(--color-arena); }
     .pie { display: flex; align-items: center; gap: var(--space-3); }
     .gracias { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border: 1.5px solid var(--color-linea-fuerte); border-radius: var(--radius-pill); background: var(--color-superficie); color: var(--color-texto); font: inherit; font-size: var(--text-sm); font-weight: 650; cursor: pointer; transition: background-color .2s, border-color .2s, color .2s, transform .15s; }
-    .gracias:hover:not(:disabled) { border-color: #e4572e; color: #c8431f; }
+    .gracias:hover:not(:disabled) { border-color: var(--color-primario); color: var(--color-primario); }
     .gracias:active:not(:disabled) { transform: scale(.95); }
     .gracias svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; transition: fill .2s; }
-    .gracias.dada { border-color: #fbd3c8; background: #fdeee9; color: #c8431f; cursor: default; }
-    .gracias.dada svg { fill: #e4572e; stroke: #e4572e; }
+    .gracias.dada { border-color: var(--color-aviso-borde); background: var(--color-primario-suave); color: var(--color-primario); cursor: default; }
+    .gracias.dada svg { fill: var(--color-primario); stroke: var(--color-primario); }
     .gracias.latiendo svg { animation: latir 600ms cubic-bezier(.34, 1.56, .64, 1); }
     @keyframes latir { 30% { transform: scale(1.45); } 60% { transform: scale(.9); } }
     .total { font-size: var(--text-xs); color: var(--color-tenue); }

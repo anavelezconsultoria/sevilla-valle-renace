@@ -180,7 +180,7 @@ const PESTANA_INICIAL: Pestana = 'mis-ayudas';
     .pestana.activa { background: var(--color-superficie); color: var(--color-primario); box-shadow: 0 6px 18px rgba(106, 79, 224, .18); }
     .pestana svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .conteo { min-width: 22px; height: 22px; padding: 0 6px; display: grid; place-items: center; border-radius: var(--radius-pill); background: var(--color-linea); color: var(--color-texto); font-size: 12px; font-weight: 700; }
-    .conteo.alerta { background: #d23c2a; color: #fff; animation: latir 2s ease-in-out infinite; }
+    .conteo.alerta { background: var(--color-accion); color: #fff; animation: latir 2s ease-in-out infinite; }
     @keyframes latir { 50% { transform: scale(1.12); } }
     .actualizar { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border: 1px solid var(--color-linea); border-radius: 50%; background: var(--color-superficie); color: var(--color-tenue); cursor: pointer; }
     .actualizar svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

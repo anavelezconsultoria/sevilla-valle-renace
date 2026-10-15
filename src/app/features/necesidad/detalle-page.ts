@@ -103,7 +103,7 @@ import { EstadoNecesidad } from '../../core/domain/necesidad.model';
     .galeria img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-md); }
     .aviso { font-size: var(--text-sm); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); }
     .aviso.prioridad { background: var(--estado-pendiente-bg); }
-    .aviso.externa { background: #f4eee6; }
+    .aviso.externa { background: var(--color-arena); }
     .bloque { padding: var(--space-5); display: grid; gap: var(--space-4); }
     h2 { font-family: var(--font-body); font-weight: 700; font-size: var(--text-lg); }
     .difundir { display: grid; gap: var(--space-3); padding: var(--space-5); }

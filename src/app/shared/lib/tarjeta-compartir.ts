@@ -12,7 +12,8 @@ const MARCA = '"Krona One", system-ui, sans-serif';
 const TEXTO = '"Inter Variable", Inter, system-ui, sans-serif';
 const AZUL = '#2b4cf2';
 const MORADO = '#6a4fe0';
-const NARANJA = '#c8431f';
+/** Color de lo que espera ayuda: el azul de accion de la marca. */
+const ESPERA = '#1d37cc';
 const TINTA = '#15132b';
 const TENUE = '#5f5c7e';
 const DOMINIO = 'sevillarenace.anavelezconsultora.com';
@@ -179,8 +180,8 @@ export async function tarjetaNecesidad(n: Necesidad): Promise<Blob> {
   dibujarMarca(ctx, 60, 60, 1);
 
   let x = 60;
-  x += pildora(ctx, 'NECESITA AYUDA', x, 170, NARANJA, '#ffffff') + 14;
-  if (n.prioridadCero) pildora(ctx, 'PRIORIDAD 0 · BEBÉS O ADULTOS MAYORES', x, 170, '#ffe1d6', NARANJA);
+  x += pildora(ctx, 'NECESITA AYUDA', x, 170, ESPERA, '#ffffff') + 14;
+  if (n.prioridadCero) pildora(ctx, 'PRIORIDAD 0 · BEBÉS O ADULTOS MAYORES', x, 170, '#f1ecff', MORADO);
 
   iconoCategoria(ctx, n, 60, 270, 96);
   ctx.fillStyle = MORADO;
@@ -234,7 +235,7 @@ export async function tarjetaListaHoy(necesidades: readonly Necesidad[], total: 
   ctx.fillStyle = TINTA;
   ctx.font = `66px ${MARCA}`;
   ctx.fillText('Hoy en Sevilla', 60, 340);
-  ctx.fillStyle = NARANJA;
+  ctx.fillStyle = ESPERA;
   ctx.fillText('necesitan', 60, 420);
   ctx.fillStyle = TENUE;
   ctx.font = `400 34px ${TEXTO}`;
@@ -255,7 +256,7 @@ export async function tarjetaListaHoy(necesidades: readonly Necesidad[], total: 
     const detalle = `${n.sector} · ${n.personasHogar} ${n.personasHogar === 1 ? 'persona' : 'personas'}`;
     ctx.fillText(lineas(ctx, detalle, ANCHO - 360, 1)[0] ?? '', 200, y + 104);
     if (n.prioridadCero) {
-      ctx.fillStyle = NARANJA;
+      ctx.fillStyle = ESPERA;
       ctx.font = `800 24px ${TEXTO}`;
       ctx.textAlign = 'right';
       ctx.fillText('PRIORIDAD 0', ANCHO - 90, y + 62);
