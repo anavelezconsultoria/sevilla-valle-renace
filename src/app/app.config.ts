@@ -1,5 +1,12 @@
 import { ApplicationConfig, ErrorHandler, provideBrowserGlobalErrorListeners, Provider } from '@angular/core';
-import { provideRouter, withComponentInputBinding, withInMemoryScrolling, withViewTransitions } from '@angular/router';
+import {
+  provideRouter,
+  withComponentInputBinding,
+  withInMemoryScrolling,
+  withNavigationErrorHandler,
+  withViewTransitions,
+} from '@angular/router';
+import { esArchivoDeVersionVieja, recargarConVersionNueva } from './infrastructure/errores/version-nueva';
 import { routes } from './app.routes';
 import {
   AyudanteGateway,
@@ -72,6 +79,10 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding(),
       withInMemoryScrolling({ scrollPositionRestoration: 'top' }),
       withViewTransitions({ skipInitialTransition: true }),
+      // Al navegar a una pantalla de una version ya reemplazada: recargar hacia esa pantalla.
+      withNavigationErrorHandler(({ error, url }) => {
+        if (esArchivoDeVersionVieja(error)) recargarConVersionNueva(url);
+      }),
     ),
     ...(usarSupabase ? PUERTOS_SUPABASE : PUERTOS_DEMO),
   ],

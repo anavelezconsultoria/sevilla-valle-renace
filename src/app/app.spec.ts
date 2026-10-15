@@ -6,6 +6,7 @@ import { enmascararTelefono, motivoClaveInvalida } from './core/domain/clave-sol
 import { ErrorAccesoSolicitante, ErrorClaveDistinta, ErrorCliente, ReporteErrores } from './core/ports/necesidades.ports';
 import { ManejadorErrores } from './infrastructure/errores/manejador-errores';
 import { DemoComunidad } from './infrastructure/demo/demo-comunidad';
+import { esArchivoDeVersionVieja } from './infrastructure/errores/version-nueva';
 import { accionesDelAyudante, accionesDelSolicitante, HORAS_PARA_CONFIRMAR, HORAS_PARA_ENTREGAR, puedeExtenderPlazo } from './core/domain/ciclo-de-vida';
 import { filtrarNecesidades } from './core/application/filtrar-necesidades';
 import { calcularDimensiones } from './shared/lib/imagen';
@@ -352,5 +353,14 @@ describe('Muro de la comunidad (demo)', () => {
     expect(JSON.stringify(muro)).not.toMatch(/3\d{9}/);
     const primera = muro[0]!;
     expect(await comunidad.darGracias(primera.eventoId)).toBe(primera.gracias + 1);
+  });
+});
+
+describe('Version nueva publicada', () => {
+  it('reconoce el error de archivo viejo en Android, iPhone y Firefox', () => {
+    expect(esArchivoDeVersionVieja(new TypeError('Failed to fetch dynamically imported module: https://x/chunk-A.js'))).toBe(true);
+    expect(esArchivoDeVersionVieja(new TypeError('Importing a module script failed.'))).toBe(true);
+    expect(esArchivoDeVersionVieja(new TypeError('error loading dynamically imported module'))).toBe(true);
+    expect(esArchivoDeVersionVieja(new TypeError('x.toSorted is not a function'))).toBe(false);
   });
 });

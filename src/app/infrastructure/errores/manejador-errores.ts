@@ -1,5 +1,6 @@
 import { ErrorHandler, inject, Injectable } from '@angular/core';
 import { ErrorCliente, ReporteErrores } from '../../core/ports/necesidades.ports';
+import { esArchivoDeVersionVieja, recargarConVersionNueva } from './version-nueva';
 
 /** Cuantos errores distintos se reportan como maximo por visita (evita inundar la base). */
 const MAX_REPORTES_POR_VISITA = 10;
@@ -19,6 +20,8 @@ export class ManejadorErrores implements ErrorHandler {
 
   handleError(error: unknown): void {
     console.error(error);
+    // Pagina abierta desde antes de una publicacion: se recarga sola, no es una falla.
+    if (esArchivoDeVersionVieja(error) && recargarConVersionNueva()) return;
     const datos = this.describir(error);
     const firma = `${datos.mensaje}|${datos.ruta}`;
     if (this.yaReportados.has(firma) || this.yaReportados.size >= MAX_REPORTES_POR_VISITA) return;
