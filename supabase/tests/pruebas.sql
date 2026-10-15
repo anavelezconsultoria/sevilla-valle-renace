@@ -490,6 +490,7 @@ exception when sqlstate 'P0001' then raise notice 'OK  nadie mas puede extender 
 end $$;
 
 -- Revision de solicitudes repetidas y senal publica (0016).
+reset role;
 do $$ declare r record; begin
   select * into r from public.registrar_necesidad('alimentos', 'Mercado', 'Necesitamos mercado para la semana', 'media', 4, 'La Ceiba', 4.26, -75.93, 'Gloria', '3201112233', '5793');
   if (select estado::text from public.necesidades where id = r.necesidad_id) <> 'registrada' then raise exception 'FALLO: la primera solicitud no se publico'; end if;
