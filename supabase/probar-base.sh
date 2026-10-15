@@ -1,23 +1,21 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Prueba la base de datos de punta a punta, sin tocar produccion:
-#   1. Levanta la misma imagen de Postgres que usa Supabase (trae auth, storage,
-#      pg_cron, pgcrypto y la publicacion de tiempo real).
-#   2. Aplica TODAS las migraciones en orden, cada una en su propia transaccion
-#      (asi los valores nuevos de un enum quedan listos para la siguiente).
-#   3. Corre supabase/tests/pruebas.sql (termina en ROLLBACK).
+#   1. Levanta Supabase local con la CLI oficial (Postgres 17 + auth + storage,
+#      igual que produccion). Al arrancar aplica TODAS las migraciones en orden.
+#   2. Corre supabase/tests/pruebas.sql (termina en ROLLBACK).
 # Falla si una migracion o una prueba falla. En GitHub Actions, el error queda
 # como anotacion visible en la ejecucion.
 # Uso local (con Docker encendido): bash supabase/probar-base.sh
 # =============================================================================
 set -euo pipefail
 
-IMAGEN="${IMAGEN:-supabase/postgres:17.6.1.178}"
-CONTENEDOR="sr-pruebas-base"
-RAIZ="$(cd "$(dirname "$0")" && pwd)"
+RAIZ="$(cd "$(dirname "$0")/.." && pwd)"
+SUPABASE="${SUPABASE:-npx -y supabase@latest}"
+# Servicios que las pruebas no necesitan: arranca mas rapido.
+EXCLUIR="studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor,realtime,postgres-meta"
 
 anotar_error() {
-  # Mensaje multilinea como anotacion de GitHub (los saltos van codificados).
   local titulo="$1" mensaje="$2"
   if [ -n "${GITHUB_ACTIONS:-}" ]; then
     mensaje="${mensaje//'%'/'%25'}"
@@ -27,38 +25,26 @@ anotar_error() {
   echo "ERROR ${titulo}: ${2}" >&2
 }
 
-limpiar() { docker rm -f "$CONTENEDOR" >/dev/null 2>&1 || true; }
-trap limpiar EXIT
-limpiar
+cd "$RAIZ"
+trap '$SUPABASE stop --no-backup >/dev/null 2>&1 || true' EXIT
 
-echo "Levantando ${IMAGEN}..."
-docker run -d --name "$CONTENEDOR" -e POSTGRES_PASSWORD=pruebas "$IMAGEN" >/dev/null
+echo "Levantando Supabase local y aplicando migraciones..."
+if ! salida="$($SUPABASE start -x "$EXCLUIR" 2>&1)"; then
+  anotar_error "Migraciones" "$(echo "$salida" | tail -25)"
+  exit 1
+fi
+echo "$salida" | grep -iE "applying|migration" || true
 
-# Espera al servidor definitivo (el de inicializacion no escucha por TCP).
-for _ in $(seq 1 90); do
-  if docker exec "$CONTENEDOR" pg_isready -U postgres -h 127.0.0.1 >/dev/null 2>&1; then break; fi
-  sleep 2
-done
-sleep 3
-docker exec "$CONTENEDOR" pg_isready -U postgres -h 127.0.0.1
-
-psql_en() {
-  docker exec -i -e PGPASSWORD=pruebas "$CONTENEDOR" psql -h 127.0.0.1 -U postgres -d postgres -X -q -v ON_ERROR_STOP=1 "$@"
-}
-
-for archivo in "$RAIZ"/migrations/*.sql; do
-  nombre="$(basename "$archivo")"
-  echo "Migracion ${nombre}"
-  if ! salida="$(psql_en -1 < "$archivo" 2>&1)"; then
-    anotar_error "Migracion ${nombre}" "$salida"
-    exit 1
-  fi
-done
+CONTENEDOR="$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)"
+if [ -z "$CONTENEDOR" ]; then
+  anotar_error "Base de datos" "No se encontro el contenedor de la base."
+  exit 1
+fi
 
 echo "Pruebas..."
-if ! salida="$(psql_en < "$RAIZ/tests/pruebas.sql" 2>&1)"; then
-  echo "$salida" | grep -E "NOTICE" | sed 's/^.*NOTICE:  //' || true
-  anotar_error "Pruebas de base de datos" "$(echo "$salida" | grep -vE "NOTICE" | tail -15)"
+if ! salida="$(docker exec -i "$CONTENEDOR" psql -U postgres -d postgres -X -q -v ON_ERROR_STOP=1 < supabase/tests/pruebas.sql 2>&1)"; then
+  echo "$salida" | grep "NOTICE" | sed 's/^.*NOTICE:  //' || true
+  anotar_error "Pruebas de base de datos" "$(echo "$salida" | grep -v "NOTICE" | tail -15)"
   exit 1
 fi
 
