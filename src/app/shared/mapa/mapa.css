@@ -151,3 +151,17 @@
 :host ::ng-deep .sr-globo-ayudante::before {
   border-top-color: var(--color-tinta, #15132b);
 }
+
+/*
+ * Forma ademas de color: relleno = espera ayuda; hueco (blanco con borde
+ * grueso) = alguien ya la lleva. Asi se distinguen aunque los tonos se parezcan.
+ */
+:host ::ng-deep .sr-pin--hueco {
+  background: #fff;
+  border-color: var(--pin);
+  border-width: 3.5px;
+}
+
+:host ::ng-deep .sr-pin--hueco svg {
+  stroke: var(--pin);
+}

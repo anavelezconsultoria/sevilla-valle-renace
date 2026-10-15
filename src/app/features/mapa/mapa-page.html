@@ -17,6 +17,12 @@
     (seleccionar)="seleccionadaId.set($event)"
   />
 
+  <ul class="leyenda-flotante" aria-label="Qué significa cada punto">
+    @for (e of leyenda; track e.etiqueta) {
+      <li><span class="punto" [class.hueco]="e.hueco" [style.--c]="e.color" aria-hidden="true"></span>{{ e.etiqueta }}</li>
+    }
+  </ul>
+
   <sr-cta-ayudar class="cta-ayudar" [ayudantes]="ayudantesActivos()" [esperando]="esperando().length" />
 
   <aside class="panel panel-izquierdo" aria-label="Bienvenida, búsqueda y cifras">
@@ -95,7 +101,7 @@
 
     <ul class="leyenda" aria-label="Colores del mapa">
       @for (e of leyenda; track e.etiqueta) {
-        <li><span class="punto" [style.background]="e.color" aria-hidden="true"></span>{{ e.etiqueta }}</li>
+        <li><span class="punto" [class.hueco]="e.hueco" [style.--c]="e.color" aria-hidden="true"></span>{{ e.etiqueta }}</li>
       }
     </ul>
 

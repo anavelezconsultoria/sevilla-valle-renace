@@ -31,7 +31,7 @@ export class MapaPage {
   protected readonly categorias = CATEGORIAS;
   protected readonly avisos = AVISOS;
   /** Leyenda del mapa: mismo color que los pines y las etiquetas de estado. */
-  protected readonly leyenda = ESTADOS_LEYENDA.map((e) => ({ etiqueta: ESTADOS[e].etiqueta, color: COLOR_ESTADO[e] }));
+  protected readonly leyenda = ESTADOS_LEYENDA.map((e) => ({ etiqueta: ESTADOS[e].etiqueta, color: COLOR_ESTADO[e], hueco: e !== EstadoNecesidad.Registrada }));
   /** La lista abre en lo que espera ayuda: es lo que mas importa ver. */
   protected readonly vista = signal<VistaLista>('esperando');
   protected readonly texto = signal('');

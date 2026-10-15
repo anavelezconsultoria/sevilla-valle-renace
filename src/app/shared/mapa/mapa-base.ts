@@ -45,7 +45,8 @@ export function iconoNecesidad({ categoria, estado, seleccionado, orden, animar,
   const color = COLOR_ESTADO[estado];
   const tamano = seleccionado ? 46 : 38;
   const latido = urgente ? 'sr-pin--urgente' : esperando ? 'sr-pin--espera' : '';
-  const clases = ['sr-pin', seleccionado ? 'sr-pin--activo' : '', animar ? 'sr-pin--cae' : '', latido].join(' ');
+  const hueco = estado !== EstadoNecesidad.Registrada;
+  const clases = ['sr-pin', hueco ? 'sr-pin--hueco' : '', seleccionado ? 'sr-pin--activo' : '', animar ? 'sr-pin--cae' : '', latido].join(' ');
   const html = `
     <div class="sr-pin-caja" style="--pin:${color};--anillo:#ffffff;--t:${tamano}px;--i:${orden}">
       <div class="${clases}">
