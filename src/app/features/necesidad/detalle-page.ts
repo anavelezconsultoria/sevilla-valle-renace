@@ -90,6 +90,7 @@ import { EstadoNecesidad } from '../../core/domain/necesidad.model';
     .volver { display: inline-block; margin-bottom: var(--space-4); font-size: var(--text-sm); font-weight: 600; color: var(--color-primario); text-decoration: none; }
     .layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr); gap: var(--space-4); align-items: start; }
     .principal, .lateral { display: grid; gap: var(--space-4); }
+    .principal > :empty, .lateral > :empty { display: none; }
     .lateral { position: sticky; top: calc(var(--header-height) + 16px); }
     .cabecera { display: grid; gap: var(--space-4); padding: var(--space-5); }
     .titulo { display: flex; gap: var(--space-4); align-items: center; }

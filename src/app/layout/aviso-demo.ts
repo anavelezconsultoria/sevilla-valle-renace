@@ -21,10 +21,10 @@ import { DemoBackend } from '../infrastructure/demo/demo-backend';
     .aviso { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 12px; padding: 8px var(--gutter); background: var(--color-primario-fuerte); color: #f5f3ff; font-size: var(--text-xs); text-align: center; }
     code { background: rgba(255,255,255,.15); padding: 1px 6px; border-radius: 4px; font-weight: 700; }
     button { background: none; border: 1px solid rgba(255,255,255,.35); color: inherit; border-radius: var(--radius-pill); padding: 2px 10px; font-size: var(--text-xs); cursor: pointer; }
-    .cerrar { border: 0; font-size: 16px; padding: 0 6px; }
+    .cerrar { flex: none; border: 0; font-size: 16px; padding: 0 6px; }
     .corto { display: none; }
     @media (max-width: 640px) {
-      .aviso { flex-wrap: nowrap; justify-content: space-between; padding-block: 6px; }
+      .aviso { flex-wrap: nowrap; justify-content: space-between; padding-block: 6px; min-width: 0; overflow: hidden; }
       .largo { display: none; }
       .corto { display: inline; white-space: nowrap; }
       .reiniciar { display: none; }

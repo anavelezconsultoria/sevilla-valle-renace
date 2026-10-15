@@ -53,8 +53,8 @@ import { NAVEGACION } from './navegacion';
     /* Celular: Mi panel y Pedir ayuda ya estan abajo; arriba solo "Mis solicitudes", que no esta en la barra. */
     @media (max-width: 860px) {
       .nav, .acciones .btn, .avatar { display: none; }
-      .barra { height: 60px; }
-      .seguir-movil { margin-left: auto; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: var(--radius-pill); background: var(--color-primario-suave); color: var(--color-primario); font-size: var(--text-sm); font-weight: 650; text-decoration: none; }
+      .barra { height: 60px; gap: var(--space-2); }
+      .seguir-movil { margin-left: auto; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; flex: none; min-height: 40px; padding: 0 12px; border-radius: var(--radius-pill); background: var(--color-primario-suave); color: var(--color-primario); font-size: var(--text-sm); font-weight: 650; text-decoration: none; }
       .seguir-movil svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
     }
   `,
