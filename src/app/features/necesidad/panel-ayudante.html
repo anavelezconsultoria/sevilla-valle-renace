@@ -32,7 +32,7 @@
       </div>
     }
     @if (puedeExtender()) {
-      <button type="button" class="btn btn-secondary btn-block" [disabled]="ocupado()" (click)="extender()">Necesito 24 horas más</button>
+      <button type="button" class="btn btn-secondary btn-block" [disabled]="ocupado()" (click)="extender()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" /></svg>Necesito 24 horas más</button>
     }
 
     @if (contacto(); as c) {
@@ -50,8 +50,8 @@
         </div>
       }
       <div class="atajos">
-        <a class="btn btn-secondary" [href]="enlaceWhatsapp()" target="_blank" rel="noopener">Escribir por WhatsApp</a>
-        <a class="btn btn-secondary" [href]="enlaceMapa()" target="_blank" rel="noopener">Cómo llegar</a>
+        <a class="btn btn-secondary" [href]="enlaceWhatsapp()" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5z" /></svg>Escribir por WhatsApp</a>
+        <a class="btn btn-secondary" [href]="enlaceMapa()" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" /></svg>Cómo llegar</a>
       </div>
     }
 

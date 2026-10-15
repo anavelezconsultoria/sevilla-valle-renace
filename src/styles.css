@@ -253,15 +253,29 @@ textarea {
   background: var(--color-accion-fuerte);
 }
 
+/* Secundario: lavanda con texto morado; se lee como boton, no como recuadro de informacion. */
 .btn-secondary {
-  background: var(--color-superficie);
-  border-color: var(--color-linea-fuerte);
-  color: var(--color-tinta);
+  background: var(--color-primario-suave);
+  border-color: #d9cdfb;
+  color: var(--color-primario-fuerte);
+  font-weight: 650;
 }
 
 .btn-secondary:hover:not(:disabled) {
+  background: #e6defd;
   border-color: var(--color-primario);
-  color: var(--color-primario);
+}
+
+/* Icono dentro de cualquier boton. */
+.btn svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .btn-ghost {
