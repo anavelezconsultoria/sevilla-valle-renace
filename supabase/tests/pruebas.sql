@@ -686,6 +686,23 @@ end $$;
 select set_config('request.headers', '{}', true);
 reset role;
 
+-- Unir perfiles conserva los colectivos (0022).
+reset role;
+insert into auth.users (id, email, aud, role) values
+  ('00000000-0000-0000-0000-0000000000c1', 'c1@prueba.local', 'authenticated', 'authenticated'),
+  ('00000000-0000-0000-0000-0000000000c2', 'c2@prueba.local', 'authenticated', 'authenticated');
+insert into public.perfiles (id, alias, rol) values ('00000000-0000-0000-0000-0000000000c1', 'Coord vieja', 'coordinacion');
+insert into public.colectivos (perfil_id, administrador_id) values (current_setting('prueba.colectivo')::uuid, '00000000-0000-0000-0000-0000000000c1')
+  on conflict (perfil_id) do update set administrador_id = excluded.administrador_id;
+insert into public.perfiles (id, alias) values ('00000000-0000-0000-0000-0000000000c2', 'Coord nueva');
+do $$ begin
+  perform public._unir_perfiles('00000000-0000-0000-0000-0000000000c2', array['00000000-0000-0000-0000-0000000000c1']::uuid[]);
+  if (select administrador_id::text from public.colectivos where perfil_id = current_setting('prueba.colectivo')::uuid) <> '00000000-0000-0000-0000-0000000000c2' then
+    raise exception 'FALLO: el colectivo no paso al perfil nuevo';
+  end if;
+  raise notice 'OK  al unir perfiles, los colectivos pasan al perfil nuevo';
+end $$;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.
