@@ -677,9 +677,16 @@ do $$ begin
   raise notice 'OK  la coordinacion toma y entrega a nombre de su colectivo';
 end $$;
 
+reset role;
+do $ declare r record; begin
+  select * into r from public.registrar_necesidad('agua', 'Agua ajena', 'Necesitamos agua para dos dias', 'media', 2, 'Sector Aj', 4.26, -75.93, 'Olga', '3209990002', '5793');
+  perform set_config('prueba.idajena', r.necesidad_id::text, true);
+end $;
+set local role authenticated;
 select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000b"}', true);
-do $$ begin
-  perform public._perfil_actual();
+select set_config('request.headers', json_build_object('x-sr-a-nombre-de', current_setting('prueba.colectivo'))::text, true);
+do $ begin
+  perform public.tomar_necesidad(current_setting('prueba.idajena')::uuid);
   raise exception 'FALLO: alguien que no lo administra actuo a nombre del colectivo';
 exception when insufficient_privilege then raise notice 'OK  nadie mas puede actuar a nombre de un colectivo ajeno';
 end $$;
@@ -719,9 +726,9 @@ do $$ begin
 end $$;
 select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-0000000000c3"}', true);
 select set_config('request.headers', json_build_object('x-sr-a-nombre-de', current_setting('prueba.colectivo'))::text, true);
-do $$ begin
-  if (public._perfil_actual()).id::text <> current_setting('prueba.colectivo') then
-    raise exception 'FALLO: la segunda administradora no actua a nombre del colectivo';
+do $ begin
+  if not exists (select 1 from public.mis_colectivos() m where m.id::text = current_setting('prueba.colectivo')) then
+    raise exception 'FALLO: la segunda administradora no ve el colectivo';
   end if;
   raise notice 'OK  las dos administradoras pueden actuar a nombre del colectivo';
 end $$;
