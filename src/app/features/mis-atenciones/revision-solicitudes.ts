@@ -1,4 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { NecesidadesLectura } from '../../core/ports/necesidades.ports';
+import { Necesidad } from '../../core/domain/necesidad.model';
+import { URGENCIAS } from '../../core/domain/catalogos';
 import { SolicitudEnRevision } from '../../core/ports/necesidades.ports';
 import { infoCategoria } from '../../core/domain/catalogos';
 import { tiempoRelativo } from '../../shared/lib/tiempo';
@@ -11,6 +15,7 @@ import { CoordinacionEstado } from './coordinacion-estado';
  */
 @Component({
   selector: 'sr-revision-solicitudes',
+  imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="herramienta">
@@ -32,6 +37,27 @@ import { CoordinacionEstado } from './coordinacion-estado';
                 <span class="muted">{{ etiquetaCategoria(s) }} · {{ s.sector }} · {{ hace(s) }}</span>
               </div>
               <p class="motivo">{{ s.motivo }}</p>
+              @if (detalle(s); as n) {
+                <details class="detalle" [open]="abierta() === s.necesidadId" (toggle)="alAlternar(s.necesidadId, $event)">
+                  <summary>Ver detalles de la solicitud</summary>
+                  <p class="descripcion">{{ n.descripcion }}</p>
+                  <ul class="datos">
+                    <li>{{ n.personasHogar }} {{ n.personasHogar === 1 ? 'persona' : 'personas' }}</li>
+                    <li>{{ urgencia(n) }}</li>
+                    @if (n.prioridadCero) {
+                      <li class="prioridad">Prioridad 0 · bebés o adultos mayores</li>
+                    }
+                  </ul>
+                  @if (n.fotos.length) {
+                    <div class="fotos">
+                      @for (f of n.fotos; track f) {
+                        <a [href]="f" target="_blank" rel="noopener"><img [src]="f" alt="Foto de la solicitud" loading="lazy" /></a>
+                      }
+                    </div>
+                  }
+                  <a class="abrir" [routerLink]="['/necesidades', n.id]">Abrir la solicitud completa →</a>
+                </details>
+              }
               <p class="contacto">{{ s.nombre }} · <a [href]="'tel:+57' + s.telefono">{{ s.telefono }}</a></p>
               <div class="acciones">
                 <button type="button" class="btn btn-primary" [disabled]="ocupado() === s.necesidadId" (click)="revisar(s, true)">Publicar</button>
@@ -54,6 +80,17 @@ import { CoordinacionEstado } from './coordinacion-estado';
     .encabezado .muted { font-size: var(--text-xs); }
     .motivo { font-size: var(--text-sm); font-weight: 600; color: var(--color-texto); padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: var(--color-acento-suave); }
     .contacto { font-size: var(--text-sm); }
+    .detalle { border-radius: var(--radius-sm); border: 1px solid var(--color-linea); }
+    .detalle summary { padding: var(--space-2) var(--space-3); font-size: var(--text-sm); font-weight: 650; color: var(--color-primario); cursor: pointer; list-style-position: inside; }
+    .detalle[open] summary { border-bottom: 1px solid var(--color-linea); }
+    .detalle > :not(summary) { margin: var(--space-3); }
+    .descripcion { font-size: var(--text-sm); color: var(--color-texto); white-space: pre-line; }
+    .datos { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; list-style: none; }
+    .datos li { padding: 3px 10px; border-radius: var(--radius-pill); background: var(--color-arena); font-size: var(--text-xs); font-weight: 600; }
+    .datos .prioridad { background: linear-gradient(135deg, #2b4cf2, #6a4fe0); color: #fff; }
+    .fotos { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .fotos img { width: 84px; height: 84px; object-fit: cover; border-radius: var(--radius-sm); }
+    .abrir { display: inline-block; font-size: var(--text-sm); font-weight: 650; color: var(--color-primario); }
     .acciones { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .vacio { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-5); border-radius: var(--radius-lg); background: var(--color-montana-suave); color: var(--color-montana); font-weight: 600; }
     .icono { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--color-superficie); font-size: 20px; }
@@ -61,11 +98,29 @@ import { CoordinacionEstado } from './coordinacion-estado';
 })
 export class RevisionSolicitudes {
   protected readonly estado = inject(CoordinacionEstado);
+  private readonly lectura = inject(NecesidadesLectura);
+  /** Solicitud con los detalles abiertos (una a la vez). */
+  protected readonly abierta = signal<string | null>(null);
   protected readonly ocupado = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
 
   protected etiquetaCategoria(s: SolicitudEnRevision): string {
     return infoCategoria(s.categoria).etiqueta;
+  }
+
+  /** Detalles publicos de la solicitud (descripcion, personas, fotos). */
+  protected detalle(s: SolicitudEnRevision): Necesidad | undefined {
+    return this.lectura.obtener(s.necesidadId);
+  }
+
+  protected urgencia(n: Necesidad): string {
+    return URGENCIAS[n.urgencia];
+  }
+
+  protected alAlternar(id: string, evento: Event): void {
+    const abierto = (evento.target as HTMLDetailsElement).open;
+    if (abierto) this.abierta.set(id);
+    else if (this.abierta() === id) this.abierta.set(null);
   }
 
   protected hace(s: SolicitudEnRevision): string {

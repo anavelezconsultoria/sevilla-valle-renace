@@ -11,7 +11,7 @@ import { Marca } from '../shared/ui/marca';
       <div class="container grid">
         <div class="col">
           <sr-marca [tamano]="32" />
-          <p class="muted">Plataforma comunitaria para que cada necesidad de Sevilla, Valle del Cauca, encuentre quién la atienda.</p>
+          <p class="muted">Red social solidaria de Sevilla, Valle del Cauca: vecinos que ayudan a vecinos hasta que cada necesidad encuentra quién la atienda.</p>
         </div>
         <nav class="col" aria-label="Sevilla Renace">
           <p class="titulo">Sevilla Renace</p>
