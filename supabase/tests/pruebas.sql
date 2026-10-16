@@ -735,6 +735,30 @@ end $$;
 select set_config('request.headers', '{}', true);
 reset role;
 
+-- Fotos de entrega: la regla de Storage no falla y respeta carpetas (0024).
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000b"}', true);
+do $$ begin
+  if not public._puede_subir_evidencia('00000000-0000-0000-0000-00000000000b/x/foto.jpg') then
+    raise exception 'FALLO: no deja subir fotos a la carpeta propia';
+  end if;
+  if public._puede_subir_evidencia('00000000-0000-0000-0000-00000000000a/x/foto.jpg') then
+    raise exception 'FALLO: deja subir a la carpeta de otra persona';
+  end if;
+  if public._puede_subir_evidencia(current_setting('prueba.colectivo') || '/x/foto.jpg') then
+    raise exception 'FALLO: deja subir a la carpeta de un colectivo ajeno';
+  end if;
+  raise notice 'OK  fotos de entrega: carpeta propia si, ajena no';
+end $$;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-0000000000c3"}', true);
+do $$ begin
+  if not public._puede_subir_evidencia(current_setting('prueba.colectivo') || '/x/foto.jpg') then
+    raise exception 'FALLO: quien administra el colectivo no puede subir a su carpeta';
+  end if;
+  raise notice 'OK  quien administra un colectivo sube fotos a su carpeta';
+end $$;
+reset role;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.
