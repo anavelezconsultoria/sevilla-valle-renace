@@ -638,6 +638,54 @@ do $$ begin
 end $$;
 reset role;
 
+-- Colectivos: entregar a nombre de un grupo (0021).
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a"}', true);
+select set_config('request.headers', '{}', true);
+do $$ declare v_col uuid; r record; begin
+  v_col := public.crear_colectivo('Colectivo de Prueba');
+  perform set_config('prueba.colectivo', v_col::text, true);
+  if not exists (select 1 from public.mis_colectivos() m where m.id = v_col) then raise exception 'FALLO: no aparece en mis colectivos'; end if;
+  begin
+    perform public.crear_colectivo('colectivo de prueba');
+    raise exception 'FALLO: acepto un nombre repetido';
+  exception when sqlstate 'P0001' then
+    if sqlerrm like 'FALLO%' then raise; end if;
+  end;
+  raise notice 'OK  la coordinacion crea un colectivo y no se repiten nombres';
+end $$;
+
+reset role;
+do $$ declare r record; begin
+  select * into r from public.registrar_necesidad('agua', 'Agua colectivo', 'Necesitamos agua para tres dias', 'media', 3, 'Sector Col', 4.26, -75.93, 'Iris', '3209990001', '5793');
+  perform set_config('prueba.idcol', r.necesidad_id::text, true);
+end $$;
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a"}', true);
+select set_config('request.headers', json_build_object('x-sr-a-nombre-de', current_setting('prueba.colectivo'))::text, true);
+do $$ begin
+  perform public.tomar_necesidad(current_setting('prueba.idcol')::uuid);
+  if (select ayudante_id::text from public.necesidades where id = current_setting('prueba.idcol')::uuid) <> current_setting('prueba.colectivo') then
+    raise exception 'FALLO: no quedo a nombre del colectivo';
+  end if;
+  perform public.entregar_necesidad(current_setting('prueba.idcol')::uuid, 'Entregado por el colectivo', '{}');
+  if not exists (select 1 from public.eventos_necesidad where necesidad_id = current_setting('prueba.idcol')::uuid and tipo = 'entregada' and actor_alias = 'Colectivo de Prueba') then
+    raise exception 'FALLO: la entrega no quedo a nombre del colectivo';
+  end if;
+  raise notice 'OK  la coordinacion toma y entrega a nombre de su colectivo';
+end $$;
+
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000b"}', true);
+do $$ begin
+  perform public._perfil_actual();
+  raise exception 'FALLO: alguien que no lo administra actuo a nombre del colectivo';
+exception when insufficient_privilege then raise notice 'OK  nadie mas puede actuar a nombre de un colectivo ajeno';
+end $$;
+select set_config('request.headers', '{}', true);
+reset role;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.
