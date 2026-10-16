@@ -703,6 +703,31 @@ do $$ begin
   raise notice 'OK  al unir perfiles, los colectivos pasan al perfil nuevo';
 end $$;
 
+-- Un colectivo con dos administradoras (0023).
+reset role;
+insert into auth.users (id, email, aud, role) values ('00000000-0000-0000-0000-0000000000c3', 'c3@prueba.local', 'authenticated', 'authenticated');
+insert into public.perfiles (id, alias, rol) values ('00000000-0000-0000-0000-0000000000c3', 'Coord dos', 'coordinacion');
+insert into public.perfiles_privado (id, celular) values ('00000000-0000-0000-0000-0000000000c3', '3187770003');
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-0000000000c2"}', true);
+select set_config('request.headers', '{}', true);
+do $$ begin
+  if public.compartir_colectivo(current_setting('prueba.colectivo')::uuid, '318 777 0003') <> 'Coord dos' then
+    raise exception 'FALLO: no comparto el colectivo';
+  end if;
+  raise notice 'OK  la coordinacion comparte su colectivo con otra coordinadora';
+end $$;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-0000000000c3"}', true);
+select set_config('request.headers', json_build_object('x-sr-a-nombre-de', current_setting('prueba.colectivo'))::text, true);
+do $$ begin
+  if (public._perfil_actual()).id::text <> current_setting('prueba.colectivo') then
+    raise exception 'FALLO: la segunda administradora no actua a nombre del colectivo';
+  end if;
+  raise notice 'OK  las dos administradoras pueden actuar a nombre del colectivo';
+end $$;
+select set_config('request.headers', '{}', true);
+reset role;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.
