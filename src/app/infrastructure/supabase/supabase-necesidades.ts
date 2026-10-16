@@ -15,6 +15,7 @@ import {
   AdjuntosPayload,
   AtencionEnCurso,
   AyudanteGateway,
+  TomarPayload,
   EntregaPayload,
   CoordinacionGateway,
   ErrorAccesoSolicitante,
@@ -59,6 +60,8 @@ import {
 } from './supabase-filas';
 
 const LIMITE_NECESIDADES = 1000;
+/** La base solo lo acepta si quien inicio sesion administra ese colectivo (migracion 0021). */
+const ENCABEZADO_COLECTIVO = 'x-sr-a-nombre-de';
 const ESPERA_RECARGA_MS = 400;
 const RECARGA_PERIODICA_MS = 120_000;
 /** El enlace del video privado dura una hora. */
@@ -104,10 +107,12 @@ export class SupabaseNecesidades
   /** Lo publico: las solicitudes en revision solo las ve quien las pidio y la coordinacion. */
   readonly todas = computed(() => this.lista().filter((n) => n.estado !== EstadoNecesidad.EnRevision));
   readonly cargando = this.cargandoInterno.asReadonly();
-  private readonly mias = computed(() => {
+  /** Ids con los que actua quien inicio sesion: el propio y los de sus colectivos. */
+  private readonly misIds = computed(() => {
     const id = this.sesion.ayudante()?.id;
-    return id ? this.lista().filter((n) => n.ayudanteId === id) : [];
+    return id ? new Set([id, ...this.sesion.colectivos().map((c) => c.id)]) : new Set<string>();
   });
+  private readonly mias = computed(() => this.lista().filter((n) => !!n.ayudanteId && this.misIds().has(n.ayudanteId)));
   private temporizadorRecarga: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
@@ -198,32 +203,32 @@ export class SupabaseNecesidades
 
   // ---- Ayudante ----
 
-  async tomar(necesidadId: string): Promise<Necesidad> {
-    return this.ejecutarYObtener('tomar_necesidad', { p_necesidad: necesidadId });
+  async tomar({ necesidadId, aNombreDe }: TomarPayload): Promise<Necesidad> {
+    return this.ejecutarYObtener('tomar_necesidad', { p_necesidad: necesidadId }, aNombreDe);
   }
 
   async liberar(necesidadId: string): Promise<Necesidad> {
-    return this.ejecutarYObtener('liberar_necesidad', { p_necesidad: necesidadId });
+    return this.ejecutarYObtener('liberar_necesidad', { p_necesidad: necesidadId }, this.colectivoDe(necesidadId));
   }
 
   async extenderPlazo(necesidadId: string): Promise<Necesidad> {
-    return this.ejecutarYObtener('extender_plazo', { p_necesidad: necesidadId });
+    return this.ejecutarYObtener('extender_plazo', { p_necesidad: necesidadId }, this.colectivoDe(necesidadId));
   }
 
   async entregar({ necesidadId, nota, fotos }: EntregaPayload): Promise<Necesidad> {
     const rutas = await Promise.all(fotos.map((foto) => this.subirEvidencia(necesidadId, foto)));
-    return this.ejecutarYObtener('entregar_necesidad', { p_necesidad: necesidadId, p_nota: nota, p_rutas: rutas });
+    return this.ejecutarYObtener('entregar_necesidad', { p_necesidad: necesidadId, p_nota: nota, p_rutas: rutas }, this.colectivoDe(necesidadId));
   }
 
   async contacto(necesidadId: string): Promise<ContactoPrivado> {
-    const filas = exigir<readonly FilaContacto[]>(await this.cliente.rpc('contacto_necesidad', { p_necesidad: necesidadId }));
+    const filas = exigir<readonly FilaContacto[]>(await this.rpcComo('contacto_necesidad', { p_necesidad: necesidadId }, this.colectivoDe(necesidadId)));
     const fila = filas[0];
     if (!fila) throw new Error('Solo quien atiende esta necesidad puede ver el contacto.');
     return aContacto(fila);
   }
 
   async videoSolicitud(necesidadId: string): Promise<string | null> {
-    const ruta = exigir<string | null>(await this.cliente.rpc('video_solicitud', { p_necesidad: necesidadId }));
+    const ruta = exigir<string | null>(await this.rpcComo('video_solicitud', { p_necesidad: necesidadId }, this.colectivoDe(necesidadId)));
     if (!ruta) return null;
     const { data, error } = await this.cliente.storage.from(this.config.bucketVideoSolicitud).createSignedUrl(ruta, SEGUNDOS_URL_VIDEO);
     return error ? null : data.signedUrl;
@@ -280,7 +285,7 @@ export class SupabaseNecesidades
 
   /** Las fotos van a la carpeta del ayudante: la politica de Storage y la funcion lo exigen. */
   private async subirEvidencia(necesidadId: string, foto: Blob): Promise<string> {
-    const ayudanteId = this.sesion.ayudante()?.id;
+    const ayudanteId = this.colectivoDe(necesidadId) ?? this.sesion.ayudante()?.id;
     if (!ayudanteId) throw new Error('Debes identificarte para registrar una entrega.');
     const ruta = `${ayudanteId}/${necesidadId}/${crypto.randomUUID()}.jpg`;
     const { error } = await this.cliente.storage
@@ -308,8 +313,24 @@ export class SupabaseNecesidades
     return this.recargarYObtener(id);
   }
 
-  private async ejecutarYObtener(funcion: string, argumentos: Record<string, string | readonly string[]>): Promise<Necesidad> {
-    const id = exigir<string>(await this.cliente.rpc(funcion, argumentos));
+  /** Si la necesidad la lleva uno de mis colectivos, su id (para actuar a su nombre). */
+  private colectivoDe(necesidadId: string): string | undefined {
+    const ayudanteId = this.obtener(necesidadId)?.ayudanteId;
+    return this.sesion.colectivos().some((c) => c.id === ayudanteId) ? ayudanteId : undefined;
+  }
+
+  /** Llama una funcion de la base; con colectivo, la base la ejecuta a su nombre. */
+  private rpcComo(funcion: string, argumentos: Record<string, string | readonly string[]>, aNombreDe?: string) {
+    const llamada = this.cliente.rpc(funcion, argumentos);
+    return aNombreDe ? llamada.setHeader(ENCABEZADO_COLECTIVO, aNombreDe) : llamada;
+  }
+
+  private async ejecutarYObtener(
+    funcion: string,
+    argumentos: Record<string, string | readonly string[]>,
+    aNombreDe?: string,
+  ): Promise<Necesidad> {
+    const id = exigir<string>(await this.rpcComo(funcion, argumentos, aNombreDe));
     return this.recargarYObtener(id);
   }
 

@@ -29,6 +29,8 @@ import {
   AtencionEnCurso,
   Ayudante,
   AyudanteGateway,
+  Colectivo,
+  TomarPayload,
   CoordinacionGateway,
   EntregaPayload,
   ErrorAccesoSolicitante,
@@ -96,6 +98,7 @@ export class DemoBackend
   readonly todas = computed(() => this.todasConRevision().filter((n) => n.estado !== EstadoNecesidad.EnRevision));
   readonly cargando = signal(false).asReadonly();
   readonly ayudante = signal<Ayudante | null>(this.cargarSesion());
+  readonly colectivos = signal<readonly Colectivo[]>([]);
 
   constructor() {
     this.aplicarVencimientos();
@@ -190,8 +193,11 @@ export class DemoBackend
 
   // ---- Ayudante ----
 
-  async tomar(necesidadId: string): Promise<Necesidad> {
-    const ayudante = this.exigirSesion();
+  async tomar({ necesidadId, aNombreDe }: TomarPayload): Promise<Necesidad> {
+    const sesion = this.exigirSesion();
+    const colectivo = this.colectivos().find((c) => c.id === aNombreDe);
+    if (aNombreDe && !colectivo) throw new Error('No puedes actuar a nombre de ese colectivo.');
+    const ayudante = colectivo ?? sesion;
     const registro = this.exigirEstado(necesidadId, EstadoNecesidad.Registrada);
     return this.transicionar({
       registro: { ...registro, ayudanteId: ayudante.id },
@@ -236,7 +242,7 @@ export class DemoBackend
     return this.transicionar({
       registro,
       estado: EstadoNecesidad.Entregada,
-      evento: { tipo: TipoEvento.Entregada, actor: ayudante.alias, nota, evidencias },
+      evento: { tipo: TipoEvento.Entregada, actor: registro.necesidad.ayudanteAlias ?? ayudante.alias, nota, evidencias },
       cambios: { venceEn: sumarHoras(new Date().toISOString(), HORAS_PARA_CONFIRMAR) },
     });
   }
@@ -382,7 +388,8 @@ export class DemoBackend
 
   misAtenciones(): readonly Necesidad[] {
     const id = this.ayudante()?.id;
-    return id ? this.registros().filter((r) => r.ayudanteId === id).map((r) => r.necesidad) : [];
+    const ids = new Set([id, ...this.colectivos().map((c) => c.id)]);
+    return id ? this.registros().filter((r) => !!r.ayudanteId && ids.has(r.ayudanteId)).map((r) => r.necesidad) : [];
   }
 
   // ---- Sesion ----
@@ -393,6 +400,11 @@ export class DemoBackend
     const ayudante: Ayudante = { id: `demo-${digitos}`, alias: alias.trim(), esCoordinador: digitos === '3000000001' };
     this.ayudante.set(ayudante);
     this.escribir(CLAVE_SESION, ayudante);
+  }
+
+  async crearColectivo(alias: string): Promise<void> {
+    this.exigirCoordinacion();
+    this.colectivos.update((lista) => [...lista, { id: `demo-col-${crypto.randomUUID()}`, alias: alias.trim() }]);
   }
 
   async tengoClave(): Promise<boolean> {
@@ -473,7 +485,8 @@ export class DemoBackend
 
   private exigirAsignado(id: string, ayudante: Ayudante): RegistroDemo {
     const registro = this.exigirEstado(id, EstadoNecesidad.EnAtencion);
-    if (registro.ayudanteId !== ayudante.id) throw new Error('Esta necesidad la está atendiendo otra persona.');
+    const propios = new Set([ayudante.id, ...this.colectivos().map((c) => c.id)]);
+    if (!registro.ayudanteId || !propios.has(registro.ayudanteId)) throw new Error('Esta necesidad la está atendiendo otra persona.');
     return registro;
   }
 

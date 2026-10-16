@@ -80,8 +80,20 @@ export interface EntregaPayload {
   readonly fotos: readonly Blob[];
 }
 
+/** Grupo a cuyo nombre se entrega (Baltimore-Maryland, una parroquia). Lo maneja quien lo creo. */
+export interface Colectivo {
+  readonly id: string;
+  readonly alias: string;
+}
+
+export interface TomarPayload {
+  readonly necesidadId: string;
+  /** Id del colectivo a cuyo nombre se toma; sin el, a nombre propio. */
+  readonly aNombreDe?: string;
+}
+
 export abstract class AyudanteGateway {
-  abstract tomar(necesidadId: string): Promise<Necesidad>;
+  abstract tomar(payload: TomarPayload): Promise<Necesidad>;
   abstract liberar(necesidadId: string): Promise<Necesidad>;
   /** Pide 24 horas mas para entregar (una vez por toma). */
   abstract extenderPlazo(necesidadId: string): Promise<Necesidad>;
@@ -247,6 +259,9 @@ export class ErrorLimiteEnvios extends Error {
 
 export abstract class SesionGateway {
   abstract readonly ayudante: Signal<Ayudante | null>;
+  /** Colectivos que administra quien inicio sesion. */
+  abstract readonly colectivos: Signal<readonly Colectivo[]>;
+  abstract crearColectivo(alias: string): Promise<void>;
   /** Entra al instante con alias y celular: sin correos ni contrasenas. */
   abstract iniciarSesion(payload: InicioSesionPayload): Promise<void>;
   abstract cerrarSesion(): Promise<void>;

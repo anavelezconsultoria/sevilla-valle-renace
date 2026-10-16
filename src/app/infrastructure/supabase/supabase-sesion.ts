@@ -1,6 +1,13 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { Session } from '@supabase/supabase-js';
-import { Ayudante, ErrorClaveAyudante, ErrorLimiteEnvios, InicioSesionPayload, SesionGateway } from '../../core/ports/necesidades.ports';
+import {
+  Ayudante,
+  Colectivo,
+  ErrorClaveAyudante,
+  ErrorLimiteEnvios,
+  InicioSesionPayload,
+  SesionGateway,
+} from '../../core/ports/necesidades.ports';
 import { exigir, SUPABASE_CLIENTE } from './supabase-cliente';
 import { aAyudante, FilaPerfil } from './supabase-filas';
 
@@ -17,6 +24,7 @@ const CODIGO_USUARIO_INEXISTENTE = '23503';
 export class SupabaseSesion implements SesionGateway {
   private readonly cliente = inject(SUPABASE_CLIENTE);
   readonly ayudante = signal<Ayudante | null>(null);
+  readonly colectivos = signal<readonly Colectivo[]>([]);
 
   constructor() {
     this.cliente.auth.onAuthStateChange((_evento, sesion) => {
@@ -38,6 +46,12 @@ export class SupabaseSesion implements SesionGateway {
     const perfil = exigir<FilaPerfil | null>(respuesta);
     if (!perfil?.id) throw new ErrorClaveAyudante();
     this.ayudante.set(aAyudante(perfil));
+    await this.cargarColectivos();
+  }
+
+  async crearColectivo(alias: string): Promise<void> {
+    exigir<string>(await this.cliente.rpc('crear_colectivo', { p_alias: alias.trim() }));
+    await this.cargarColectivos();
   }
 
   async tengoClave(): Promise<boolean> {
@@ -51,6 +65,7 @@ export class SupabaseSesion implements SesionGateway {
   async cerrarSesion(): Promise<void> {
     await this.cliente.auth.signOut();
     this.ayudante.set(null);
+    this.colectivos.set([]);
   }
 
   /** Reutiliza la sesion guardada en el celular; si no hay, crea una anonima. */
@@ -65,12 +80,20 @@ export class SupabaseSesion implements SesionGateway {
   private async sincronizar(sesion: Session | null): Promise<void> {
     if (!sesion) {
       this.ayudante.set(null);
+      this.colectivos.set([]);
       return;
     }
     const perfil = exigir<FilaPerfil | null>(
       await this.cliente.from('perfiles').select('id, alias, rol').eq('id', sesion.user.id).maybeSingle(),
     );
     this.ayudante.set(perfil ? aAyudante(perfil) : null);
+    if (perfil) await this.cargarColectivos();
+  }
+
+  private async cargarColectivos(): Promise<void> {
+    const { data, error } = await this.cliente.rpc('mis_colectivos');
+    // Si la funcion aun no existe en la base, simplemente no hay colectivos.
+    this.colectivos.set(error ? [] : ((data ?? []) as readonly Colectivo[]));
   }
 
   private traducirError(estado: number | undefined, mensaje: string): Error {

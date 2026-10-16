@@ -11,6 +11,7 @@ import { HistorialCelularHerramienta } from './historial-celular';
 import { HogaresAtendidos } from './hogares-atendidos';
 import { EnCursoSoporte } from './en-curso-soporte';
 import { ErroresRecientes } from './errores-recientes';
+import { ColectivosHerramienta } from './colectivos-herramienta';
 import { CoordinacionEstado } from './coordinacion-estado';
 import { AvisoVencimientos } from './aviso-vencimientos';
 import { ClaveAyudante } from './clave-ayudante';
@@ -54,6 +55,7 @@ const PESTANA_INICIAL: Pestana = 'mis-ayudas';
     HogaresAtendidos,
     EnCursoSoporte,
     ErroresRecientes,
+    ColectivosHerramienta,
     AvisoVencimientos,
     ClaveAyudante,
   ],
@@ -124,6 +126,7 @@ const PESTANA_INICIAL: Pestana = 'mis-ayudas';
             }
             @case ('sistema') {
               <section class="seccion dos-columnas entrada">
+                <sr-colectivos />
                 <sr-restablecer-clave />
                 <sr-errores-recientes />
               </section>

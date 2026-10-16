@@ -62,7 +62,7 @@ describe('Mas tiempo para entregar', () => {
   it('quien atiende pide 24 horas mas una sola vez por toma', async () => {
     const { necesidad } = await backend.registrar(NUEVA);
     await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'Nana' });
-    const tomada = await backend.tomar(necesidad.id);
+    const tomada = await backend.tomar({ necesidadId: necesidad.id });
     expect(puedeExtenderPlazo(tomada)).toBe(true);
     const extendida = await backend.extenderPlazo(necesidad.id);
     expect(new Date(extendida.venceEn!).getTime() - new Date(tomada.venceEn!).getTime()).toBe(24 * 3_600_000);
@@ -139,7 +139,7 @@ describe('Flujo completo en modo demostracion', () => {
     expect(distanciaMetros(necesidad.ubicacionAproximada, CENTRO_SEVILLA)).toBeGreaterThan(100);
 
     await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'Ayudante de prueba' });
-    await backend.tomar(necesidad.id);
+    await backend.tomar({ necesidadId: necesidad.id });
     const contacto = await backend.contacto(necesidad.id);
     expect(contacto.telefono).toBe('3157770000');
     expect(JSON.stringify(contacto)).not.toContain(NUEVA.contacto.clave);
@@ -162,7 +162,7 @@ describe('Flujo completo en modo demostracion', () => {
     expect(propias.map((n) => n.id)).toEqual([necesidad.id]);
 
     await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'A' });
-    await backend.tomar(necesidad.id);
+    await backend.tomar({ necesidadId: necesidad.id });
     await backend.entregar({ necesidadId: necesidad.id, nota: 'Listo', fotos: [] });
     const final = await backend.confirmarRecibida({ necesidadId: necesidad.id, credencial: { tipo: 'clave', ...ACCESO } });
     expect(final.cierre).toBe(CierreAtencion.Confirmada);
@@ -174,7 +174,7 @@ describe('Flujo completo en modo demostracion', () => {
     await expect(backend.misNecesidades(ajena)).rejects.toBeInstanceOf(ErrorAccesoSolicitante);
 
     await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'A' });
-    await backend.tomar(necesidad.id);
+    await backend.tomar({ necesidadId: necesidad.id });
     await backend.entregar({ necesidadId: necesidad.id, nota: 'Listo', fotos: [] });
     await expect(
       backend.confirmarRecibida({ necesidadId: necesidad.id, credencial: { tipo: 'clave', ...ajena } }),
@@ -209,20 +209,20 @@ describe('Flujo completo en modo demostracion', () => {
   it('nadie puede tomar una necesidad que ya esta en atencion', async () => {
     const { necesidad } = await backend.registrar(NUEVA);
     await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'A' });
-    await backend.tomar(necesidad.id);
+    await backend.tomar({ necesidadId: necesidad.id });
     await backend.iniciarSesion({ celular: '3003334444', clave: '5793', alias: 'B' });
-    await expect(backend.tomar(necesidad.id)).rejects.toThrow();
+    await expect(backend.tomar({ necesidadId: necesidad.id })).rejects.toThrow();
     await expect(backend.contacto(necesidad.id)).rejects.toThrow();
   });
 
   it('libera la toma vencida y cierra la entrega sin reclamo a las 48 horas', async () => {
     const { necesidad } = await backend.registrar(NUEVA);
     await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'A' });
-    await backend.tomar(necesidad.id);
+    await backend.tomar({ necesidadId: necesidad.id });
     backend.aplicarVencimientos(new Date(Date.now() + (HORAS_PARA_ENTREGAR + 1) * 3_600_000));
     expect(backend.obtener(necesidad.id)?.estado).toBe(EstadoNecesidad.Registrada);
 
-    await backend.tomar(necesidad.id);
+    await backend.tomar({ necesidadId: necesidad.id });
     await backend.entregar({ necesidadId: necesidad.id, nota: 'Listo', fotos: [] });
     backend.aplicarVencimientos(new Date(Date.now() + (HORAS_PARA_CONFIRMAR + 1) * 3_600_000));
     const cerrada = backend.obtener(necesidad.id);
@@ -250,7 +250,7 @@ describe('Repartir mejor la ayuda', () => {
   async function recibirAyuda(): Promise<string> {
     const { necesidad, codigoDispositivo } = await backend.registrar(NUEVA);
     await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'Nana' });
-    await backend.tomar(necesidad.id);
+    await backend.tomar({ necesidadId: necesidad.id });
     await backend.entregar({ necesidadId: necesidad.id, nota: 'Listo', fotos: [] });
     await backend.confirmarRecibida({ necesidadId: necesidad.id, credencial: { tipo: 'dispositivo', codigo: codigoDispositivo } });
     return necesidad.id;
@@ -268,7 +268,7 @@ describe('Repartir mejor la ayuda', () => {
     expect(necesidad.estado).toBe(EstadoNecesidad.EnRevision);
     expect(backend.todas().some((n) => n.id === necesidad.id)).toBe(false);
     expect(backend.obtener(necesidad.id)?.estado).toBe(EstadoNecesidad.EnRevision);
-    await expect(backend.tomar(necesidad.id)).rejects.toThrow();
+    await expect(backend.tomar({ necesidadId: necesidad.id })).rejects.toThrow();
   });
 
   it('otra categoria se publica con la senal de ayuda reciente', async () => {
@@ -365,5 +365,31 @@ describe('Version nueva publicada', () => {
     expect(esArchivoDeVersionVieja(new TypeError('Importing a module script failed.'))).toBe(true);
     expect(esArchivoDeVersionVieja(new TypeError('error loading dynamically imported module'))).toBe(true);
     expect(esArchivoDeVersionVieja(new TypeError('x.toSorted is not a function'))).toBe(false);
+  });
+});
+
+describe('Entregar a nombre de un colectivo (demo)', () => {
+  it('la coordinacion toma y entrega a nombre del colectivo y la ve en sus ayudas', async () => {
+    localStorage.clear();
+    TestBed.configureTestingModule({});
+    const backend = TestBed.inject(DemoBackend);
+    await backend.iniciarSesion({ celular: '3000000001', clave: '5793', alias: 'Ana' });
+    await backend.crearColectivo('Baltimore-Maryland');
+    const colectivo = backend.colectivos()[0]!;
+    const { necesidad } = await backend.registrar(NUEVA);
+    const tomada = await backend.tomar({ necesidadId: necesidad.id, aNombreDe: colectivo.id });
+    expect(tomada.ayudanteAlias).toBe('Baltimore-Maryland');
+    expect(backend.misAtenciones().some((n) => n.id === necesidad.id)).toBe(true);
+    const entregada = await backend.entregar({ necesidadId: necesidad.id, nota: 'Listo', fotos: [] });
+    expect(entregada.eventos.find((e) => e.tipo === TipoEvento.Entregada)?.actor).toBe('Baltimore-Maryland');
+  });
+
+  it('nadie toma a nombre de un colectivo que no administra', async () => {
+    localStorage.clear();
+    TestBed.configureTestingModule({});
+    const backend = TestBed.inject(DemoBackend);
+    await backend.iniciarSesion({ celular: '3001112222', clave: '5793', alias: 'Nana' });
+    const { necesidad } = await backend.registrar(NUEVA);
+    await expect(backend.tomar({ necesidadId: necesidad.id, aNombreDe: 'demo-col-ajeno' })).rejects.toThrow();
   });
 });

@@ -9,6 +9,23 @@
         <sr-identificarse-form (identificado)="alIdentificarse()" />
       </div>
     } @else {
+      @if (colectivos().length && ayudante(); as yo) {
+        <fieldset class="a-nombre">
+          <legend>¿A nombre de quién?</legend>
+          <div class="opciones-nombre">
+            <label class="opcion-nombre" [class.elegida]="aNombreDe() === ''">
+              <input type="radio" name="a-nombre-de" value="" [checked]="aNombreDe() === ''" (change)="aNombreDe.set('')" />
+              {{ yo.alias }}
+            </label>
+            @for (c of colectivos(); track c.id) {
+              <label class="opcion-nombre" [class.elegida]="aNombreDe() === c.id">
+                <input type="radio" name="a-nombre-de" [value]="c.id" [checked]="aNombreDe() === c.id" (change)="aNombreDe.set(c.id)" />
+                {{ c.alias }}
+              </label>
+            }
+          </div>
+        </fieldset>
+      }
       <button type="button" class="btn btn-primary btn-block grande" [disabled]="ocupado()" (click)="atender()">
         {{ ocupado() ? 'Tomando...' : 'Atender esta necesidad' }}
       </button>

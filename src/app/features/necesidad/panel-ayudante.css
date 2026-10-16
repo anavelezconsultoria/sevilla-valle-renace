@@ -109,3 +109,57 @@ dd {
   grid-template-columns: 1fr 1fr;
   gap: var(--space-2);
 }
+
+/* "¿A nombre de quien?": la coordinacion elige entre su nombre y sus colectivos. */
+.a-nombre {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.a-nombre legend {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 650;
+  color: var(--color-tinta);
+}
+
+.opciones-nombre {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.opcion-nombre {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1.5px solid var(--color-linea-fuerte);
+  border-radius: var(--radius-pill);
+  background: var(--color-superficie);
+  font-size: var(--text-sm);
+  font-weight: 650;
+  color: var(--color-texto);
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s, color .15s;
+}
+
+.opcion-nombre input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.opcion-nombre.elegida {
+  border-color: var(--color-primario);
+  background: var(--color-primario-suave);
+  color: var(--color-primario-fuerte);
+}
+
+.opcion-nombre:has(input:focus-visible) {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 2px;
+}

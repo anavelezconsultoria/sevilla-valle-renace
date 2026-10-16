@@ -17,7 +17,11 @@ import { EntregaForm } from './entrega-form';
 })
 export class PanelAyudante {
   private readonly ayudanteGw = inject(AyudanteGateway);
-  protected readonly ayudante = inject(SesionGateway).ayudante;
+  private readonly sesion = inject(SesionGateway);
+  protected readonly ayudante = this.sesion.ayudante;
+  protected readonly colectivos = this.sesion.colectivos;
+  /** A nombre de quien se toma: vacio = a nombre propio. */
+  protected readonly aNombreDe = signal<string>('');
 
   readonly necesidad = input.required<Necesidad>();
 
@@ -35,7 +39,8 @@ export class PanelAyudante {
   protected readonly soyQuienAtiende = computed(() => {
     const n = this.necesidad();
     const yo = this.ayudante()?.id;
-    return !!yo && n.ayudanteId === yo && (n.estado === EstadoNecesidad.EnAtencion || n.estado === EstadoNecesidad.Entregada);
+    const mios = new Set([yo, ...this.colectivos().map((c) => c.id)]);
+    return !!yo && !!n.ayudanteId && mios.has(n.ayudanteId) && (n.estado === EstadoNecesidad.EnAtencion || n.estado === EstadoNecesidad.Entregada);
   });
   protected readonly acciones = computed(() =>
     accionesDelAyudante({ estado: this.necesidad().estado, esAsignado: this.esAsignado() }),
@@ -102,7 +107,8 @@ export class PanelAyudante {
       this.pidiendoIdentidad.set(true);
       return;
     }
-    await this.ejecutar(() => this.ayudanteGw.tomar(this.necesidad().id));
+    const aNombreDe = this.aNombreDe() || undefined;
+    await this.ejecutar(() => this.ayudanteGw.tomar({ necesidadId: this.necesidad().id, aNombreDe }));
   }
 
   protected async alIdentificarse(): Promise<void> {
