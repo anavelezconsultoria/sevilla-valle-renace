@@ -101,6 +101,8 @@ export class DemoBackend
   readonly colectivos = signal<readonly Colectivo[]>([]);
 
   constructor() {
+    // Guarda los datos de ejemplo desde el inicio (asi se pueden preparar escenarios de prueba).
+    if (!this.leer<RegistroDemo[]>(CLAVE_ALMACEN)) this.escribir(CLAVE_ALMACEN, this.registros());
     this.aplicarVencimientos();
     const temporizador = setInterval(() => this.aplicarVencimientos(), INTERVALO_VENCIMIENTOS_MS);
     inject(DestroyRef).onDestroy(() => clearInterval(temporizador));
