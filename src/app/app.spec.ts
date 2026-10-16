@@ -230,9 +230,10 @@ describe('Flujo completo en modo demostracion', () => {
     expect(cerrada?.cierre).toBe(CierreAtencion.Automatica);
   });
 
-  it('el filtro publico ordena por urgencia y no expone datos de contacto', () => {
+  it('el filtro publico ordena por fecha (la mas antigua primero) y no expone datos de contacto', () => {
     const lista = filtrarNecesidades(backend.todas(), {});
-    expect(lista[0]?.urgencia).toBe(Urgencia.Alta);
+    const fechas = lista.map((n) => new Date(n.registradaEn).getTime());
+    expect(fechas).toEqual([...fechas].sort((a, b) => a - b));
     expect(JSON.stringify(lista)).not.toContain('3000000000');
   });
 });
@@ -296,12 +297,14 @@ describe('Repartir mejor la ayuda', () => {
     await expect(backend.solicitudesEnRevision()).rejects.toThrow();
   });
 
-  it('quien espera sin ayuda reciente va antes en la lista', async () => {
+  it('la lista va por fecha de solicitud, primero la mas antigua', async () => {
     await recibirAyuda();
-    const conAyuda = (await backend.registrar({ ...NUEVA, categoria: Categoria.Ropa, titulo: 'Cobijas', descripcion: 'Necesitamos cobijas para la noche' })).necesidad;
-    const sinAyuda = (await backend.registrar({ ...NUEVA, categoria: Categoria.Ropa, titulo: 'Ropa', descripcion: 'Necesitamos ropa para los niños', contacto: { ...NUEVA.contacto, telefono: '3158880000' } })).necesidad;
-    const orden = filtrarNecesidades(backend.todas(), { estados: [EstadoNecesidad.Registrada] }).map((n) => n.id);
-    expect(orden.indexOf(sinAyuda.id)).toBeLessThan(orden.indexOf(conAyuda.id));
+    // La que tiene ayuda reciente pero es mas antigua va primero: manda la fecha.
+    await backend.registrar({ ...NUEVA, categoria: Categoria.Ropa, titulo: 'Cobijas', descripcion: 'Necesitamos cobijas para la noche' });
+    await backend.registrar({ ...NUEVA, categoria: Categoria.Ropa, titulo: 'Ropa', descripcion: 'Necesitamos ropa para los niños', contacto: { ...NUEVA.contacto, telefono: '3158880000' } });
+    const lista = filtrarNecesidades(backend.todas(), { estados: [EstadoNecesidad.Registrada] });
+    const fechas = lista.map((n) => new Date(n.registradaEn).getTime());
+    expect(fechas).toEqual([...fechas].sort((a, b) => a - b));
   });
 
   it('reconoce a quien entrego', async () => {

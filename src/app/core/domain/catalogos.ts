@@ -106,7 +106,7 @@ export const COLOR_ESTADO: Record<EstadoNecesidad, string> = {
 /** Avisos de como se prioriza y que tarda mas. Mismo texto en la portada y en el registro. */
 export const AVISOS = {
   prioridadTitulo: 'Prioridad 0',
-  prioridad: 'Los hogares con bebés o adultos mayores se atienden primero.',
+  prioridad: 'Los hogares con bebés o adultos mayores se marcan para que se atiendan primero.',
   materialesTitulo: 'Materiales de construcción',
   materiales: 'Se gestionan con entidades externas: es un proceso un poco más demorado.',
 } as const;

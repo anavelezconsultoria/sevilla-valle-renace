@@ -1,10 +1,4 @@
-import { FiltroNecesidades, Necesidad, Urgencia } from '../domain/necesidad.model';
-
-const PESO_URGENCIA: Record<Urgencia, number> = {
-  [Urgencia.Alta]: 0,
-  [Urgencia.Media]: 1,
-  [Urgencia.Baja]: 2,
-};
+import { FiltroNecesidades, Necesidad } from '../domain/necesidad.model';
 
 function coincideTexto(necesidad: Necesidad, texto: string): boolean {
   const buscado = texto.trim().toLowerCase();
@@ -15,8 +9,8 @@ function coincideTexto(necesidad: Necesidad, texto: string): boolean {
 }
 
 /**
- * Filtra y ordena: primero prioridad 0 (bebes o adultos mayores), luego lo mas
- * urgente y, a igual urgencia, lo que lleva mas tiempo esperando.
+ * Filtra y ordena por fecha de solicitud: primero lo mas antiguo (decision de
+ * la coordinacion, 2026-10-16). Prioridad 0 y urgencia se ven como etiquetas.
  */
 export function filtrarNecesidades(todas: readonly Necesidad[], filtro: FiltroNecesidades): readonly Necesidad[] {
   return todas
@@ -24,12 +18,5 @@ export function filtrarNecesidades(todas: readonly Necesidad[], filtro: FiltroNe
     .filter((n) => !filtro.categoria || n.categoria === filtro.categoria)
     .filter((n) => !filtro.urgencia || n.urgencia === filtro.urgencia)
     .filter((n) => coincideTexto(n, filtro.texto ?? ''))
-    .sort(
-      (a, b) =>
-        Number(b.prioridadCero) - Number(a.prioridadCero) ||
-        // Despues, quienes no han recibido ayuda en los ultimos 7 dias: se reparte mejor.
-        Number(a.ayudaRecienteCategoria !== undefined) - Number(b.ayudaRecienteCategoria !== undefined) ||
-        PESO_URGENCIA[a.urgencia] - PESO_URGENCIA[b.urgencia] ||
-        new Date(a.registradaEn).getTime() - new Date(b.registradaEn).getTime(),
-    );
+    .sort((a, b) => new Date(a.registradaEn).getTime() - new Date(b.registradaEn).getTime());
 }
