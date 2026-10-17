@@ -759,6 +759,18 @@ do $$ begin
 end $$;
 reset role;
 
+-- Si el colectivo entra desde otro navegador, conserva a sus administradoras (0025).
+reset role;
+insert into auth.users (id, email, aud, role) values ('00000000-0000-0000-0000-0000000000c9', 'c9@prueba.local', 'authenticated', 'authenticated');
+insert into public.perfiles (id, alias) values ('00000000-0000-0000-0000-0000000000c9', 'Colectivo nuevo id');
+do $$ begin
+  perform public._unir_perfiles('00000000-0000-0000-0000-0000000000c9', array[current_setting('prueba.colectivo')::uuid]);
+  if not exists (select 1 from public.colectivos where perfil_id = '00000000-0000-0000-0000-0000000000c9' and administrador_id = '00000000-0000-0000-0000-0000000000c3') then
+    raise exception 'FALLO: el colectivo perdio a sus administradoras al cambiar de id';
+  end if;
+  raise notice 'OK  si el colectivo entra desde otro navegador, conserva a sus administradoras';
+end $$;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.
