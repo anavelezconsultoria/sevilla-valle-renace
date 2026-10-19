@@ -14,6 +14,36 @@ function dispositivo(navegador: string): string {
   return 'Otro dispositivo';
 }
 
+interface ExplicacionError {
+  readonly patron: RegExp;
+  readonly texto: string;
+  /** true: no hay que hacer nada, la pagina ya lo resuelve sola. */
+  readonly normal: boolean;
+}
+
+/** Errores conocidos explicados en lenguaje simple para la coordinacion. */
+const EXPLICACIONES: readonly ExplicacionError[] = [
+  {
+    patron: /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module/i,
+    texto: 'Normal después de una actualización: tenía la versión anterior abierta y la página se recargó sola.',
+    normal: true,
+  },
+  {
+    patron: /Failed to fetch|NetworkError|Load failed|network request failed/i,
+    texto: 'Se quedó sin internet o con mala señal en ese momento. Si se repite mucho, puede ser la señal de esa zona.',
+    normal: true,
+  },
+  {
+    patron: /is not a function/i,
+    texto: 'Celular con sistema viejo. Si ya pasó hace días, probablemente ya está corregido.',
+    normal: false,
+  },
+];
+
+function explicar(mensaje: string): ExplicacionError | undefined {
+  return EXPLICACIONES.find((x) => x.patron.test(mensaje));
+}
+
 /**
  * Errores de la pagina en el celular de la gente. Sirve para enterarse antes
  * de que alguien escriba por WhatsApp. Sin datos personales.
@@ -25,7 +55,7 @@ function dispositivo(navegador: string): string {
     <section class="card herramienta">
       <p class="eyebrow">Coordinación</p>
       <h2>Errores de la página</h2>
-      <p class="muted">Lo que le ha fallado a la gente en su celular. Si ves uno que se repite, avísale a quien mantiene la página.</p>
+      <p class="muted">Lo que le ha fallado a la gente en su celular. Los marcados como normales no necesitan nada; si ves otro que se repite, avísale a quien mantiene la página.</p>
       @if (estado.cargando()) {
         <p class="muted">Cargando...</p>
       } @else if (!estado.errores().length) {
@@ -39,6 +69,9 @@ function dispositivo(navegador: string): string {
                 <span class="veces" [class.muchas]="e.veces > 3">{{ e.veces }} {{ e.veces === 1 ? 'vez' : 'veces' }}</span>
               </div>
               <span class="muted">{{ e.ruta || '/' }} · {{ dispositivo(e) }} · última {{ hace(e) }}</span>
+              @if (explicacion(e); as x) {
+                <span class="explicacion" [class.normal]="x.normal">{{ x.texto }}</span>
+              }
             </li>
           }
         </ul>
@@ -59,6 +92,8 @@ function dispositivo(navegador: string): string {
     .veces.muchas { color: var(--color-primario-fuerte); }
     .item .muted { font-size: var(--text-xs); }
     .vacio { font-size: var(--text-sm); color: var(--color-montana); font-weight: 600; }
+    .explicacion { font-size: var(--text-xs); font-weight: 600; padding: 4px 8px; border-radius: var(--radius-sm); background: var(--color-acento-suave); color: var(--color-texto); }
+    .explicacion.normal { background: var(--color-arena); color: var(--color-tenue); }
   `,
 })
 export class ErroresRecientes {
@@ -66,6 +101,10 @@ export class ErroresRecientes {
 
   protected dispositivo(e: ErrorRegistrado): string {
     return dispositivo(e.navegador);
+  }
+
+  protected explicacion(e: ErrorRegistrado): ExplicacionError | undefined {
+    return explicar(e.mensaje);
   }
 
   protected hace(e: ErrorRegistrado): string {
