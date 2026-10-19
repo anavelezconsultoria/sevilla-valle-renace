@@ -6,10 +6,11 @@ import { SiteHeader } from './layout/site-header';
 import { SiteFooter } from './layout/site-footer';
 import { NavMovil } from './layout/nav-movil';
 import { AvisoDemo } from './layout/aviso-demo';
+import { AvisoCampana } from './layout/aviso-campana';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, SiteHeader, SiteFooter, NavMovil, AvisoDemo],
+  imports: [RouterOutlet, SiteHeader, SiteFooter, NavMovil, AvisoDemo, AvisoCampana],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.modo-mapa]': 'esMapa()' },
   template: `
@@ -22,6 +23,7 @@ import { AvisoDemo } from './layout/aviso-demo';
       <sr-site-footer />
     }
     <sr-nav-movil />
+    <sr-aviso-campana />
   `,
   styles: `
     :host { display: flex; flex-direction: column; min-height: 100dvh; }
