@@ -27,7 +27,7 @@ type Vista = 'lista' | 'mapa';
       <div class="pestanas" role="tablist" aria-label="Estado">
         @for (opcion of opcionesEstado; track opcion.valor) {
           <button type="button" role="tab" class="pestana" [attr.data-estado]="opcion.valor" [attr.aria-selected]="estado() === opcion.valor" (click)="estado.set(opcion.valor)">
-            <span>{{ opcion.etiqueta }}</span><span class="num">{{ conteos()[opcion.valor] }}</span>
+            <span class="num">{{ conteos()[opcion.valor] }}</span><span class="etiqueta">{{ opcion.etiqueta }}</span>
           </button>
         }
       </div>
@@ -77,15 +77,21 @@ type Vista = 'lista' | 'mapa';
     .cabecera { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-4); }
     .cabecera h1 { font-size: var(--text-2xl); margin-block: 6px; }
     .cabecera p.muted { max-width: 620px; }
-    .pestanas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); margin-bottom: var(--space-3); }
-    .pestana { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 52px; padding: 10px 16px; border: 1.5px solid var(--color-linea-fuerte); border-radius: var(--radius-md); background: var(--color-superficie); font: inherit; font-size: var(--text-sm); font-weight: 650; color: var(--color-tenue); text-align: left; cursor: pointer; }
-    .pestana .num { min-width: 30px; height: 30px; padding-inline: 8px; display: grid; place-items: center; border-radius: 999px; background: var(--color-arena); color: var(--color-tinta); font-weight: 800; }
-    .pestana[aria-selected='true'] { color: #fff; }
-    .pestana[aria-selected='true'] .num { background: rgba(255,255,255,.9); }
-    .pestana[data-estado='registrada'][aria-selected='true'] { background: var(--color-espera); border-color: var(--color-espera); }
-    .pestana[data-estado='en_atencion'][aria-selected='true'] { background: var(--estado-progreso); border-color: var(--estado-progreso); }
-    .pestana[data-estado='entregada'][aria-selected='true'] { background: var(--estado-entregada); border-color: var(--estado-entregada); }
-    .pestana[data-estado='atendida'][aria-selected='true'] { background: var(--estado-exito); border-color: var(--estado-exito); }
+    /* Tabla de estados: una sola fila, numero arriba y etiqueta abajo. */
+    .pestanas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: var(--space-3); border: 1px solid var(--color-linea); border-radius: var(--radius-md); background: var(--color-superficie); overflow: hidden; }
+    .pestana { position: relative; display: grid; justify-items: center; gap: 2px; padding: 10px 4px 12px; border: 0; border-left: 1px solid var(--color-linea); background: none; font: inherit; color: var(--color-tenue); cursor: pointer; transition: background-color .2s, color .2s; }
+    .pestana:first-child { border-left: 0; }
+    .pestana:hover { background: var(--color-fondo); }
+    .pestana .num { font-family: var(--font-titulo); font-size: var(--text-lg); font-weight: 700; line-height: 1.1; color: var(--color-tinta); font-variant-numeric: tabular-nums; }
+    .pestana .etiqueta { font-size: var(--text-xs); font-weight: 600; text-align: center; line-height: 1.2; }
+    .pestana::after { content: ''; position: absolute; left: 12%; right: 12%; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--tono); opacity: 0; transition: opacity .2s; }
+    .pestana[aria-selected='true'] { background: color-mix(in srgb, var(--tono) 9%, var(--color-superficie)); color: var(--color-tinta); }
+    .pestana[aria-selected='true'] .num { color: var(--tono); }
+    .pestana[aria-selected='true']::after { opacity: 1; }
+    .pestana[data-estado='registrada'] { --tono: var(--color-espera); }
+    .pestana[data-estado='en_atencion'] { --tono: var(--estado-progreso); }
+    .pestana[data-estado='entregada'] { --tono: var(--estado-entregada); }
+    .pestana[data-estado='atendida'] { --tono: var(--estado-exito); }
     .mas-filtros { margin-bottom: var(--space-3); }
     .mas-filtros summary { display: none; }
     .filtros { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-bottom: var(--space-4); }
@@ -100,8 +106,7 @@ type Vista = 'lista' | 'mapa';
     @media (max-width: 640px) {
       .cabecera p.muted { display: none; }
       .cabecera .btn { align-self: flex-start; }
-      .pestanas { grid-template-columns: 1fr 1fr; }
-      .mas-filtros summary { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border: 1.5px solid var(--color-linea-fuerte); border-radius: var(--radius-md); background: var(--color-superficie); font-weight: 650; color: var(--color-primario); cursor: pointer; list-style: none; }
+      .mas-filtros summary { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px; border: 1px solid var(--color-linea); border-radius: var(--radius-pill); background: var(--color-superficie); font-size: var(--text-sm); font-weight: 650; width: fit-content; color: var(--color-primario); cursor: pointer; list-style: none; }
       .mas-filtros summary::-webkit-details-marker { display: none; }
       .mas-filtros[open] summary { margin-bottom: var(--space-2); }
       .filtros select, .filtros input { min-width: 0; flex-basis: 100%; }
