@@ -16,6 +16,7 @@ import {
   AtencionEnCurso,
   AyudanteGateway,
   BloquearCelularPayload,
+  ReportePendiente,
   TomarPayload,
   EntregaPayload,
   CoordinacionGateway,
@@ -46,6 +47,7 @@ import {
   aHistorial,
   aHogarAtendido,
   aNecesidad,
+  aReportePendiente,
   aSolicitudEnRevision,
   aVecino,
   FilaAtencionEnCurso,
@@ -55,6 +57,7 @@ import {
   FilaHogarAtendido,
   FilaNecesidad,
   FilaRegistro,
+  FilaReporte,
   FilaRevision,
   FilaVecino,
   SELECT_NECESIDADES,
@@ -268,6 +271,14 @@ export class SupabaseNecesidades
     const cerradas = exigir<number>(await this.cliente.rpc('bloquear_celular', { p_telefono: telefono, p_motivo: motivo }));
     await this.recargar();
     return cerradas;
+  }
+
+  async reportesPendientes(): Promise<readonly ReportePendiente[]> {
+    return exigir<readonly FilaReporte[]>(await this.cliente.rpc('reportes_pendientes')).map(aReportePendiente);
+  }
+
+  async marcarReportesRevisados(necesidadId: string): Promise<void> {
+    exigir<null>(await this.cliente.rpc('marcar_reportes_revisados', { p_necesidad: necesidadId }));
   }
 
   async hogaresQueRecibieron(): Promise<readonly HogarAtendido[]> {

@@ -30,6 +30,9 @@ import {
   Ayudante,
   AyudanteGateway,
   BloquearCelularPayload,
+  ReportarMalUsoPayload,
+  ReportePendiente,
+  ReportesGateway,
   Colectivo,
   TomarPayload,
   CoordinacionGateway,
@@ -88,6 +91,7 @@ export class DemoBackend
     SolicitanteGateway,
     AyudanteGateway,
     CoordinacionGateway,
+    ReportesGateway,
     ReconocimientoLectura,
     SesionGateway,
     ModoDatos
@@ -96,6 +100,8 @@ export class DemoBackend
   private readonly registros = signal<RegistroDemo[]>(this.cargar());
   /** Celulares bloqueados por la coordinacion (solo en memoria en la demostracion). */
   private readonly bloqueados = new Set<string>();
+  /** Reportes de mal uso sin revisar (solo en memoria en la demostracion). */
+  private readonly reportes = new Map<string, ReportarMalUsoPayload[]>();
   private readonly todasConRevision = computed(() => this.registros().map((r) => r.necesidad));
   /** Lo publico: las solicitudes en revision solo las ve quien las pidio y la coordinacion. */
   readonly todas = computed(() => this.todasConRevision().filter((n) => n.estado !== EstadoNecesidad.EnRevision));
@@ -309,6 +315,37 @@ export class DemoBackend
       estado: aprobar ? EstadoNecesidad.Registrada : EstadoNecesidad.Cancelada,
       evento: { tipo: aprobar ? TipoEvento.RevisionAprobada : TipoEvento.RevisionRechazada, actor: coordinacion.alias, evidencias: [] },
     });
+  }
+
+  async reportar(payload: ReportarMalUsoPayload): Promise<void> {
+    this.reportes.set(payload.necesidadId, [...(this.reportes.get(payload.necesidadId) ?? []), payload]);
+  }
+
+  async reportesPendientes(): Promise<readonly ReportePendiente[]> {
+    this.exigirCoordinacion();
+    const ahora = new Date().toISOString();
+    return [...this.reportes.entries()].flatMap(([id, lista]) => {
+      const registro = this.registros().find((r) => r.necesidad.id === id);
+      if (!registro) return [];
+      return [{
+        necesidadId: id,
+        titulo: registro.necesidad.titulo,
+        categoria: registro.necesidad.categoria,
+        sector: registro.necesidad.sector,
+        estado: registro.necesidad.estado,
+        nombre: registro.contacto.nombre,
+        telefono: soloDigitos(registro.contacto.telefono),
+        reportes: lista.length,
+        motivos: [...new Set(lista.map((r) => r.motivo))],
+        notas: lista.map((r) => r.nota).filter((n) => n.length > 0),
+        ultimo: ahora,
+      }];
+    });
+  }
+
+  async marcarReportesRevisados(necesidadId: string): Promise<void> {
+    this.exigirCoordinacion();
+    this.reportes.delete(necesidadId);
   }
 
   async bloquearCelular({ telefono }: BloquearCelularPayload): Promise<number> {

@@ -1,3 +1,4 @@
+import { MotivoReporte } from '../domain/reporte-mal-uso';
 import { Signal } from '@angular/core';
 import {
   AccesoSolicitante,
@@ -207,6 +208,32 @@ export interface ErrorRegistrado {
   readonly ultimaVez: string;
 }
 
+export interface ReportarMalUsoPayload {
+  readonly necesidadId: string;
+  readonly motivo: MotivoReporte;
+  readonly nota: string;
+}
+
+/** Cualquier vecino reporta una solicitud por mal uso (anonimo). */
+export abstract class ReportesGateway {
+  abstract reportar(payload: ReportarMalUsoPayload): Promise<void>;
+}
+
+/** Solicitud con reportes sin revisar. Privado: solo coordinacion. */
+export interface ReportePendiente {
+  readonly necesidadId: string;
+  readonly titulo: string;
+  readonly categoria: Categoria;
+  readonly sector: string;
+  readonly estado: EstadoNecesidad;
+  readonly nombre: string;
+  readonly telefono: string;
+  readonly reportes: number;
+  readonly motivos: readonly MotivoReporte[];
+  readonly notas: readonly string[];
+  readonly ultimo: string;
+}
+
 export interface BloquearCelularPayload {
   readonly telefono: string;
   /** Para la coordinacion; nunca se muestra al publico. */
@@ -222,6 +249,9 @@ export abstract class CoordinacionGateway {
   abstract historial(telefono: string): Promise<HistorialCelular>;
   /** Impide que el celular publique mas y cierra lo que tenga abierto. Devuelve cuantas cerro. */
   abstract bloquearCelular(payload: BloquearCelularPayload): Promise<number>;
+  /** Solicitudes reportadas por vecinos, la mas reportada primero. */
+  abstract reportesPendientes(): Promise<readonly ReportePendiente[]>;
+  abstract marcarReportesRevisados(necesidadId: string): Promise<void>;
   /** Hogares que ya recibieron ayuda, el mas reciente primero. */
   abstract hogaresQueRecibieron(): Promise<readonly HogarAtendido[]>;
   /** Ayudas en curso con el contacto de quien las lleva, la mas cerca de vencerse primero. */

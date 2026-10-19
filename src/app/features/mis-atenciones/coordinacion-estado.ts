@@ -3,6 +3,7 @@ import {
   AtencionEnCurso,
   CoordinacionGateway,
   ErrorRegistrado,
+  ReportePendiente,
   RevisarPayload,
   SolicitudEnRevision,
 } from '../../core/ports/necesidades.ports';
@@ -27,16 +28,31 @@ export class CoordinacionEstado {
   readonly errorEnCurso = signal<string | null>(null);
   readonly errores = signal<readonly ErrorRegistrado[]>([]);
   readonly errorErrores = signal<string | null>(null);
+  readonly reportes = signal<readonly ReportePendiente[]>([]);
 
   async cargar(): Promise<void> {
     this.cargando.set(true);
-    await Promise.all([this.cargarRevision(), this.cargarEnCurso(), this.cargarErrores()]);
+    await Promise.all([this.cargarRevision(), this.cargarEnCurso(), this.cargarErrores(), this.cargarReportes()]);
     this.cargando.set(false);
   }
 
   async revisar(payload: RevisarPayload): Promise<void> {
     await this.coordinacion.revisar(payload);
     this.enRevision.update((lista) => lista.filter((s) => s.necesidadId !== payload.necesidadId));
+  }
+
+  async marcarReportesRevisados(necesidadId: string): Promise<void> {
+    await this.coordinacion.marcarReportesRevisados(necesidadId);
+    this.reportes.update((lista) => lista.filter((r) => r.necesidadId !== necesidadId));
+  }
+
+  /** Sin la migracion 0028 aplicada no hay reportes: la lista queda vacia sin romper el panel. */
+  private async cargarReportes(): Promise<void> {
+    try {
+      this.reportes.set(await this.coordinacion.reportesPendientes());
+    } catch {
+      this.reportes.set([]);
+    }
   }
 
   private async cargarRevision(): Promise<void> {

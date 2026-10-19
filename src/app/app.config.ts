@@ -14,6 +14,7 @@ import {
   CoordinacionGateway,
   ReconocimientoLectura,
   ReporteErrores,
+  ReportesGateway,
   ModoDatos,
   NecesidadesLectura,
   SesionGateway,
@@ -28,6 +29,7 @@ import { ConsolaReporteErrores } from './infrastructure/demo/consola-reporte-err
 import { ManejadorErrores } from './infrastructure/errores/manejador-errores';
 import { SupabaseComunidad } from './infrastructure/supabase/supabase-comunidad';
 import { DemoComunidad } from './infrastructure/demo/demo-comunidad';
+import { SupabaseReportes } from './infrastructure/supabase/supabase-reportes';
 
 /**
  * Composicion de dependencias: el unico lugar que sabe que backend se usa.
@@ -43,6 +45,7 @@ const PUERTOS_DEMO: Provider[] = [
   { provide: ModoDatos, useExisting: DemoBackend },
   { provide: ReporteErrores, useExisting: ConsolaReporteErrores },
   { provide: ComunidadGateway, useExisting: DemoComunidad },
+  { provide: ReportesGateway, useExisting: DemoBackend },
 ];
 
 const PUERTOS_SUPABASE: Provider[] = [
@@ -56,6 +59,7 @@ const PUERTOS_SUPABASE: Provider[] = [
   { provide: ModoDatos, useExisting: SupabaseNecesidades },
   { provide: ReporteErrores, useExisting: SupabaseReporteErrores },
   { provide: ComunidadGateway, useExisting: SupabaseComunidad },
+  { provide: ReportesGateway, useExisting: SupabaseReportes },
 ];
 
 /**

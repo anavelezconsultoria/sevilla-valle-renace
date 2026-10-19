@@ -7,6 +7,7 @@ import { NecesidadCard } from '../../shared/ui/necesidad-card';
 import { IdentificarseForm } from '../sesion/identificarse-form';
 import { RestablecerClave } from './restablecer-clave';
 import { RevisionSolicitudes } from './revision-solicitudes';
+import { ReportesVecinos } from './reportes-vecinos';
 import { HistorialCelularHerramienta } from './historial-celular';
 import { HogaresAtendidos } from './hogares-atendidos';
 import { EnCursoSoporte } from './en-curso-soporte';
@@ -51,6 +52,7 @@ const PESTANA_INICIAL: Pestana = 'mis-ayudas';
     IdentificarseForm,
     RestablecerClave,
     RevisionSolicitudes,
+    ReportesVecinos,
     HistorialCelularHerramienta,
     HogaresAtendidos,
     EnCursoSoporte,
@@ -110,6 +112,7 @@ const PESTANA_INICIAL: Pestana = 'mis-ayudas';
               <section class="seccion entrada">
                 <h2 class="titulo-seccion">Solicitudes en revisión</h2>
                 <sr-revision-solicitudes />
+                <sr-reportes-vecinos />
               </section>
             }
             @case ('en-curso') {
@@ -241,7 +244,7 @@ export class MisAtencionesPage {
     const erroresHoy = this.estado.errores().filter((e) => new Date(e.ultimaVez).getTime() > hace24h).length;
     return [
       { id: 'mis-ayudas', etiqueta: 'Mis ayudas', icono: 'M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z', conteo: this.mias().filter((n) => n.estado === EstadoNecesidad.EnAtencion).length },
-      { id: 'revision', etiqueta: 'Revisión', icono: 'M9 4h6v3H9zM7 5H5v16h14V5h-2M9 14l2 2 4-4', conteo: this.estado.enRevision().length, alerta: true },
+      { id: 'revision', etiqueta: 'Revisión', icono: 'M9 4h6v3H9zM7 5H5v16h14V5h-2M9 14l2 2 4-4', conteo: this.estado.enRevision().length + this.estado.reportes().length, alerta: true },
       { id: 'en-curso', etiqueta: 'En curso', icono: 'M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19a2 2 0 1 0 0-.01M17 19a2 2 0 1 0 0-.01', conteo: this.estado.enCurso().length, alerta: urgentes > 0 },
       { id: 'hogares', etiqueta: 'Hogares', icono: 'M3 11l9-7 9 7M5 10v10h14V10M10 20v-6h4v6' },
       { id: 'sistema', etiqueta: 'Sistema', icono: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 14H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 21 10h.1a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1z', conteo: erroresHoy, alerta: true },

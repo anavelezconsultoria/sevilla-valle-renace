@@ -72,6 +72,8 @@
       </div>
     }
 
+    <p class="regla-entrega"><strong>Entrega en la puerta de la casa.</strong> Si te piden verse en otro lugar o que le dejes la ayuda a otra persona, avísale a la coordinación antes de entregar.</p>
+
     @if (entregando()) {
       <sr-entrega-form [necesidadId]="n.id" (entregada)="entregando.set(false)" (cancelar)="entregando.set(false)" />
     } @else {

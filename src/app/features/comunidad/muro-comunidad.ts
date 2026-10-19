@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ComunidadGateway, PublicacionMuro } from '../../core/ports/necesidades.ports';
+import { ComunidadGateway, NecesidadesLectura, PublicacionMuro } from '../../core/ports/necesidades.ports';
 import { graciasDadas, recordarGracias } from '../../shared/lib/dispositivo';
 import { PublicacionCard } from './publicacion-card';
 
@@ -36,6 +36,7 @@ const POR_PAGINA = 15;
               [style.--i]="i % pagina"
               [publicacion]="p"
               [yaDio]="dadas().has(p.eventoId)"
+              [necesidadId]="necesidadDe().get(p.eventoId)"
               [latiendo]="recienDada() === p.eventoId"
               (agradecer)="agradecer($event)"
             />
@@ -68,6 +69,9 @@ const POR_PAGINA = 15;
 })
 export class MuroComunidad {
   private readonly comunidad = inject(ComunidadGateway);
+  private readonly lectura = inject(NecesidadesLectura);
+  /** Cada publicacion es un evento de una solicitud que ya esta cargada: evento -> solicitud. */
+  protected readonly necesidadDe = computed(() => new Map(this.lectura.todas().flatMap((n) => n.eventos.map((e) => [e.id, n.id] as const))));
 
   protected readonly pagina = POR_PAGINA;
   protected readonly publicaciones = signal<readonly PublicacionMuro[]>([]);

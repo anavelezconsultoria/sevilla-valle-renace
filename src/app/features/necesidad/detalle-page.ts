@@ -12,10 +12,11 @@ import { PanelSolicitante } from './panel-solicitante';
 import { BotonCompartir } from '../../shared/ui/boton-compartir';
 import { Compartible, tarjetaNecesidad } from '../../shared/lib/tarjeta-compartir';
 import { EstadoNecesidad } from '../../core/domain/necesidad.model';
+import { ReportarMalUso } from './reportar-mal-uso';
 
 @Component({
   selector: 'sr-detalle-page',
-  imports: [RouterLink, CategoriaIcono, EstadoBadge, LineaTiempo, MapaNecesidades, PanelAyudante, PanelSolicitante, BotonCompartir],
+  imports: [RouterLink, CategoriaIcono, EstadoBadge, LineaTiempo, MapaNecesidades, PanelAyudante, PanelSolicitante, BotonCompartir, ReportarMalUso],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="container pagina">
@@ -74,6 +75,9 @@ import { EstadoNecesidad } from '../../core/domain/necesidad.model';
               <sr-mapa-necesidades class="mapa" [necesidades]="[n]" [seleccionadaId]="n.id" />
               <p class="nota-mapa">Ubicación aproximada. La dirección exacta solo la ve quien atiende.</p>
             </section>
+            @if (n.estado !== 'cancelada') {
+              <sr-reportar-mal-uso [necesidadId]="n.id" [abrirAlCargar]="reportar() !== undefined" />
+            }
           </aside>
         </div>
       } @else {
@@ -120,6 +124,8 @@ export class DetallePage {
   protected readonly avisos = AVISOS;
   /** Viene del parametro de ruta :id (withComponentInputBinding). */
   readonly id = input.required<string>();
+  /** ?reportar en la URL (enlace desde la comunidad) abre el formulario de reporte. */
+  readonly reportar = input<string>();
 
   protected readonly necesidad = computed(() => {
     this.lectura.todas();

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { PublicacionMuro } from '../../core/ports/necesidades.ports';
 import { infoCategoria } from '../../core/domain/catalogos';
 import { avatarDe } from '../../shared/lib/avatar';
@@ -11,7 +12,7 @@ import { CategoriaIcono } from '../../shared/ui/categoria-icono';
  */
 @Component({
   selector: 'sr-publicacion-card',
-  imports: [CategoriaIcono],
+  imports: [CategoriaIcono, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let p = publicacion();
@@ -55,6 +56,9 @@ import { CategoriaIcono } from '../../shared/ui/categoria-icono';
         @if (p.gracias > 0) {
           <span class="total">{{ p.gracias }} {{ p.gracias === 1 ? 'persona agradeció' : 'personas agradecieron' }}</span>
         }
+        @if (necesidadId(); as id) {
+          <a class="reportar" [routerLink]="['/necesidades', id]" [queryParams]="{ reportar: 1 }">Reportar</a>
+        }
       </footer>
     </article>
   `,
@@ -75,6 +79,8 @@ import { CategoriaIcono } from '../../shared/ui/categoria-icono';
     .gracias:hover:not(:disabled) { border-color: var(--color-primario); color: var(--color-primario); }
     .gracias:active:not(:disabled) { transform: scale(.95); }
     .gracias svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; transition: fill .2s; }
+    .reportar { margin-left: auto; font-size: var(--text-xs); font-weight: 600; color: var(--color-tenue); text-decoration: underline; text-underline-offset: 3px; }
+    .reportar:hover { color: var(--color-tinta); }
     .gracias.dada { border-color: var(--color-aviso-borde); background: var(--color-primario-suave); color: var(--color-primario); cursor: default; }
     .gracias.dada svg { fill: var(--color-primario); stroke: var(--color-primario); }
     .gracias.latiendo svg { animation: latir 600ms cubic-bezier(.34, 1.56, .64, 1); }
@@ -85,6 +91,8 @@ import { CategoriaIcono } from '../../shared/ui/categoria-icono';
 export class PublicacionCard {
   readonly publicacion = input.required<PublicacionMuro>();
   readonly yaDio = input(false);
+  /** Solicitud de esta publicacion, para reportar mal uso. */
+  readonly necesidadId = input<string>();
   /** Recien agradecida: el corazon late una vez. */
   readonly latiendo = input(false);
   readonly agradecer = output<string>();

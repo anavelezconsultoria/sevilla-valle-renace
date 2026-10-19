@@ -16,7 +16,9 @@ import {
   HogarAtendido,
   SolicitudEnRevision,
   VecinoQueAyuda,
+  ReportePendiente,
 } from '../../core/ports/necesidades.ports';
+import { MotivoReporte } from '../../core/domain/reporte-mal-uso';
 
 /** Forma de las filas que devuelve la API de Supabase (snake_case, tal cual la base). */
 
@@ -283,5 +285,35 @@ export function aErrorRegistrado(fila: FilaErrorRegistrado): ErrorRegistrado {
     veces: fila.veces,
     primeraVez: fila.primera_vez,
     ultimaVez: fila.ultima_vez,
+  };
+}
+
+export interface FilaReporte {
+  readonly necesidad_id: string;
+  readonly titulo: string;
+  readonly categoria: Categoria;
+  readonly sector: string;
+  readonly estado: EstadoNecesidad;
+  readonly nombre: string;
+  readonly telefono: string;
+  readonly reportes: number;
+  readonly motivos: readonly MotivoReporte[];
+  readonly notas: readonly string[] | null;
+  readonly ultimo: string;
+}
+
+export function aReportePendiente(fila: FilaReporte): ReportePendiente {
+  return {
+    necesidadId: fila.necesidad_id,
+    titulo: fila.titulo,
+    categoria: fila.categoria,
+    sector: fila.sector,
+    estado: fila.estado,
+    nombre: fila.nombre,
+    telefono: fila.telefono,
+    reportes: Number(fila.reportes),
+    motivos: fila.motivos,
+    notas: fila.notas ?? [],
+    ultimo: fila.ultimo,
   };
 }

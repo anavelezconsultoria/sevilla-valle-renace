@@ -163,3 +163,14 @@ dd {
   outline: 2px solid var(--color-primario);
   outline-offset: 2px;
 }
+
+/* Regla contra la reventa: la ayuda se entrega en la casa registrada. */
+.regla-entrega {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--color-primario);
+  background: var(--color-primario-suave);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: var(--color-texto);
+}
