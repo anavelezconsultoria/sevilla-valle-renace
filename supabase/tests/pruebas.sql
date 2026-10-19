@@ -63,13 +63,13 @@ exception when sqlstate 'P0001' then raise notice 'OK  no se puede confirmar ant
 end $$;
 
 do $$ begin
-  perform public.registrar_necesidad('agua', 'Agua', 'Se rompio el tanque con el temblor', 'alta', 1, 'Sector', 4.26, -75.93, 'Rosa', '3151234567', '1234');
+  perform public.registrar_necesidad('agua', 'Agua', 'Se rompio el tanque con el temblor', 'alta', 1, 'Sector', 4.200, -75.93, 'Rosa', '3151234567', '1234');
   raise exception 'FALLO: se acepto una clave obvia';
 exception when sqlstate 'P0001' then raise notice 'OK  se rechaza una clave obvia (1234)';
 end $$;
 
 do $$ begin
-  perform public.registrar_necesidad('agua', 'Agua', 'Se rompio el tanque con el temblor', 'alta', 1, 'Sector', 4.26, -75.93, 'Rosa', '3151234567', '4567');
+  perform public.registrar_necesidad('agua', 'Agua', 'Se rompio el tanque con el temblor', 'alta', 1, 'Sector', 4.200, -75.93, 'Rosa', '3151234567', '4567');
   raise exception 'FALLO: se acepto como clave el final del celular';
 exception when sqlstate 'P0001' then raise notice 'OK  se rechaza como clave el final del celular, que quien ayuda ve';
 end $$;
@@ -86,7 +86,7 @@ end $$;
 
 -- Fuerza bruta: 5 fallos bloquean el celular 15 minutos, incluso para la clave correcta.
 do $$ declare r record; begin
-  select * into r from public.registrar_necesidad('ropa', 'Cobijas', 'Dormimos en el patio por las replicas', 'media', 2, 'Sector', 4.26, -75.93, 'Eva', '3205550000', '7319');
+  select * into r from public.registrar_necesidad('ropa', 'Cobijas', 'Dormimos en el patio por las replicas', 'media', 2, 'Sector', 4.201, -75.93, 'Eva', '3205550000', '7319');
   for i in 1..5 loop
     if exists (select 1 from public.mis_necesidades('3205550000', lpad(i::text, 4, '8'))) then raise exception 'FALLO: clave falsa aceptada'; end if;
   end loop;
@@ -185,7 +185,7 @@ do $$ begin
 end $$;
 
 do $$ begin
-  perform public.registrar_necesidad('aseo', 'Jabon', 'Necesitamos jabon para lavar la ropa', 'baja', 2, 'Sector', 4.26, -75.93, 'Teo', '3017776655', '3952');
+  perform public.registrar_necesidad('aseo', 'Jabon', 'Necesitamos jabon para lavar la ropa', 'baja', 2, 'Sector', 4.202, -75.93, 'Teo', '3017776655', '3952');
   if public.confirmar_con_clave(current_setting('prueba.id')::uuid, '3017776655', '3952') is not null then
     raise exception 'FALLO: la clave de otra persona sirvio para esta necesidad';
   end if;
@@ -259,27 +259,27 @@ set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 do $$ begin
   for i in 1..3 loop
-    perform public.registrar_necesidad('aseo', 'Kit de aseo ' || i, 'Necesitamos jabon y panales para el bebe', 'baja', 2, 'Sector', 4.26, -75.93, 'Ana', '3110000000', '2468');
+    perform public.registrar_necesidad('aseo', 'Kit de aseo ' || i, 'Necesitamos jabon y panales para el bebe', 'baja', 2, 'Sector', 4.203, -75.93, 'Ana', '3110000000', '2468');
   end loop;
-  perform public.registrar_necesidad('aseo', 'Kit de aseo 4', 'Necesitamos jabon y panales para el bebe', 'baja', 2, 'Sector', 4.26, -75.93, 'Ana', '3110000000', '2468');
+  perform public.registrar_necesidad('aseo', 'Kit de aseo 4', 'Necesitamos jabon y panales para el bebe', 'baja', 2, 'Sector', 4.203, -75.93, 'Ana', '3110000000', '2468');
   raise exception 'FALLO: se permitio una cuarta necesidad activa con el mismo celular';
 exception when sqlstate 'P0001' then raise notice 'OK  un celular no puede tener mas de 3 necesidades activas';
 end $$;
 
 do $$ begin
-  perform public.registrar_necesidad('aseo', 'X', 'corta', 'baja', 0, 'S', 4.26, -75.93, 'A', '123', '5793');
+  perform public.registrar_necesidad('aseo', 'X', 'corta', 'baja', 0, 'S', 4.204, -75.93, 'A', '123', '5793');
   raise exception 'FALLO: se aceptaron datos invalidos';
 exception when check_violation then raise notice 'OK  la base rechaza datos invalidos aunque el cliente no valide';
 end $$;
 
 -- Un celular, una clave; y prioridad 0.
 do $$ declare r record; begin
-  select * into r from public.registrar_necesidad('alimentos', 'Leche para bebe', 'Bebe de 3 meses sin leche de formula', 'alta', 3, 'Sector', 4.26, -75.93, 'Luz', '3157001122', '5793', '', true);
+  select * into r from public.registrar_necesidad('alimentos', 'Leche para bebe', 'Bebe de 3 meses sin leche de formula', 'alta', 3, 'Sector', 4.205, -75.93, 'Luz', '3157001122', '5793', '', true);
   if r.necesidad_id is null then raise exception 'FALLO: no se registro la primera solicitud'; end if;
   if not (select prioridad_cero from public.necesidades where id = r.necesidad_id) then raise exception 'FALLO: no quedo como prioridad 0'; end if;
-  select * into r from public.registrar_necesidad('ropa', 'Cobijas', 'Necesitamos cobijas para la noche', 'media', 3, 'Sector', 4.26, -75.93, 'Luz', '3157001122', '8642');
+  select * into r from public.registrar_necesidad('ropa', 'Cobijas', 'Necesitamos cobijas para la noche', 'media', 3, 'Sector', 4.205, -75.93, 'Luz', '3157001122', '8642');
   if r.necesidad_id is not null or r.codigo <> 'clave_no_coincide' then raise exception 'FALLO: se acepto otra clave para el mismo celular'; end if;
-  select * into r from public.registrar_necesidad('ropa', 'Cobijas', 'Necesitamos cobijas para la noche', 'media', 3, 'Sector', 4.26, -75.93, 'Luz', '3157001122', '5793');
+  select * into r from public.registrar_necesidad('ropa', 'Cobijas', 'Necesitamos cobijas para la noche', 'media', 3, 'Sector', 4.205, -75.93, 'Luz', '3157001122', '5793');
   if r.necesidad_id is null then raise exception 'FALLO: la misma clave no sirvio para la segunda solicitud'; end if;
   if (select prioridad_cero from public.necesidades where id = r.necesidad_id) then raise exception 'FALLO: prioridad 0 por defecto'; end if;
   raise notice 'OK  prioridad 0 se guarda; un celular usa una sola clave para todas sus solicitudes';
@@ -317,7 +317,7 @@ insert into auth.users (id, email, aud, role)
 values ('00000000-0000-0000-0000-00000000000c', 'c@prueba.local', 'authenticated', 'authenticated'),
        ('00000000-0000-0000-0000-00000000000d', 'd@prueba.local', 'authenticated', 'authenticated');
 do $$ declare r record; begin
-  select * into r from public.registrar_necesidad('ropa', 'Cobijas para la noche', 'Necesitamos cobijas para 3 personas', 'media', 3, 'Sector', 4.26, -75.93, 'Paz', '3185550003', '5793');
+  select * into r from public.registrar_necesidad('ropa', 'Cobijas para la noche', 'Necesitamos cobijas para 3 personas', 'media', 3, 'Sector', 4.206, -75.93, 'Paz', '3185550003', '5793');
   perform set_config('prueba.id4', r.necesidad_id::text, true);
 end $$;
 
@@ -408,7 +408,7 @@ reset role;
 
 -- Adjuntos: solo a una necesidad recien registrada, con limite; el video es privado.
 do $$ declare r record; begin
-  select * into r from public.registrar_necesidad('techo', 'Tejas para el techo', 'Se cayo el techo del cuarto', 'alta', 3, 'Sector', 4.26, -75.93, 'Rita', '3155550004', '5793');
+  select * into r from public.registrar_necesidad('techo', 'Tejas para el techo', 'Se cayo el techo del cuarto', 'alta', 3, 'Sector', 4.207, -75.93, 'Rita', '3155550004', '5793');
   perform set_config('prueba.id5', r.necesidad_id::text, true);
   perform set_config('prueba.codigo5', r.codigo, true);
   if not public._puede_adjuntar('solicitudes', r.necesidad_id || '/a.jpg') then raise exception 'FALLO: no deja subir a una necesidad nueva'; end if;
@@ -450,15 +450,15 @@ reset role;
 
 -- Toques repetidos: la misma solicitud en minutos no se duplica.
 do $$ begin
-  perform public.registrar_necesidad('aseo', 'Pañales talla 3', 'Bebe de 8 meses necesita pañales', 'media', 3, 'Sector', 4.26, -75.93, 'Eva', '3175550002', '5793');
-  perform public.registrar_necesidad('aseo', 'Pañales talla 3 ', 'bebe de 8 meses necesita pañales', 'media', 3, 'Sector', 4.26, -75.93, 'Eva', '3175550002', '5793');
+  perform public.registrar_necesidad('aseo', 'Pañales talla 3', 'Bebe de 8 meses necesita pañales', 'media', 3, 'Sector', 4.208, -75.93, 'Eva', '3175550002', '5793');
+  perform public.registrar_necesidad('aseo', 'Pañales talla 3 ', 'bebe de 8 meses necesita pañales', 'media', 3, 'Sector', 4.208, -75.93, 'Eva', '3175550002', '5793');
   raise exception 'FALLO: se registro dos veces la misma solicitud';
 exception when sqlstate 'P0001' then raise notice 'OK  un toque repetido no crea una solicitud duplicada';
 end $$;
 
 -- "Necesito mas tiempo": una vez por toma, solo quien atiende.
 do $$ declare r record; begin
-  select * into r from public.registrar_necesidad('agua', 'Agua potable', 'Necesitamos agua para tomar esta semana', 'media', 2, 'Sector', 4.26, -75.93, 'Teo', '3165550001', '5793');
+  select * into r from public.registrar_necesidad('agua', 'Agua potable', 'Necesitamos agua para tomar esta semana', 'media', 2, 'Sector', 4.209, -75.93, 'Teo', '3165550001', '5793');
   perform set_config('prueba.id3', r.necesidad_id::text, true);
 end $$;
 
@@ -492,7 +492,7 @@ end $$;
 -- Revision de solicitudes repetidas y senal publica (0016).
 reset role;
 do $$ declare r record; begin
-  select * into r from public.registrar_necesidad('alimentos', 'Mercado', 'Necesitamos mercado para la semana', 'media', 4, 'La Ceiba', 4.26, -75.93, 'Gloria', '3201112233', '5793');
+  select * into r from public.registrar_necesidad('alimentos', 'Mercado', 'Necesitamos mercado para la semana', 'media', 4, 'La Ceiba', 4.210, -75.93, 'Gloria', '3201112233', '5793');
   if (select estado::text from public.necesidades where id = r.necesidad_id) <> 'registrada' then raise exception 'FALLO: la primera solicitud no se publico'; end if;
   if not (select primera_solicitud from public.necesidades where id = r.necesidad_id) then raise exception 'FALLO: no quedo como primera solicitud'; end if;
   -- Simula que ya se la entregaron y la confirmo.
@@ -502,7 +502,7 @@ do $$ declare r record; begin
 end $$;
 
 do $$ declare r record; begin
-  select * into r from public.registrar_necesidad('alimentos', 'Mas mercado', 'Se nos acabo el mercado otra vez', 'alta', 4, 'La Ceiba', 4.26, -75.93, 'Gloria', '3201112233', '5793');
+  select * into r from public.registrar_necesidad('alimentos', 'Mas mercado', 'Se nos acabo el mercado otra vez', 'alta', 4, 'La Ceiba', 4.210, -75.93, 'Gloria', '3201112233', '5793');
   if (select estado::text from public.necesidades where id = r.necesidad_id) <> 'en_revision' then raise exception 'FALLO: la misma categoria repetida no quedo en revision'; end if;
   if (select motivo_revision from public.necesidades_privado where necesidad_id = r.necesidad_id) not like 'Recibió alimentos hace%' then
     raise exception 'FALLO: motivo inesperado';
@@ -512,7 +512,7 @@ do $$ declare r record; begin
   end if;
   perform set_config('prueba.revision', r.necesidad_id::text, true);
 
-  select * into r from public.registrar_necesidad('ropa', 'Cobijas', 'Necesitamos cobijas para los ninos', 'media', 4, 'La Ceiba', 4.26, -75.93, 'Gloria', '3201112233', '5793');
+  select * into r from public.registrar_necesidad('ropa', 'Cobijas', 'Necesitamos cobijas para los ninos', 'media', 4, 'La Ceiba', 4.210, -75.93, 'Gloria', '3201112233', '5793');
   if (select estado::text from public.necesidades where id = r.necesidad_id) <> 'registrada' then raise exception 'FALLO: otra categoria no debia ir a revision'; end if;
   if (select primera_solicitud from public.necesidades where id = r.necesidad_id) then raise exception 'FALLO: ya no es la primera solicitud'; end if;
   if (select ayuda_reciente_categoria::text from public.necesidades where id = r.necesidad_id) is distinct from 'alimentos' then
@@ -658,7 +658,7 @@ end $$;
 
 reset role;
 do $$ declare r record; begin
-  select * into r from public.registrar_necesidad('agua', 'Agua colectivo', 'Necesitamos agua para tres dias', 'media', 3, 'Sector Col', 4.26, -75.93, 'Iris', '3209990001', '5793');
+  select * into r from public.registrar_necesidad('agua', 'Agua colectivo', 'Necesitamos agua para tres dias', 'media', 3, 'Sector Col', 4.211, -75.93, 'Iris', '3209990001', '5793');
   perform set_config('prueba.idcol', r.necesidad_id::text, true);
 end $$;
 
@@ -679,7 +679,7 @@ end $$;
 
 reset role;
 do $$ declare r record; begin
-  select * into r from public.registrar_necesidad('agua', 'Agua ajena', 'Necesitamos agua para dos dias', 'media', 2, 'Sector Aj', 4.26, -75.93, 'Olga', '3209990002', '5793');
+  select * into r from public.registrar_necesidad('agua', 'Agua ajena', 'Necesitamos agua para dos dias', 'media', 2, 'Sector Aj', 4.212, -75.93, 'Olga', '3209990002', '5793');
   perform set_config('prueba.idajena', r.necesidad_id::text, true);
 end $$;
 set local role authenticated;
@@ -798,7 +798,7 @@ set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 do $$
 begin
-  perform public.registrar_necesidad('ropa', 'Ropa para ninos', 'Necesitamos ropa para dos ninos pequenos', 'media', 3, 'Sector bloqueo', 4.26, -75.93, 'Abusa', '3209990001', '8361');
+  perform public.registrar_necesidad('ropa', 'Ropa para ninos', 'Necesitamos ropa para dos ninos pequenos', 'media', 3, 'Sector bloqueo', 4.211, -75.93, 'Abusa', '3209990001', '8361');
   begin
     perform public.bloquear_celular('3209990001');
     raise exception 'FALLO: alguien anonimo bloqueo un celular';
@@ -824,12 +824,81 @@ set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 do $$ begin
   begin
-    perform public.registrar_necesidad('ropa', 'Ropa otra vez', 'Necesitamos ropa para dos ninos pequenos', 'media', 3, 'Sector bloqueo', 4.26, -75.93, 'Abusa', '3209990001', '8361');
+    perform public.registrar_necesidad('ropa', 'Ropa otra vez', 'Necesitamos ropa para dos ninos pequenos', 'media', 3, 'Sector bloqueo', 4.211, -75.93, 'Abusa', '3209990001', '8361');
     raise exception 'FALLO: un celular bloqueado registro otra solicitud';
   exception when sqlstate 'P0001' then
     if sqlerrm not like 'Este celular no puede registrar%' then raise; end if;
   end;
   raise notice 'OK  un celular bloqueado no puede registrar mas solicitudes';
+end $$;
+reset role;
+-- Reportes de mal uso y mismo punto (0028).
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$ begin
+  perform public.registrar_necesidad('alimentos', 'Mercado familia A', 'Se nos acabo el mercado despues del temblor', 'media', 4, 'Sector punto', 4.2610, -75.9310, 'Hogar A', '3209990011', '8361');
+  perform public.registrar_necesidad('alimentos', 'Mercado familia B', 'Se nos acabo el mercado despues del temblor', 'media', 4, 'Sector punto', 4.26102, -75.93102, 'Hogar B', '3209990012', '7392');
+  perform public.registrar_necesidad('alimentos', 'Mercado familia C', 'Se nos acabo el mercado despues del temblor', 'media', 4, 'Sector lejos', 4.2700, -75.9400, 'Hogar C', '3209990013', '6284');
+end $$;
+reset role;
+do $$
+declare v_b uuid; v_eventos text;
+begin
+  if (select n.estado from public.necesidades n join public.necesidades_privado pr on pr.necesidad_id = n.id where pr.telefono = '3209990011') <> 'registrada' then
+    raise exception 'FALLO: la primera solicitud del punto no se publico';
+  end if;
+  select n.id into v_b from public.necesidades n join public.necesidades_privado pr on pr.necesidad_id = n.id
+   where pr.telefono = '3209990012' and n.estado = 'en_revision' and pr.motivo_revision like 'Otro celular pidió alimentos desde casi el mismo punto%';
+  if v_b is null then raise exception 'FALLO: otro celular en el mismo punto no entro a revision'; end if;
+  select string_agg(tipo::text, ',' order by ocurrido_en, id) into v_eventos from public.eventos_necesidad where necesidad_id = v_b;
+  if v_eventos not like '%registrada%' or v_eventos not like '%en_revision%' or (select count(*) from public.eventos_necesidad where necesidad_id = v_b and tipo = 'en_revision') <> 1 then
+    raise exception 'FALLO: eventos de la solicitud en revision: %', v_eventos;
+  end if;
+  if (select n.estado from public.necesidades n join public.necesidades_privado pr on pr.necesidad_id = n.id where pr.telefono = '3209990013') <> 'registrada' then
+    raise exception 'FALLO: una solicitud lejana entro a revision';
+  end if;
+  perform set_config('prueba.reportada', v_b::text, true);
+  raise notice 'OK  otro celular que pide lo mismo desde casi el mismo punto entra a revision; lejos se publica';
+end $$;
+
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$
+declare v_id uuid := (select current_setting('prueba.reportada'))::uuid;
+begin
+  perform public.reportar_mal_uso(v_id, 'vende', 'La vi vendiendo el mercado', 'dispositivo-prueba-0001');
+  perform public.reportar_mal_uso(v_id, 'vende', 'Otra vez', 'dispositivo-prueba-0001');
+  perform public.reportar_mal_uso(v_id, 'no_vive_ahi', '', 'dispositivo-prueba-0002');
+  begin
+    perform * from public.reportes_pendientes();
+    raise exception 'FALLO: alguien anonimo vio los reportes';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    perform public.reportar_mal_uso(v_id, 'inventado', '', 'dispositivo-prueba-0003');
+    raise exception 'FALLO: se acepto un motivo que no existe';
+  exception when check_violation then null;
+  end;
+  raise notice 'OK  cualquiera reporta mal uso, una vez por dispositivo, y no ve los reportes';
+end $$;
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-0000000000c3"}', true);
+select set_config('request.headers', '{}', true);
+do $$
+declare
+  v_id uuid := (select current_setting('prueba.reportada'))::uuid;
+  r record;
+begin
+  select * into r from public.reportes_pendientes() p where p.necesidad_id = v_id;
+  if r.reportes <> 2 or not ('vende' = any (r.motivos)) or r.telefono <> '3209990012' then
+    raise exception 'FALLO: la coordinacion no ve bien los reportes (% reportes)', r.reportes;
+  end if;
+  perform public.marcar_reportes_revisados(v_id);
+  if exists (select 1 from public.reportes_pendientes() p where p.necesidad_id = v_id) then
+    raise exception 'FALLO: los reportes revisados siguen pendientes';
+  end if;
+  raise notice 'OK  la coordinacion ve los reportes con el celular y los marca como revisados';
 end $$;
 reset role;
 reset role;
