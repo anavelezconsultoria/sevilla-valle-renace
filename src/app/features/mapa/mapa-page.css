@@ -745,3 +745,30 @@
     display: none;
   }
 }
+
+/* Contador de ayudas de la portada: pequeno, debajo de los botones. */
+.contador-portada {
+  margin-top: var(--space-2);
+}
+
+.contador-flotante {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .contador-flotante {
+    position: absolute;
+    top: 112px;
+    left: var(--space-3);
+    z-index: 500;
+    display: block;
+    border-radius: var(--radius-pill);
+    background: var(--color-superficie);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .lista-abierta .contador-flotante,
+  .paneles-ocultos .contador-flotante {
+    display: none;
+  }
+}

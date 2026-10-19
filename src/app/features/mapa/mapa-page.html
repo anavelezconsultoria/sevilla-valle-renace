@@ -23,6 +23,9 @@
     }
   </ul>
 
+  <!-- En celular la portada no se ve: el contador flota sobre el mapa. -->
+  <sr-contador-ayudas class="contador-flotante" [cifras]="cifras()" />
+
   <sr-cta-ayudar class="cta-ayudar" [ayudantes]="ayudantesActivos()" [esperando]="esperando().length" />
 
   <aside class="panel panel-izquierdo" aria-label="Bienvenida, búsqueda y cifras">
@@ -43,6 +46,7 @@
         <a routerLink="/pedir-ayuda" class="btn btn-accion btn-respira">Necesito ayuda</a>
         <a routerLink="/necesidades" class="btn btn-primary">Quiero ayudar</a>
       </div>
+      <sr-contador-ayudas class="contador-portada" [cifras]="cifras()" />
     </section>
 
     <label class="buscador card entrada" style="--i: 1">

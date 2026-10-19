@@ -33,19 +33,12 @@ function aAyudaEntregada(n: Necesidad): AyudaEntregada {
  * Confirmadas y cerradas sin reclamo se cuentan por separado y nunca se suman en una sola cifra sin decirlo.
  */
 @Component({
-  selector: 'sr-entregadas-page',
+  selector: 'sr-cifras-ayudas',
   imports: [RouterLink, CategoriaIcono, Contador, Revelar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <header class="encabezado-pagina">
-      <div class="container encabezado">
-        <p class="eyebrow">Ayudas entregadas</p>
-        <h1>Lo que Sevilla ha logrado junta</h1>
-        <p class="muted">Cada ayuda queda registrada con quién la llevó, cuándo y, si la hay, una foto sin rostros de lo que se entregó.</p>
-        <a routerLink="/vecinos-que-ayudan" class="enlace-vecinos">Ver los vecinos que han ayudado →</a>
-      </div>
-    </header>
-    <div class="container pagina">
+    <div class="pagina">
+      <p class="muted intro">Cada ayuda queda registrada con quién la llevó, cuándo y, si la hay, una foto sin rostros de lo que se entregó.</p>
       <dl class="cifras">
         <div class="card entrada"><dt>Necesidades atendidas</dt><dd [srContador]="ayudas().length"></dd></div>
         <div class="card entrada" style="--i: 1"><dt>Personas ayudadas</dt><dd [srContador]="personas()"></dd></div>
@@ -90,11 +83,8 @@ function aAyudaEntregada(n: Necesidad): AyudaEntregada {
     </div>
   `,
   styles: `
-    .pagina { padding-block: var(--space-6); display: grid; gap: var(--space-5); }
-    .encabezado { display: grid; gap: var(--space-2); }
-    .encabezado p.muted { max-width: 640px; }
-    .enlace-vecinos { display: inline-block; margin-top: var(--space-2); font-weight: 650; color: var(--color-primario); }
-    .encabezado h1 { font-size: var(--text-2xl); }
+    .pagina { display: grid; gap: var(--space-5); }
+    .intro { max-width: 640px; }
     .cifras { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin: 0; }
     .cifras div { padding: var(--space-4); }
     dt { font-size: var(--text-xs); color: var(--color-tenue); }
@@ -122,7 +112,7 @@ function aAyudaEntregada(n: Necesidad): AyudaEntregada {
     @media (max-width: 760px) { .cifras { grid-template-columns: 1fr 1fr; } }
   `,
 })
-export class EntregadasPage {
+export class CifrasAyudas {
   private readonly lectura = inject(NecesidadesLectura);
   protected readonly fecha = fechaCorta;
 

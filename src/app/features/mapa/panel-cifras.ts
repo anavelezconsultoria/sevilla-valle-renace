@@ -21,7 +21,7 @@ import { Contador } from '../../shared/ui/contador';
         <div data-tono="entregada"><dt>Por confirmar</dt><dd [srContador]="c.entregadas"></dd></div>
         <div data-tono="exito"><dt>Atendidas</dt><dd [srContador]="c.atendidas"></dd></div>
       </dl>
-      <a routerLink="/ayudas-entregadas" class="pie">
+      <a routerLink="/comunidad" [queryParams]="{ pestana: 'cifras' }" class="pie">
         <span [srContador]="c.personasAyudadas"></span> personas ayudadas
         <span class="flecha" aria-hidden="true">→</span>
       </a>

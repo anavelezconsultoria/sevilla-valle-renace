@@ -17,8 +17,9 @@ import { Marca } from '../shared/ui/marca';
           <p class="titulo">Sevilla Renace</p>
           <a routerLink="/como-funciona">Cómo funciona</a>
           <a routerLink="/seguimiento">Mis solicitudes</a>
-          <a routerLink="/ayudas-entregadas">Ayudas entregadas</a>
-          <a routerLink="/vecinos-que-ayudan">Vecinos que han ayudado</a>
+          <a routerLink="/comunidad">Comunidad</a>
+          <a routerLink="/comunidad" [queryParams]="{ pestana: 'vecinos' }">Vecinos que han ayudado</a>
+          <a routerLink="/comunidad" [queryParams]="{ pestana: 'cifras' }">Cifras de las ayudas</a>
         </nav>
         <div class="col">
           <p class="titulo">Emergencias</p>

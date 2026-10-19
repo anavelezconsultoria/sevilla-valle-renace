@@ -11,6 +11,7 @@ const ESTADOS_LEYENDA = [EstadoNecesidad.Registrada, EstadoNecesidad.EnAtencion,
 import { MapaNecesidades } from '../../shared/mapa/mapa-necesidades';
 import { NecesidadCard } from '../../shared/ui/necesidad-card';
 import { PanelCifras } from './panel-cifras';
+import { ContadorAyudas } from './contador-ayudas';
 import { CtaAyudar } from './cta-ayudar';
 import { BotonCompartir } from '../../shared/ui/boton-compartir';
 import { Compartible, tarjetaListaHoy } from '../../shared/lib/tarjeta-compartir';
@@ -20,7 +21,7 @@ const MAX_EN_LISTA_HOY = 6;
 
 @Component({
   selector: 'sr-mapa-page',
-  imports: [RouterLink, MapaNecesidades, NecesidadCard, PanelCifras, BotonCompartir, CtaAyudar],
+  imports: [RouterLink, MapaNecesidades, NecesidadCard, PanelCifras, BotonCompartir, CtaAyudar, ContadorAyudas],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './mapa-page.html',
   styleUrl: './mapa-page.css',

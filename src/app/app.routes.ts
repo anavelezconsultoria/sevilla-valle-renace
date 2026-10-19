@@ -32,21 +32,13 @@ export const routes: Routes = [
     title: 'Mi panel | Sevilla Renace',
     loadComponent: () => import('./features/mis-atenciones/mis-atenciones-page').then((m) => m.MisAtencionesPage),
   },
-  {
-    path: 'ayudas-entregadas',
-    title: 'Ayudas entregadas | Sevilla Renace',
-    loadComponent: () => import('./features/entregadas/entregadas-page').then((m) => m.EntregadasPage),
-  },
+  { path: 'ayudas-entregadas', redirectTo: '/comunidad?pestana=cifras' },
   {
     path: 'comunidad',
     title: 'Comunidad | Sevilla Renace',
     loadComponent: () => import('./features/comunidad/comunidad-page').then((m) => m.ComunidadPage),
   },
-  {
-    path: 'vecinos-que-ayudan',
-    title: 'Vecinos que han ayudado | Sevilla Renace',
-    loadComponent: () => import('./features/entregadas/vecinos-page').then((m) => m.VecinosPage),
-  },
+  { path: 'vecinos-que-ayudan', redirectTo: '/comunidad?pestana=vecinos' },
   {
     path: 'como-funciona',
     title: 'Cómo funciona | Sevilla Renace',

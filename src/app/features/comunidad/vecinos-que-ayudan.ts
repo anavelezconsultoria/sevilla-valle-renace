@@ -9,19 +9,12 @@ import { tiempoRelativo } from '../../shared/lib/tiempo';
  * posiciones, solo cuantas entregas lleva cada vecino.
  */
 @Component({
-  selector: 'sr-vecinos-page',
+  selector: 'sr-vecinos-que-ayudan',
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <header class="encabezado-pagina">
-      <div class="container encabezado">
-        <p class="eyebrow">Gracias</p>
-        <h1>Vecinos que han ayudado</h1>
-        <p class="muted">Cada nombre es alguien de Sevilla que llevó una ayuda hasta la puerta de una familia. Aparece el nombre que cada quien eligió mostrar.</p>
-      </div>
-    </header>
-    <section class="container pagina">
-
+    <section class="pagina">
+      <p class="muted intro">Cada nombre es alguien que llevó una ayuda hasta la puerta de una familia. Aparece el nombre que cada quien eligió mostrar.</p>
       @if (cargando()) {
         <p class="muted">Cargando...</p>
       } @else if (!vecinos().length) {
@@ -44,16 +37,13 @@ import { tiempoRelativo } from '../../shared/lib/tiempo';
         </ul>
         <div class="cierre">
           <a routerLink="/necesidades" class="btn btn-primary">Quiero ayudar también</a>
-          <a routerLink="/ayudas-entregadas" class="btn btn-ghost">Ver las ayudas entregadas</a>
         </div>
       }
     </section>
   `,
   styles: `
-    .encabezado { display: grid; gap: var(--space-2); }
-    .encabezado h1 { font-size: var(--text-2xl); }
-    .encabezado p.muted { max-width: 640px; }
-    .pagina { padding-block: var(--space-6); display: grid; gap: var(--space-5); }
+    .pagina { display: grid; gap: var(--space-5); }
+    .intro { max-width: 640px; }
     .lista, .cierre, .vacio { max-width: 720px; }
     .lista { display: grid; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
     .vecino { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); }
@@ -65,7 +55,7 @@ import { tiempoRelativo } from '../../shared/lib/tiempo';
     .cierre { display: flex; flex-wrap: wrap; gap: var(--space-3); }
   `,
 })
-export class VecinosPage {
+export class VecinosQueAyudan {
   private readonly reconocimiento = inject(ReconocimientoLectura);
 
   protected readonly vecinos = signal<readonly VecinoQueAyuda[]>([]);
