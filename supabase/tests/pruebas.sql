@@ -771,6 +771,28 @@ do $$ begin
   raise notice 'OK  si el colectivo entra desde otro navegador, conserva a sus administradoras';
 end $$;
 
+-- Ajuste de personas ayudadas (0026).
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$ begin
+  if (select personas_ayudadas_extra from public.ajustes_cifras where id = 1) is null then raise exception 'FALLO: el ajuste no se puede leer'; end if;
+  begin
+    perform public.fijar_personas_ayudadas_extra(500);
+    raise exception 'FALLO: alguien anonimo cambio el ajuste';
+  exception when insufficient_privilege then null;
+  end;
+  raise notice 'OK  cualquiera lee el ajuste de personas ayudadas, nadie anonimo lo cambia';
+end $$;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-0000000000c3"}', true);
+select set_config('request.headers', '{}', true);
+do $$ begin
+  perform public.fijar_personas_ayudadas_extra(100, 'Jornadas por fuera');
+  if (select personas_ayudadas_extra from public.ajustes_cifras where id = 1) <> 100 then raise exception 'FALLO: la coordinacion no cambio el ajuste'; end if;
+  raise notice 'OK  la coordinacion fija el ajuste de personas ayudadas';
+end $$;
+reset role;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.
