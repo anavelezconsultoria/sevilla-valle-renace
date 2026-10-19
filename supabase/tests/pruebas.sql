@@ -798,9 +798,9 @@ set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 do $$
 begin
-  perform public.registrar_necesidad('ropa', 'Ropa para ninos', 'Necesitamos ropa para dos ninos pequenos', 'media', 3, 'Sector bloqueo', 4.211, -75.93, 'Abusa', '3209990001', '8361');
+  perform public.registrar_necesidad('ropa', 'Ropa para ninos', 'Necesitamos ropa para dos ninos pequenos', 'media', 3, 'Sector bloqueo', 4.211, -75.93, 'Abusa', '3209990091', '8361');
   begin
-    perform public.bloquear_celular('3209990001');
+    perform public.bloquear_celular('3209990091');
     raise exception 'FALLO: alguien anonimo bloqueo un celular';
   exception when insufficient_privilege then null;
   end;
@@ -810,12 +810,12 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-0000000000c3"}', true);
 select set_config('request.headers', '{}', true);
 do $$ begin
-  if public.bloquear_celular('320 999 0001', 'Pruebas') <> 1 then raise exception 'FALLO: no cerro la solicitud abierta'; end if;
+  if public.bloquear_celular('320 999 0091', 'Pruebas') <> 1 then raise exception 'FALLO: no cerro la solicitud abierta'; end if;
 end $$;
 reset role;
 do $$ begin
   if exists (select 1 from public.necesidades n join public.necesidades_privado pr on pr.necesidad_id = n.id
-              where pr.telefono = '3209990001' and n.estado <> 'cancelada') then
+              where pr.telefono = '3209990091' and n.estado <> 'cancelada') then
     raise exception 'FALLO: la solicitud del celular bloqueado sigue abierta';
   end if;
   raise notice 'OK  la coordinacion bloquea un celular y se cancela lo que tenia abierto';
@@ -824,7 +824,7 @@ set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 do $$ begin
   begin
-    perform public.registrar_necesidad('ropa', 'Ropa otra vez', 'Necesitamos ropa para dos ninos pequenos', 'media', 3, 'Sector bloqueo', 4.211, -75.93, 'Abusa', '3209990001', '8361');
+    perform public.registrar_necesidad('ropa', 'Ropa otra vez', 'Necesitamos ropa para dos ninos pequenos', 'media', 3, 'Sector bloqueo', 4.211, -75.93, 'Abusa', '3209990091', '8361');
     raise exception 'FALLO: un celular bloqueado registro otra solicitud';
   exception when sqlstate 'P0001' then
     if sqlerrm not like 'Este celular no puede registrar%' then raise; end if;
