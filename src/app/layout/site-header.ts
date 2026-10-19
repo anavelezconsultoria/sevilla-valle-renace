@@ -21,7 +21,7 @@ import { NAVEGACION } from './navegacion';
           <a routerLink="/seguimiento" class="btn btn-ghost seguir">Mis solicitudes</a>
           <a routerLink="/seguimiento" class="seguir-movil">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h10M9 12h10M9 19h10M4 5h.01M4 12h.01M4 19h.01" /></svg>
-            Mis solicitudes
+            <span><span class="mis">Mis </span>solicitudes</span>
           </a>
           <a routerLink="/pedir-ayuda" class="btn btn-accion">Necesito ayuda</a>
           <a routerLink="/mis-atenciones" class="avatar" [attr.aria-label]="ayudante() ? 'Mi panel de ' + ayudante()!.alias : 'Quiero ayudar: identificarme'">
@@ -56,6 +56,13 @@ import { NAVEGACION } from './navegacion';
       .barra { height: 60px; gap: var(--space-2); }
       .seguir-movil { margin-left: auto; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; flex: none; min-height: 40px; padding: 0 12px; border-radius: var(--radius-pill); background: var(--color-primario-suave); color: var(--color-primario); font-size: var(--text-sm); font-weight: 650; text-decoration: none; }
       .seguir-movil svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+    }
+    /* Celulares angostos (360-390 px): la marca y el boton caben sin cortarse. */
+    @media (max-width: 390px) {
+      .barra { padding-inline: var(--space-3); }
+      :host ::ng-deep .marca .texto { font-size: .92rem; }
+      .seguir-movil { padding: 0 10px; gap: 4px; }
+      .seguir-movil .mis { display: none; }
     }
   `,
 })

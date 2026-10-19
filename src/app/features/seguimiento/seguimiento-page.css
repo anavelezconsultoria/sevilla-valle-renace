@@ -2,6 +2,8 @@
   max-width: 680px;
   padding-block: var(--space-6);
   display: grid;
+  /* minmax(0, 1fr): ningun hijo puede ensanchar la columna mas que la pantalla. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
 }
 
