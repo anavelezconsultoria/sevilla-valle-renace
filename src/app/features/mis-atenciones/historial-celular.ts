@@ -64,6 +64,16 @@ const MS_POR_DIA = 86_400_000;
             </ul>
           </div>
         }
+        @if (h.solicitudes.length) {
+          <div class="bloque bloquear">
+            @if (bloqueado(); as cerradas) {
+              <p class="hecho" role="status">Celular bloqueado. Ya no puede publicar solicitudes{{ cerradas.cerradas ? ' y se cerraron ' + cerradas.cerradas + ' que tenía abiertas' : '' }}.</p>
+            } @else {
+              <p class="muted">Si este celular abusa de la plataforma, puedes impedir que publique más. Lo que tenga abierto se cierra.</p>
+              <button type="button" class="btn btn-ghost peligro" [disabled]="bloqueando()" (click)="bloquear()">{{ bloqueando() ? 'Bloqueando...' : 'Bloquear este celular' }}</button>
+            }
+          </div>
+        }
         @if (h.ayudante; as a) {
           <div class="bloque">
             <h3>También ayuda como «{{ a.alias }}»</h3>
@@ -87,6 +97,9 @@ const MS_POR_DIA = 86_400_000;
     .nota { font-size: var(--text-xs); color: var(--color-acento); font-weight: 600; }
     .bloque { display: grid; gap: var(--space-2); margin-top: var(--space-2); }
     .vacio { font-size: var(--text-sm); color: var(--color-tenue); }
+    .bloquear { padding-top: var(--space-3); border-top: 1px solid var(--color-linea); }
+    .peligro { justify-self: start; color: var(--color-espera-texto); border-color: var(--color-espera); }
+    .hecho { font-size: var(--text-sm); font-weight: 600; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: var(--color-arena); }
   `,
 })
 export class HistorialCelularHerramienta {
@@ -102,6 +115,9 @@ export class HistorialCelularHerramienta {
   protected readonly buscando = signal(false);
   protected readonly historial = signal<HistorialCelular | null>(null);
   protected readonly error = signal<string | null>(null);
+  protected readonly bloqueando = signal(false);
+  /** Resultado del bloqueo del celular consultado (null si no se ha bloqueado). */
+  protected readonly bloqueado = signal<{ readonly cerradas: number } | null>(null);
 
   protected readonly recibidasRecientes = computed(() => {
     const limite = Date.now() - DIAS_AYUDA_RECIENTE * MS_POR_DIA;
@@ -130,7 +146,24 @@ export class HistorialCelularHerramienta {
     await this.consultar();
   }
 
+  protected async bloquear(): Promise<void> {
+    const telefono = this.telefono();
+    if (!confirm(`¿Bloquear el celular ${telefono}? No podrá publicar más solicitudes y se cerrará lo que tenga abierto.`)) return;
+    this.bloqueando.set(true);
+    this.error.set(null);
+    try {
+      const cerradas = await this.coordinacion.bloquearCelular({ telefono, motivo: 'Bloqueado por la coordinación' });
+      this.bloqueado.set({ cerradas });
+      this.historial.set(await this.coordinacion.historial(telefono));
+    } catch (e) {
+      this.error.set(e instanceof Error ? e.message : 'No se pudo bloquear el celular.');
+    } finally {
+      this.bloqueando.set(false);
+    }
+  }
+
   private async consultar(): Promise<void> {
+    this.bloqueado.set(null);
     this.buscando.set(true);
     this.error.set(null);
     try {

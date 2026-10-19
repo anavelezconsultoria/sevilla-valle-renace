@@ -207,6 +207,12 @@ export interface ErrorRegistrado {
   readonly ultimaVez: string;
 }
 
+export interface BloquearCelularPayload {
+  readonly telefono: string;
+  /** Para la coordinacion; nunca se muestra al publico. */
+  readonly motivo: string;
+}
+
 /** Herramientas de la coordinacion (solo perfiles con rol coordinacion). */
 export abstract class CoordinacionGateway {
   /** Devuelve cuantas solicitudes de ese celular quedaron con la clave nueva. */
@@ -214,6 +220,8 @@ export abstract class CoordinacionGateway {
   abstract solicitudesEnRevision(): Promise<readonly SolicitudEnRevision[]>;
   abstract revisar(payload: RevisarPayload): Promise<void>;
   abstract historial(telefono: string): Promise<HistorialCelular>;
+  /** Impide que el celular publique mas y cierra lo que tenga abierto. Devuelve cuantas cerro. */
+  abstract bloquearCelular(payload: BloquearCelularPayload): Promise<number>;
   /** Hogares que ya recibieron ayuda, el mas reciente primero. */
   abstract hogaresQueRecibieron(): Promise<readonly HogarAtendido[]>;
   /** Ayudas en curso con el contacto de quien las lleva, la mas cerca de vencerse primero. */

@@ -29,6 +29,7 @@ import {
   AtencionEnCurso,
   Ayudante,
   AyudanteGateway,
+  BloquearCelularPayload,
   Colectivo,
   TomarPayload,
   CoordinacionGateway,
@@ -93,6 +94,8 @@ export class DemoBackend
 {
   readonly esDemo = true;
   private readonly registros = signal<RegistroDemo[]>(this.cargar());
+  /** Celulares bloqueados por la coordinacion (solo en memoria en la demostracion). */
+  private readonly bloqueados = new Set<string>();
   private readonly todasConRevision = computed(() => this.registros().map((r) => r.necesidad));
   /** Lo publico: las solicitudes en revision solo las ve quien las pidio y la coordinacion. */
   readonly todas = computed(() => this.todasConRevision().filter((n) => n.estado !== EstadoNecesidad.EnRevision));
@@ -125,6 +128,9 @@ export class DemoBackend
   // ---- Solicitante ----
 
   async registrar(nueva: NuevaNecesidad): Promise<RegistroResultado> {
+    if (this.bloqueados.has(soloDigitos(nueva.contacto.telefono))) {
+      throw new Error('Este celular no puede registrar solicitudes. Comunícate con la coordinación.');
+    }
     const delCelular = this.registros().filter((r) => soloDigitos(r.contacto.telefono) === soloDigitos(nueva.contacto.telefono));
     if (delCelular.length && !delCelular.some((r) => r.clave === nueva.contacto.clave)) throw new ErrorClaveDistinta();
     const ahora = new Date().toISOString();
@@ -303,6 +309,26 @@ export class DemoBackend
       estado: aprobar ? EstadoNecesidad.Registrada : EstadoNecesidad.Cancelada,
       evento: { tipo: aprobar ? TipoEvento.RevisionAprobada : TipoEvento.RevisionRechazada, actor: coordinacion.alias, evidencias: [] },
     });
+  }
+
+  async bloquearCelular({ telefono }: BloquearCelularPayload): Promise<number> {
+    const coordinacion = this.exigirCoordinacion();
+    const digitos = soloDigitos(telefono);
+    this.bloqueados.add(digitos);
+    const abiertos = [EstadoNecesidad.Registrada, EstadoNecesidad.EnRevision, EstadoNecesidad.EnAtencion];
+    const propios = this.registros().filter((r) => soloDigitos(r.contacto.telefono) === digitos);
+    let cerradas = 0;
+    for (const registro of propios) {
+      const actual = this.registros().find((r) => r.necesidad.id === registro.necesidad.id) ?? registro;
+      if (abiertos.includes(actual.necesidad.estado)) {
+        this.transicionar({ registro: actual, estado: EstadoNecesidad.Cancelada, evento: { tipo: TipoEvento.Cancelada, actor: coordinacion.alias, evidencias: [] }, cambios: { venceEn: undefined } });
+        cerradas++;
+      } else if (actual.necesidad.estado === EstadoNecesidad.Entregada) {
+        this.transicionar({ registro: actual, estado: EstadoNecesidad.Atendida, evento: { tipo: TipoEvento.CerradaAutomaticamente, actor: coordinacion.alias, evidencias: [] }, cambios: { cierre: CierreAtencion.Automatica, venceEn: undefined } });
+        cerradas++;
+      }
+    }
+    return cerradas;
   }
 
   async historial(telefono: string): Promise<HistorialCelular> {

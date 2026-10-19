@@ -15,6 +15,7 @@ import {
   AdjuntosPayload,
   AtencionEnCurso,
   AyudanteGateway,
+  BloquearCelularPayload,
   TomarPayload,
   EntregaPayload,
   CoordinacionGateway,
@@ -261,6 +262,12 @@ export class SupabaseNecesidades
 
   async historial(telefono: string): Promise<HistorialCelular> {
     return aHistorial(exigir<FilaHistorial>(await this.cliente.rpc('historial_celular', { p_telefono: telefono })));
+  }
+
+  async bloquearCelular({ telefono, motivo }: BloquearCelularPayload): Promise<number> {
+    const cerradas = exigir<number>(await this.cliente.rpc('bloquear_celular', { p_telefono: telefono, p_motivo: motivo }));
+    await this.recargar();
+    return cerradas;
   }
 
   async hogaresQueRecibieron(): Promise<readonly HogarAtendido[]> {
