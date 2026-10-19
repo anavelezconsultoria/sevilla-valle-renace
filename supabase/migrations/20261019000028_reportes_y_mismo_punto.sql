@@ -146,14 +146,14 @@ begin
   update public.necesidades set estado = 'en_revision', actualizada_en = now() where id = new.necesidad_id;
   return new;
 end
-$;
+$$;
 
 /** El evento de revision va despues del de registro, para que la linea de tiempo quede en orden. */
 create or replace function public._evento_revision_mismo_punto()
 returns trigger
 language plpgsql
 set search_path = ''
-as $
+as $$
 begin
   if exists (
     select 1 from public.necesidades_privado pr
@@ -165,7 +165,7 @@ begin
   end if;
   return new;
 end
-$;
+$$;
 
 drop trigger if exists evento_revision_mismo_punto on public.eventos_necesidad;
 create trigger evento_revision_mismo_punto
