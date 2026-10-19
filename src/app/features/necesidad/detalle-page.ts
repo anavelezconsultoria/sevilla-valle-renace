@@ -64,6 +64,9 @@ import { ReportarMalUso } from './reportar-mal-uso';
           <aside class="lateral">
             <sr-panel-solicitante [necesidad]="n" />
             <sr-panel-ayudante [necesidad]="n" />
+            @if (n.estado !== 'cancelada') {
+              <sr-reportar-mal-uso [necesidadId]="n.id" [abrirAlCargar]="reportar() !== undefined" />
+            }
             @if (n.estado === 'registrada') {
               <section class="card difundir">
                 <h2>Ayuda a que alguien la vea</h2>
@@ -75,9 +78,6 @@ import { ReportarMalUso } from './reportar-mal-uso';
               <sr-mapa-necesidades class="mapa" [necesidades]="[n]" [seleccionadaId]="n.id" />
               <p class="nota-mapa">Ubicación aproximada. La dirección exacta solo la ve quien atiende.</p>
             </section>
-            @if (n.estado !== 'cancelada') {
-              <sr-reportar-mal-uso [necesidadId]="n.id" [abrirAlCargar]="reportar() !== undefined" />
-            }
           </aside>
         </div>
       } @else {
