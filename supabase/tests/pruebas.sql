@@ -797,10 +797,8 @@ reset role;
 set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 do $$
-declare r record;
 begin
-  select * into r from public.registrar_necesidad('ropa', 'Ropa para ninos', 'Necesitamos ropa para dos ninos pequenos', 'media', 3, 'Sector bloqueo', 4.26, -75.93, 'Abusa', '3209990001', '8361');
-  perform set_config('prueba.bloqueo', r.necesidad_id::text, true);
+  perform public.registrar_necesidad('ropa', 'Ropa para ninos', 'Necesitamos ropa para dos ninos pequenos', 'media', 3, 'Sector bloqueo', 4.26, -75.93, 'Abusa', '3209990001', '8361');
   begin
     perform public.bloquear_celular('3209990001');
     raise exception 'FALLO: alguien anonimo bloqueo un celular';
@@ -813,7 +811,11 @@ select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000
 select set_config('request.headers', '{}', true);
 do $$ begin
   if public.bloquear_celular('320 999 0001', 'Pruebas') <> 1 then raise exception 'FALLO: no cerro la solicitud abierta'; end if;
-  if (select estado from public.necesidades where id = current_setting('prueba.bloqueo')::uuid) <> 'cancelada' then
+end $$;
+reset role;
+do $$ begin
+  if exists (select 1 from public.necesidades n join public.necesidades_privado pr on pr.necesidad_id = n.id
+              where pr.telefono = '3209990001' and n.estado <> 'cancelada') then
     raise exception 'FALLO: la solicitud del celular bloqueado sigue abierta';
   end if;
   raise notice 'OK  la coordinacion bloquea un celular y se cancela lo que tenia abierto';
