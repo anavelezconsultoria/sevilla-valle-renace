@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { NecesidadesLectura } from '../../core/ports/necesidades.ports';
+import { CoordinacionGateway, NecesidadesLectura, SolicitudDelHistorial } from '../../core/ports/necesidades.ports';
 import { Necesidad } from '../../core/domain/necesidad.model';
-import { URGENCIAS } from '../../core/domain/catalogos';
+import { ESTADOS, URGENCIAS } from '../../core/domain/catalogos';
 import { SolicitudEnRevision } from '../../core/ports/necesidades.ports';
 import { infoCategoria } from '../../core/domain/catalogos';
-import { tiempoRelativo } from '../../shared/lib/tiempo';
+import { fechaCorta, tiempoRelativo } from '../../shared/lib/tiempo';
 import { CoordinacionEstado } from './coordinacion-estado';
 
 /**
@@ -58,6 +58,32 @@ import { CoordinacionEstado } from './coordinacion-estado';
                   <a class="abrir" [routerLink]="['/necesidades', n.id]">Abrir la solicitud completa →</a>
                 </details>
               }
+              <details class="detalle" (toggle)="alAbrirHogar(s, $event)">
+                <summary>Ver lo que ha pedido este hogar</summary>
+                @if (otras()[s.necesidadId]; as lista) {
+                  @if (!lista.length) {
+                    <p class="muted">No tiene otras solicitudes con este celular.</p>
+                  }
+                  <ul class="otras">
+                    @for (o of lista; track o.id) {
+                      <li>
+                        <strong>{{ o.titulo }}</strong>
+                        <span class="muted">{{ etiquetaCategoria(o) }} · {{ etiquetaEstado(o) }} · pidió {{ fecha(o.registradaEn) }}</span>
+                        @if (o.entregadaEn) {
+                          <span class="muted">Le llegó {{ fecha(o.entregadaEn) }}{{ o.ayudante ? ' · la llevó ' + o.ayudante : '' }}</span>
+                        }
+                        @if (detallePorId(o.id); as d) {
+                          <span class="descripcion">{{ d.descripcion }}</span>
+                          <span class="muted">{{ d.personasHogar }} {{ d.personasHogar === 1 ? 'persona' : 'personas' }}</span>
+                        }
+                        <a class="abrir" [routerLink]="['/necesidades', o.id]">Abrir →</a>
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="muted">Cargando...</p>
+                }
+              </details>
               <p class="contacto">{{ s.nombre }} · <a [href]="'tel:+57' + s.telefono">{{ s.telefono }}</a></p>
               <div class="acciones">
                 <button type="button" class="btn btn-primary" [disabled]="ocupado() === s.necesidadId" (click)="revisar(s, true)">Publicar</button>
@@ -90,6 +116,10 @@ import { CoordinacionEstado } from './coordinacion-estado';
     .datos .prioridad { background: linear-gradient(135deg, #2b4cf2, #6a4fe0); color: #fff; }
     .fotos { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .fotos img { width: 84px; height: 84px; object-fit: cover; border-radius: var(--radius-sm); }
+    .otras { display: grid; gap: var(--space-3); list-style: none; padding: 0; }
+    .otras li { display: grid; gap: 2px; padding-bottom: var(--space-2); border-bottom: 1px solid var(--color-linea); font-size: var(--text-sm); }
+    .otras li:last-child { border-bottom: 0; padding-bottom: 0; }
+    .otras .muted { font-size: var(--text-xs); }
     .abrir { display: inline-block; font-size: var(--text-sm); font-weight: 650; color: var(--color-primario); }
     .acciones { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .vacio { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-5); border-radius: var(--radius-lg); background: var(--color-montana-suave); color: var(--color-montana); font-weight: 600; }
@@ -99,18 +129,41 @@ import { CoordinacionEstado } from './coordinacion-estado';
 export class RevisionSolicitudes {
   protected readonly estado = inject(CoordinacionEstado);
   private readonly lectura = inject(NecesidadesLectura);
+  private readonly coordinacion = inject(CoordinacionGateway);
+  protected readonly fecha = fechaCorta;
+  /** Otras solicitudes del mismo celular, por solicitud en revision. Se piden al abrir. */
+  protected readonly otras = signal<Readonly<Record<string, readonly SolicitudDelHistorial[]>>>({});
   /** Solicitud con los detalles abiertos (una a la vez). */
   protected readonly abierta = signal<string | null>(null);
   protected readonly ocupado = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
 
-  protected etiquetaCategoria(s: SolicitudEnRevision): string {
+  protected etiquetaCategoria(s: Pick<SolicitudEnRevision, 'categoria'>): string {
     return infoCategoria(s.categoria).etiqueta;
   }
 
   /** Detalles publicos de la solicitud (descripcion, personas, fotos). */
   protected detalle(s: SolicitudEnRevision): Necesidad | undefined {
     return this.lectura.obtener(s.necesidadId);
+  }
+
+  protected detallePorId(id: string): Necesidad | undefined {
+    return this.lectura.obtener(id);
+  }
+
+  protected etiquetaEstado(o: SolicitudDelHistorial): string {
+    return ESTADOS[o.estado].etiqueta;
+  }
+
+  protected async alAbrirHogar(s: SolicitudEnRevision, evento: Event): Promise<void> {
+    if (!(evento.target as HTMLDetailsElement).open || this.otras()[s.necesidadId]) return;
+    try {
+      const historial = await this.coordinacion.historial(s.telefono);
+      const lista = historial.solicitudes.filter((o) => o.id !== s.necesidadId);
+      this.otras.update((actual) => ({ ...actual, [s.necesidadId]: lista }));
+    } catch (e) {
+      this.error.set(e instanceof Error ? e.message : 'No se pudo cargar lo que ha pedido este hogar.');
+    }
   }
 
   protected urgencia(n: Necesidad): string {

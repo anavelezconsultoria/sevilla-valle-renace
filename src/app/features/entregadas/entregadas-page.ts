@@ -132,7 +132,8 @@ export class EntregadasPage {
       .map(aAyudaEntregada)
       .sort((a, b) => new Date(b.entregadaEn).getTime() - new Date(a.entregadaEn).getTime()),
   );
-  protected readonly personas = computed(() => this.ayudas().reduce((t, a) => t + a.necesidad.personasHogar, 0));
+  /** Incluye las ayudas entregadas por fuera de la plataforma, igual que el mapa. */
+  protected readonly personas = computed(() => this.lectura.cifras().personasAyudadas);
   protected readonly confirmadas = computed(() => this.ayudas().filter((a) => a.necesidad.cierre === CierreAtencion.Confirmada).length);
   protected readonly automaticas = computed(() => this.ayudas().filter((a) => a.necesidad.cierre === CierreAtencion.Automatica).length);
 }

@@ -60,6 +60,10 @@ import {
 } from './supabase-filas';
 
 const LIMITE_NECESIDADES = 1000;
+
+interface FilaAjustes {
+  readonly personas_ayudadas_extra: number;
+}
 /** La base solo lo acepta si quien inicio sesion administra ese colectivo (migracion 0021). */
 const ENCABEZADO_COLECTIVO = 'x-sr-a-nombre-de';
 const ESPERA_RECARGA_MS = 400;
@@ -104,6 +108,8 @@ export class SupabaseNecesidades
   readonly esDemo = false;
   private readonly lista = signal<readonly Necesidad[]>([]);
   private readonly cargandoInterno = signal(true);
+  /** Personas ayudadas por fuera de la plataforma (tabla ajustes_cifras, migracion 0026). */
+  private readonly personasExtra = signal(0);
   /** Lo publico: las solicitudes en revision solo las ve quien las pidio y la coordinacion. */
   readonly todas = computed(() => this.lista().filter((n) => n.estado !== EstadoNecesidad.EnRevision));
   readonly cargando = this.cargandoInterno.asReadonly();
@@ -141,7 +147,7 @@ export class SupabaseNecesidades
   }
 
   cifras(): CifrasPublicas {
-    return calcularCifras(this.todas());
+    return calcularCifras(this.todas(), this.personasExtra());
   }
 
   // ---- Solicitante ----
@@ -347,6 +353,7 @@ export class SupabaseNecesidades
   }
 
   private async recargar(): Promise<void> {
+    void this.cargarAjustes();
     try {
       const filas = exigir<readonly FilaNecesidad[]>(
         await this.cliente
@@ -359,5 +366,11 @@ export class SupabaseNecesidades
     } finally {
       this.cargandoInterno.set(false);
     }
+  }
+
+  /** Si el ajuste no se puede leer, la cifra queda solo con lo registrado. */
+  private async cargarAjustes(): Promise<void> {
+    const { data } = await this.cliente.from('ajustes_cifras').select('personas_ayudadas_extra').eq('id', 1).maybeSingle<FilaAjustes>();
+    this.personasExtra.set(data?.personas_ayudadas_extra ?? 0);
   }
 }

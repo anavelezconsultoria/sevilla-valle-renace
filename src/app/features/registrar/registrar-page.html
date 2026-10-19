@@ -169,6 +169,19 @@
         @case ('ubicacion') {
           <div class="paso" [class.atras]="direccion() === 'atras'">
             <h1 id="titulo-paso">{{ paso().titulo }}</h1>
+            <div class="dos-columnas">
+              <div class="field">
+                <label class="field-label" for="sector">Barrio, vereda o corregimiento</label>
+                <input id="sector" class="input" [formField]="formulario.sector" placeholder="Ej.: Barrio El Centro" />
+                <sr-errores-campo [estado]="estado(formulario.sector)" />
+              </div>
+              <div class="field">
+                <label class="field-label" for="referencias">Cómo llegar <span class="muted">(opcional)</span></label>
+                <input id="referencias" class="input" [formField]="formulario.referencias" placeholder="Ej.: Casa azul frente a la escuela" />
+                <sr-errores-campo [estado]="estado(formulario.referencias)" />
+              </div>
+            </div>
+            <p class="separador-mapa">Ahora marca dónde estás</p>
             <p class="ayuda">En el mapa público solo aparece un punto aproximado, a unos 200 metros. Nunca tu casa.</p>
             <button type="button" class="btn btn-accion btn-block gps" (click)="usarMiUbicacion()" [disabled]="ubicando()" [class.ubicado]="punto() !== null">
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z" /></svg>
@@ -182,18 +195,6 @@
             @if (mostrarErrores() && !punto()) {
               <p class="field-error" role="alert">Usa tu ubicación o toca el mapa para marcar dónde estás.</p>
             }
-            <div class="dos-columnas">
-              <div class="field">
-                <label class="field-label" for="sector">Barrio, vereda o corregimiento</label>
-                <input id="sector" class="input" [formField]="formulario.sector" placeholder="Ej.: Barrio El Centro" />
-                <sr-errores-campo [estado]="estado(formulario.sector)" />
-              </div>
-              <div class="field">
-                <label class="field-label" for="referencias">Cómo llegar <span class="muted">(opcional)</span></label>
-                <input id="referencias" class="input" [formField]="formulario.referencias" placeholder="Ej.: Casa azul frente a la escuela" />
-                <sr-errores-campo [estado]="estado(formulario.referencias)" />
-              </div>
-            </div>
           </div>
         }
 
