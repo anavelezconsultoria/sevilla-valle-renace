@@ -793,6 +793,43 @@ do $$ begin
 end $$;
 reset role;
 
+-- Celulares bloqueados (0027).
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$
+declare r record;
+begin
+  select * into r from public.registrar_necesidad('ropa', 'Ropa para ninos', 'Necesitamos ropa para dos ninos pequenos', 'media', 3, 'Sector bloqueo', 4.26, -75.93, 'Abusa', '3209990001', '8361');
+  perform set_config('prueba.bloqueo', r.necesidad_id::text, true);
+  begin
+    perform public.bloquear_celular('3209990001');
+    raise exception 'FALLO: alguien anonimo bloqueo un celular';
+  exception when insufficient_privilege then null;
+  end;
+  raise notice 'OK  nadie anonimo puede bloquear celulares';
+end $$;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-0000000000c3"}', true);
+select set_config('request.headers', '{}', true);
+do $$ begin
+  if public.bloquear_celular('320 999 0001', 'Pruebas') <> 1 then raise exception 'FALLO: no cerro la solicitud abierta'; end if;
+  if (select estado from public.necesidades where id = current_setting('prueba.bloqueo')::uuid) <> 'cancelada' then
+    raise exception 'FALLO: la solicitud del celular bloqueado sigue abierta';
+  end if;
+  raise notice 'OK  la coordinacion bloquea un celular y se cancela lo que tenia abierto';
+end $$;
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$ begin
+  begin
+    perform public.registrar_necesidad('ropa', 'Ropa otra vez', 'Necesitamos ropa para dos ninos pequenos', 'media', 3, 'Sector bloqueo', 4.26, -75.93, 'Abusa', '3209990001', '8361');
+    raise exception 'FALLO: un celular bloqueado registro otra solicitud';
+  exception when sqlstate 'P0001' then
+    if sqlerrm not like 'Este celular no puede registrar%' then raise; end if;
+  end;
+  raise notice 'OK  un celular bloqueado no puede registrar mas solicitudes';
+end $$;
+reset role;
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.
