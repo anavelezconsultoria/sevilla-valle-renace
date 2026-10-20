@@ -207,7 +207,7 @@ end $$;
 -- 6. Vencimientos de 48 horas
 -- -----------------------------------------------------------------------------
 do $$ declare r record; begin
-  select * into r from public.registrar_necesidad('ropa', 'Cobijas para la noche', 'Dormimos en el patio por las replicas', 'media', 3, 'Sector prueba', 4.27, -75.93, 'Luis', '3009998877', '8264');
+  select * into r from public.registrar_necesidad('ropa', 'Cobijas para la noche', 'Se cayo el techo de la pieza de los ninos', 'media', 3, 'Sector prueba', 4.27, -75.93, 'Luis', '3009998877', '8264');
   perform set_config('prueba.id2', r.necesidad_id::text, true);
   perform set_config('prueba.codigo2', r.codigo, true);
 end $$;
@@ -513,7 +513,10 @@ do $$ declare r record; begin
   perform set_config('prueba.revision', r.necesidad_id::text, true);
 
   select * into r from public.registrar_necesidad('ropa', 'Cobijas', 'Necesitamos cobijas para los ninos', 'media', 4, 'La Ceiba', 4.210, -75.93, 'Gloria', '3201112233', '5793');
-  if (select estado::text from public.necesidades where id = r.necesidad_id) <> 'registrada' then raise exception 'FALLO: otra categoria no debia ir a revision'; end if;
+  if (select estado::text from public.necesidades where id = r.necesidad_id) <> 'en_revision'
+     or (select motivo_revision from public.necesidades_privado where necesidad_id = r.necesidad_id) not like 'Ya tiene otra solicitud sin cerrar (alimentos)%' then
+    raise exception 'FALLO: con otra solicitud abierta, una categoria distinta debia ir a revision';
+  end if;
   if (select primera_solicitud from public.necesidades where id = r.necesidad_id) then raise exception 'FALLO: ya no es la primera solicitud'; end if;
   if (select ayuda_reciente_categoria::text from public.necesidades where id = r.necesidad_id) is distinct from 'alimentos' then
     raise exception 'FALLO: no marco la ayuda reciente';
@@ -838,7 +841,7 @@ select set_config('request.jwt.claims', '{"role":"anon"}', true);
 do $$ begin
   perform public.registrar_necesidad('alimentos', 'Mercado familia A', 'Se nos acabo el mercado despues del temblor', 'media', 4, 'Sector punto', 4.2610, -75.9310, 'Hogar A', '3209990011', '8361');
   perform public.registrar_necesidad('alimentos', 'Mercado familia B', 'Se nos acabo el mercado despues del temblor', 'media', 4, 'Sector punto', 4.26102, -75.93102, 'Hogar B', '3209990012', '7392');
-  perform public.registrar_necesidad('alimentos', 'Mercado familia C', 'Se nos acabo el mercado despues del temblor', 'media', 4, 'Sector lejos', 4.2700, -75.9400, 'Hogar C', '3209990013', '6284');
+  perform public.registrar_necesidad('alimentos', 'Mercado familia C', 'No tenemos comida desde el lunes', 'media', 4, 'Sector lejos', 4.2700, -75.9400, 'Hogar C', '3209990013', '6284');
 end $$;
 reset role;
 do $$
@@ -901,6 +904,25 @@ begin
   raise notice 'OK  la coordinacion ve los reportes con el celular y los marca como revisados';
 end $$;
 reset role;
+-- Revision por otra solicitud abierta y por descripcion copiada (0029).
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$ begin
+  perform public.registrar_necesidad('salud', 'Consulta medica', 'Mi papa necesita una cita con el medico general urgente', 'alta', 2, 'Sector copia', 4.2300, -75.9500, 'Copia uno', '3209990021', '8361');
+  perform public.registrar_necesidad('salud', 'Consulta medica', 'Mi papa necesita una cita con el medico general, urgente!', 'alta', 2, 'Sector copia', 4.2400, -75.9600, 'Copia dos', '3209990022', '7392');
+end $$;
+reset role;
+do $$ begin
+  if (select n.estado from public.necesidades n join public.necesidades_privado pr on pr.necesidad_id = n.id where pr.telefono = '3209990021') <> 'registrada' then
+    raise exception 'FALLO: la solicitud original no se publico';
+  end if;
+  if not exists (select 1 from public.necesidades n join public.necesidades_privado pr on pr.necesidad_id = n.id
+                  where pr.telefono = '3209990022' and n.estado = 'en_revision' and pr.motivo_revision like 'Hay otra solicitud con la misma descripción%') then
+    raise exception 'FALLO: una descripcion copiada desde otro celular no entro a revision';
+  end if;
+  raise notice 'OK  una descripcion copiada desde otro celular entra a revision';
+end $$;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.
