@@ -258,12 +258,13 @@ end $$;
 set local role anon;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 do $$ begin
-  for i in 1..3 loop
-    perform public.registrar_necesidad('aseo', 'Kit de aseo ' || i, 'Necesitamos jabon y panales para el bebe', 'baja', 2, 'Sector', 4.203, -75.93, 'Ana', '3110000000', '2468');
-  end loop;
-  perform public.registrar_necesidad('aseo', 'Kit de aseo 4', 'Necesitamos jabon y panales para el bebe', 'baja', 2, 'Sector', 4.203, -75.93, 'Ana', '3110000000', '2468');
-  raise exception 'FALLO: se permitio una cuarta necesidad activa con el mismo celular';
-exception when sqlstate 'P0001' then raise notice 'OK  un celular no puede tener mas de 3 necesidades activas';
+  perform public.registrar_necesidad('aseo', 'Kit de aseo', 'Necesitamos jabon y panales para el bebe', 'baja', 2, 'Sector', 4.203, -75.93, 'Ana', '3110000000', '2468');
+  perform public.registrar_necesidad('ropa', 'Cobijas para la noche', 'Hace mucho frio y no tenemos cobijas', 'baja', 2, 'Sector', 4.203, -75.93, 'Ana', '3110000000', '2468');
+  perform public.registrar_necesidad('agua', 'Agua potable', 'El agua del acueducto sigue cortada', 'baja', 2, 'Sector', 4.203, -75.93, 'Ana', '3110000000', '2468');
+  raise exception 'FALLO: se permitio una tercera necesidad activa con el mismo celular';
+exception when sqlstate 'P0001' then
+  if sqlerrm not like 'Este celular ya tiene 2 solicitudes activas%' then raise; end if;
+  raise notice 'OK  un celular no puede tener mas de 2 necesidades activas';
 end $$;
 
 do $$ begin
