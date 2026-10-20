@@ -18,7 +18,7 @@ import { CoordinacionEstado } from './coordinacion-estado';
   template: `
     <section class="herramienta">
       <h2>Reportes de vecinos</h2>
-      <p class="muted">Solicitudes que alguien reportó por mal uso. Los reportes son anónimos. <strong>Llama antes de bloquear:</strong> un reporte solo no prueba nada.</p>
+      <p class="muted">Solicitudes que alguien reportó por mal uso. Los reportes son anónimos. <strong>Llama antes de decidir:</strong> un reporte solo no prueba nada. <em>Cancelar</em> cierra solo esta solicitud; <em>bloquear</em> cierra todo lo del celular y no lo deja pedir más.</p>
 
       @if (!estado.reportes().length) {
         <p class="vacio">Sin reportes pendientes.</p>
@@ -44,8 +44,9 @@ import { CoordinacionEstado } from './coordinacion-estado';
               <p class="contacto">{{ r.nombre }} · <a [href]="'tel:+57' + r.telefono">{{ r.telefono }}</a></p>
               <div class="acciones">
                 <a class="btn btn-ghost" [routerLink]="['/necesidades', r.necesidadId]">Ver solicitud</a>
+                <button type="button" class="btn btn-ghost peligro" [disabled]="ocupado() === r.necesidadId" (click)="cancelar(r)">Cancelar solicitud</button>
                 <button type="button" class="btn btn-ghost peligro" [disabled]="ocupado() === r.necesidadId" (click)="bloquear(r)">Bloquear celular</button>
-                <button type="button" class="btn btn-ghost" [disabled]="ocupado() === r.necesidadId" (click)="descartar(r)">Ya lo revisé</button>
+                <button type="button" class="btn btn-ghost" [disabled]="ocupado() === r.necesidadId" (click)="descartar(r)">Dejarla activa</button>
               </div>
             </li>
           }
@@ -103,6 +104,11 @@ export class ReportesVecinos {
       await this.coordinacion.bloquearCelular({ telefono: r.telefono, motivo: 'Reportes de vecinos por mal uso' });
       await this.estado.marcarReportesRevisados(r.necesidadId);
     });
+  }
+
+  protected async cancelar(r: ReportePendiente): Promise<void> {
+    if (!confirm(`¿Cancelar «${r.titulo}» de ${r.nombre}? Deja de estar publicada y, si alguien la estaba atendiendo, la pierde.`)) return;
+    await this.ejecutar(r, () => this.estado.cancelarReportada(r.necesidadId));
   }
 
   protected async descartar(r: ReportePendiente): Promise<void> {

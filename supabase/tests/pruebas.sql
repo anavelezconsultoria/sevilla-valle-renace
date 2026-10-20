@@ -923,6 +923,32 @@ do $$ begin
   raise notice 'OK  una descripcion copiada desde otro celular entra a revision';
 end $$;
 
+-- La coordinacion cancela una solicitud (0029).
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-0000000000c3"}', true);
+select set_config('request.headers', '{}', true);
+do $$
+declare v_id uuid := (select n.id from public.necesidades n join public.necesidades_privado pr on pr.necesidad_id = n.id where pr.telefono = '3209990021');
+begin
+  perform public.cancelar_por_coordinacion(v_id);
+  if (select estado from public.necesidades where id = v_id) <> 'cancelada' then raise exception 'FALLO: la coordinacion no cancelo la solicitud'; end if;
+  begin
+    perform public.cancelar_por_coordinacion(v_id);
+    raise exception 'FALLO: se cancelo dos veces';
+  exception when sqlstate 'P0001' then
+    if sqlerrm like 'FALLO%' then raise; end if;
+  end;
+  raise notice 'OK  la coordinacion cancela una solicitud abierta';
+end $$;
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$ begin
+  perform public.cancelar_por_coordinacion('00000000-0000-0000-0000-000000000000');
+  raise exception 'FALLO: alguien anonimo cancelo';
+exception when insufficient_privilege then raise notice 'OK  nadie anonimo puede cancelar como coordinacion';
+end $$;
+reset role;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.

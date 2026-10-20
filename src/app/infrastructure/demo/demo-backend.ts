@@ -343,6 +343,15 @@ export class DemoBackend
     });
   }
 
+  async cancelarPorCoordinacion(necesidadId: string): Promise<void> {
+    const coordinacion = this.exigirCoordinacion();
+    const registro = this.registros().find((r) => r.necesidad.id === necesidadId);
+    const abiertos = [EstadoNecesidad.Registrada, EstadoNecesidad.EnRevision, EstadoNecesidad.EnAtencion, EstadoNecesidad.Entregada];
+    if (!registro || !abiertos.includes(registro.necesidad.estado)) throw new Error('Esta solicitud ya está cerrada o cancelada.');
+    this.transicionar({ registro, estado: EstadoNecesidad.Cancelada, evento: { tipo: TipoEvento.Cancelada, actor: coordinacion.alias, evidencias: [] }, cambios: { venceEn: undefined } });
+    this.reportes.delete(necesidadId);
+  }
+
   async marcarReportesRevisados(necesidadId: string): Promise<void> {
     this.exigirCoordinacion();
     this.reportes.delete(necesidadId);

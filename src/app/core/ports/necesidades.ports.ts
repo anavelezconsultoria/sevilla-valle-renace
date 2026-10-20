@@ -252,6 +252,8 @@ export abstract class CoordinacionGateway {
   /** Solicitudes reportadas por vecinos, la mas reportada primero. */
   abstract reportesPendientes(): Promise<readonly ReportePendiente[]>;
   abstract marcarReportesRevisados(necesidadId: string): Promise<void>;
+  /** Cancela una solicitud abierta (mal uso, duplicada). Sus reportes quedan revisados. */
+  abstract cancelarPorCoordinacion(necesidadId: string): Promise<void>;
   /** Hogares que ya recibieron ayuda, el mas reciente primero. */
   abstract hogaresQueRecibieron(): Promise<readonly HogarAtendido[]>;
   /** Ayudas en curso con el contacto de quien las lleva, la mas cerca de vencerse primero. */

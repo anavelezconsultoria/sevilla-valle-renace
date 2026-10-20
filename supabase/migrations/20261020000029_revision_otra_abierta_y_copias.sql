@@ -140,3 +140,30 @@ revoke execute on function public._texto_comparable(text) from public, anon, aut
 revoke execute on function public._dias_misma_descripcion(uuid) from public, anon, authenticated;
 revoke execute on function public._revisar_mismo_punto() from public, anon, authenticated;
 revoke execute on function public._evento_revision_mismo_punto() from public, anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- La coordinacion cancela una solicitud (por ejemplo, reportada por mal uso
+-- o duplicada). Sirve en cualquier estado abierto; sus reportes quedan revisados.
+-- ---------------------------------------------------------------------------
+create or replace function public.cancelar_por_coordinacion(p_necesidad uuid)
+returns uuid
+language plpgsql volatile security definer
+set search_path = ''
+as $$
+declare
+  v_perfil public.perfiles := public._exigir_coordinacion();
+begin
+  update public.necesidades
+     set estado = 'cancelada', cierre = null, vence_en = null, actualizada_en = now()
+   where id = p_necesidad and estado in ('registrada', 'en_revision', 'en_atencion', 'entregada');
+  if not found then
+    raise exception 'Esta solicitud ya está cerrada o cancelada.' using errcode = 'P0001';
+  end if;
+  perform public._registrar_evento(p_necesidad, 'cancelada', v_perfil.id, 'Coordinación');
+  update public.reportes_mal_uso set revisado_en = now() where necesidad_id = p_necesidad and revisado_en is null;
+  return p_necesidad;
+end
+$$;
+
+revoke execute on function public.cancelar_por_coordinacion(uuid) from public, anon;
+grant execute on function public.cancelar_por_coordinacion(uuid) to authenticated;

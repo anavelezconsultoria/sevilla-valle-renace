@@ -41,6 +41,11 @@ export class CoordinacionEstado {
     this.enRevision.update((lista) => lista.filter((s) => s.necesidadId !== payload.necesidadId));
   }
 
+  async cancelarReportada(necesidadId: string): Promise<void> {
+    await this.coordinacion.cancelarPorCoordinacion(necesidadId);
+    this.reportes.update((lista) => lista.filter((r) => r.necesidadId !== necesidadId));
+  }
+
   async marcarReportesRevisados(necesidadId: string): Promise<void> {
     await this.coordinacion.marcarReportesRevisados(necesidadId);
     this.reportes.update((lista) => lista.filter((r) => r.necesidadId !== necesidadId));

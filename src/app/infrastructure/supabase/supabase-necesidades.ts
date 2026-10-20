@@ -277,6 +277,11 @@ export class SupabaseNecesidades
     return exigir<readonly FilaReporte[]>(await this.cliente.rpc('reportes_pendientes')).map(aReportePendiente);
   }
 
+  async cancelarPorCoordinacion(necesidadId: string): Promise<void> {
+    exigir<string>(await this.cliente.rpc('cancelar_por_coordinacion', { p_necesidad: necesidadId }));
+    await this.recargar();
+  }
+
   async marcarReportesRevisados(necesidadId: string): Promise<void> {
     exigir<null>(await this.cliente.rpc('marcar_reportes_revisados', { p_necesidad: necesidadId }));
   }
