@@ -924,11 +924,12 @@ do $$ begin
 end $$;
 
 -- La coordinacion cancela una solicitud (0029).
+select set_config('prueba.cancelar', (select n.id::text from public.necesidades n join public.necesidades_privado pr on pr.necesidad_id = n.id where pr.telefono = '3209990021'), true);
 set local role authenticated;
 select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-0000000000c3"}', true);
 select set_config('request.headers', '{}', true);
 do $$
-declare v_id uuid := (select n.id from public.necesidades n join public.necesidades_privado pr on pr.necesidad_id = n.id where pr.telefono = '3209990021');
+declare v_id uuid := current_setting('prueba.cancelar')::uuid;
 begin
   perform public.cancelar_por_coordinacion(v_id);
   if (select estado from public.necesidades where id = v_id) <> 'cancelada' then raise exception 'FALLO: la coordinacion no cancelo la solicitud'; end if;
