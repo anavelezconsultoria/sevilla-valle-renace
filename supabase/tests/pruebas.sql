@@ -951,6 +951,34 @@ exception when insufficient_privilege then raise notice 'OK  nadie anonimo puede
 end $$;
 reset role;
 
+-- Sin tope de necesidades en atencion (0031).
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+do $$ begin
+  for i in 1..6 loop
+    perform public.registrar_necesidad('transporte', 'Viaje ' || i, 'Necesito ir al hospital, cita numero ' || i || ' de control', 'media', 1,
+      'Sector tope', 4.30 + i * 0.01, -75.90, 'Tope ' || i, '32099901' || lpad(i::text, 2, '0'), '8361');
+  end loop;
+end $$;
+reset role;
+select set_config('prueba.tope', (select string_agg(n.id::text, ',') from public.necesidades n join public.necesidades_privado pr on pr.necesidad_id = n.id
+                                    where pr.telefono like '32099901%' and n.estado = 'registrada'), true);
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000b"}', true);
+select set_config('request.headers', '{}', true);
+do $$
+declare v_id text;
+begin
+  if array_length(string_to_array(current_setting('prueba.tope'), ','), 1) <> 6 then
+    raise exception 'FALLO: se esperaban 6 solicitudes publicadas para la prueba';
+  end if;
+  foreach v_id in array string_to_array(current_setting('prueba.tope'), ',') loop
+    perform public.tomar_necesidad(v_id::uuid);
+  end loop;
+  raise notice 'OK  una persona puede atender mas de 5 necesidades a la vez';
+end $$;
+reset role;
+
 reset role;
 do $$ begin
   -- Solo las filas de esta prueba: now() es la hora de inicio de la transaccion.
